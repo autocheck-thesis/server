@@ -9,5 +9,6 @@ defmodule ThesisWeb.Router do
     pipe_through :api
   end
 
-  post "/", ThesisWeb.IndexController, :index
+  get "/", ThesisWeb.IndexController, :index
+  post "/", ThesisWeb.IndexController, :launch
 end
