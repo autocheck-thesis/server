@@ -1,0 +1,4 @@
+localhost:3000 {
+  tls self_signed
+  proxy / http://localhost:4000
+}
