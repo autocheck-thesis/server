@@ -28,4 +28,30 @@ defmodule ThesisWeb.IndexController do
 
     Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.TestLiveView, session: %{})
   end
+
+  defp loop(conn) do
+    receive do
+      {:log, %{out: out}} ->
+        conn |> chunk(out)
+        loop(conn)
+
+      {:done, %{job: job}} ->
+        conn |> chunk("Done with job #{job.id}\n")
+        conn
+    end
+  end
+
+  def work(conn, _params) do
+    {:ok, worker} = Thesis.JobWorker.start_link()
+    Thesis.JobWorker.process(worker, %Thesis.Job{id: 1})
+
+    conn =
+      conn
+      |> put_resp_content_type("text/event-stream")
+      |> send_chunked(200)
+
+    conn |> chunk("Will log!\n")
+
+    loop(conn)
+  end
 end

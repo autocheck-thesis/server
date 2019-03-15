@@ -1,5 +1,6 @@
 defmodule Thesis.JobWorker do
   use Agent
+  require Logger
 
   def start_link() do
     server = %{
@@ -11,7 +12,7 @@ defmodule Thesis.JobWorker do
     }
 
     {:ok, conn} = Docker.start_link(server)
-    Agent.start_link(fn -> conn end, name: __MODULE__)
+    Agent.start_link(fn -> conn end)
   end
 
   def handle_info(_msg, state) do
@@ -19,22 +20,45 @@ defmodule Thesis.JobWorker do
     {:noreply, state}
   end
 
-  def process(worker, %Thesis.Job{} = job) do
-    Agent.get(
+  defp loop(conn, job, pid) do
+    receive do
+      %Docker.AsyncReply{reply: {:chunk, [stdout: out]}} ->
+        send(pid, {:log, %{job: job, out: out}})
+        # Logger.debug("Sending '#{out}' to '#{inspect(pid)}'")
+        loop(conn, job, pid)
+
+      %Docker.AsyncReply{reply: :done} ->
+        # Logger.debug("Sending done to '#{inspect(pid)}'")
+        send(pid, {:done, %{job: job}})
+    end
+  end
+
+  def process(worker, %Thesis.Job{} = job, pid \\ self()) do
+    Agent.cast(
       worker,
       fn conn ->
         {:ok, %{"Id" => id}} =
           Docker.Container.create(conn, "test", %{
-            Cmd: ["bash", "-c", "sleep 1; echo hello world; exit 100"],
+            Cmd: [
+              "bash",
+              "-c",
+              """
+              for i in {1..5}
+              do
+                echo $i
+                sleep 1s
+              done
+              exit 100
+              """
+            ],
             Image: "ubuntu",
             HostConfig: %{AutoRemove: true}
           })
 
         Docker.Container.start(conn, id)
-        {:ok, ref} = Docker.Container.follow(conn, id)
-        {:ok, %{"StatusCode" => status_code}} = Docker.Container.wait(conn, id, :infinity)
-        IO.inspect(status_code)
-        job
+        Docker.Container.follow(conn, id)
+
+        loop(conn, job, pid)
       end
     )
   end

@@ -29,5 +29,7 @@ defmodule ThesisWeb.Router do
     get "/lti", IndexController, :index
     post "/", IndexController, :launch
     post "/lti", IndexController, :launch
+
+    get "/work", ThesisWeb.IndexController, :work
   end
 end
