@@ -23,7 +23,11 @@ defmodule ThesisWeb.Router do
 
   scope "/", ThesisWeb do
     pipe_through :browser
+
     get "/", IndexController, :index
+    get "/index", IndexController, :index
+    get "/lti", IndexController, :index
     post "/", IndexController, :launch
+    post "/lti", IndexController, :launch
   end
 end

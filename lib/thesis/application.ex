@@ -14,6 +14,9 @@ defmodule Thesis.Application do
       # {Thesis.Worker, arg},
     ]
 
+    {:ok, worker} = Thesis.JobWorker.start_link()
+    Thesis.JobWorker.process(worker, %Thesis.Job{id: 1})
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Thesis.Supervisor]
