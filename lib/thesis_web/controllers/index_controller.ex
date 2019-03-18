@@ -8,6 +8,8 @@ defmodule ThesisWeb.IndexController do
     conn
     |> put_session(:user_id, params["user_id"])
     |> put_session(:oauth_consumer_key, params["oauth_consumer_key"])
+    |> put_session(:lis_result_sourcedid, params["lis_result_sourcedid"])
+    |> put_session(:lis_outcome_service_url, params["lis_outcome_service_url"])
     |> redirect(to: "/")
   end
 
@@ -16,7 +18,7 @@ defmodule ThesisWeb.IndexController do
 
     if user_id do
       conn
-      |> text("Welcome back, " <> user_id)
+      |> render("index.html", [user: user_id])
     else
       conn
       |> text("You have no session")

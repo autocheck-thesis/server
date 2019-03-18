@@ -1,0 +1,6 @@
+<h1>MASTER THESIS</h1>
+<body>
+  <main role="main">
+    <%= render @view_module, @view_template, assigns %>
+  </main>
+</body>
