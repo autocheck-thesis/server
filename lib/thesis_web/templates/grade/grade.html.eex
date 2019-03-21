@@ -1,0 +1,5 @@
+<form action="/grade" method="post">
+  <label for="grade">What grade do you want?</label>
+  <input type="text" id="grade" name="grade">
+  <button type="submit">Send</button>
+</form>
