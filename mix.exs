@@ -38,6 +38,8 @@ defmodule Thesis.MixProject do
       {:phoenix_html, "~> 2.13"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
+      {:phoenix_live_view, github: "phoenixframework/phoenix_live_view"},
+      {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:plug_cowboy, "~> 2.0"}
     ]
   end

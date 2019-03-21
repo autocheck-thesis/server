@@ -14,14 +14,18 @@ defmodule ThesisWeb.IndexController do
   end
 
   def index(conn, _params) do
-    user_id = get_session(conn, :user_id)
+    # user_id = get_session(conn, :user_id)
 
-    if user_id do
-      conn
-      |> render("index.html", [user: user_id])
-    else
-      conn
-      |> text("You have no session")
-    end
+    # if user_id do
+    #   conn
+    #   |> render("index.html", user: user_id)
+    # else
+    #   conn
+    #   |> put_status(403)
+    #   |> put_view(ThesisWeb.ErrorView)
+    #   |> render(:"403")
+    # end
+
+    Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.TestLiveView, session: %{})
   end
 end

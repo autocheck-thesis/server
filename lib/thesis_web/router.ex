@@ -5,6 +5,13 @@ defmodule ThesisWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_flash
+    plug Phoenix.LiveView.Flash
+  end
+
   scope "/api", ThesisWeb do
     pipe_through :api
   end
@@ -14,6 +21,9 @@ defmodule ThesisWeb.Router do
     post "/", GradeController, :grade_post
   end
 
-  get "/", ThesisWeb.IndexController, :index
-  post "/", ThesisWeb.IndexController, :launch
+  scope "/", ThesisWeb do
+    pipe_through :browser
+    get "/", IndexController, :index
+    post "/", IndexController, :launch
+  end
 end

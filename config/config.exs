@@ -12,7 +12,18 @@ config :thesis, ThesisWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "Uqz3utAOWmiwz3MsYCCB4QKjKg7bReiKg1wj4z5ryAEHCQMHioxz6JtQTlULGPtm",
   render_errors: [view: ThesisWeb.ErrorView, accepts: ~w(json)],
-  pubsub: [name: Thesis.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub: [name: Thesis.PubSub, adapter: Phoenix.PubSub.PG2],
+  live_view: [
+    signing_salt: "YOUR_SECRET"
+  ],
+  live_reload: [
+    patterns: [
+      ~r{priv/static/.*(js|css|png|jpeg|jpg|gif)$},
+      ~r{web/views/.*(ex)$},
+      ~r{web/templates/.*(eex)$},
+      ~r{web/live/.*(ex)$}
+    ]
+  ]
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -23,8 +34,11 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :plug_lti,
-  lti_key:    "test",
+  lti_key: "test",
   lti_secret: "secret"
+
+config :phoenix,
+  template_engines: [leex: Phoenix.LiveView.Engine]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
