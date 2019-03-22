@@ -31,32 +31,11 @@ defmodule ThesisWeb.IndexController do
     Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.TestLiveView, session: %{})
   end
 
-  defp loop(conn) do
-    receive do
-      {:log, %{out: out}} ->
-        conn |> chunk(out)
-        loop(conn)
-
-      {:error, %RuntimeError{} = error} ->
-        Logger.error(inspect(error))
-        conn |> chunk("Error: Could not spawn container")
-
-      {:done, %{job: job}} ->
-        conn |> chunk("Done with job #{job.id}\n")
-    end
-  end
-
   def work(conn, _params) do
-    {:ok, worker} = Thesis.JobWorker.start_link()
-    Thesis.JobWorker.process(worker, %Thesis.Job{id: 1})
+    user_id = get_session(conn, :user_id)
 
-    conn =
-      conn
-      |> put_resp_content_type("text/event-stream")
-      |> send_chunked(200)
-
-    conn |> chunk("Spawning container...\n")
-
-    loop(conn)
+    Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.LogLiveView,
+      session: %{user_id: user_id}
+    )
   end
 end

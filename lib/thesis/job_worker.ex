@@ -61,6 +61,11 @@ defmodule Thesis.JobWorker do
         # Logger.debug("Sending '#{out}' to '#{inspect(pid)}'")
         loop(conn, job, pid)
 
+      %Docker.AsyncReply{reply: {:chunk, [stderr: err]}} ->
+        send(pid, {:log, %{job: job, err: err}})
+        # Logger.debug("Sending '#{out}' to '#{inspect(pid)}'")
+        loop(conn, job, pid)
+
       %Docker.AsyncReply{reply: :done} ->
         # Logger.debug("Sending done to '#{inspect(pid)}'")
         send(pid, {:done, %{job: job}})
@@ -76,12 +81,8 @@ defmodule Thesis.JobWorker do
                  "bash",
                  "-c",
                  """
-                 for i in {1..5}
-                 do
-                   echo $i
-                   sleep 1s
-                 done
-                 exit 100
+                 apt-get update
+                 apt-get install -y cowsay
                  """
                ],
                Image: "ubuntu",
