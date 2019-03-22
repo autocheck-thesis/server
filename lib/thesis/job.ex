@@ -1,3 +1,3 @@
 defmodule Thesis.Job do
-  defstruct [:id]
+  defstruct [:id, :image, :cmd]
 end

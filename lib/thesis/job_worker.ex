@@ -77,15 +77,8 @@ defmodule Thesis.JobWorker do
       worker,
       fn conn ->
         case Docker.Container.create(conn, "test", %{
-               Cmd: [
-                 "bash",
-                 "-c",
-                 """
-                 apt-get update
-                 apt-get install -y cowsay
-                 """
-               ],
-               Image: "ubuntu",
+               Cmd: job.cmd,
+               Image: job.image,
                HostConfig: %{AutoRemove: true}
              }) do
           {:ok, %{"Id" => id}} ->

@@ -35,7 +35,7 @@ defmodule ThesisWeb.IndexController do
     user_id = get_session(conn, :user_id)
 
     Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.LogLiveView,
-      session: %{user_id: user_id}
+      session: %{user_id: user_id, images: ["ubuntu", "alpine"]}
     )
   end
 end
