@@ -52,3 +52,9 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Docker configuration
+# config :docker,
+#   url: "https://192.168.64.6:2375",
+#   certfile: "~/.docker/machine/machines/dinghy/cert.pem",
+#   keyfile: "~/.docker/machine/machines/dinghy/key.pem"

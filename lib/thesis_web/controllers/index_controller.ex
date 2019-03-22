@@ -1,6 +1,8 @@
 defmodule ThesisWeb.IndexController do
   use ThesisWeb, :controller
 
+  require Logger
+
   plug PlugLti when action in [:launch]
   plug :fetch_session
 
@@ -35,9 +37,12 @@ defmodule ThesisWeb.IndexController do
         conn |> chunk(out)
         loop(conn)
 
+      {:error, %RuntimeError{} = error} ->
+        Logger.error(inspect(error))
+        conn |> chunk("Error: Could not spawn container")
+
       {:done, %{job: job}} ->
         conn |> chunk("Done with job #{job.id}\n")
-        conn
     end
   end
 
@@ -50,7 +55,7 @@ defmodule ThesisWeb.IndexController do
       |> put_resp_content_type("text/event-stream")
       |> send_chunked(200)
 
-    conn |> chunk("Will log!\n")
+    conn |> chunk("Spawning container...\n")
 
     loop(conn)
   end
