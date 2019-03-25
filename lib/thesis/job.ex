@@ -1,3 +1,4 @@
 defmodule Thesis.Job do
-  defstruct [:id, :image, :cmd]
+  @enforce_keys [:id, :image, :cmd, :filename, :filepath]
+  defstruct [:id, :image, :cmd, :filename, :filepath]
 end

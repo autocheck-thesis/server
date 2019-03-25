@@ -58,16 +58,16 @@ defmodule Thesis.JobWorker do
     receive do
       %Docker.AsyncReply{reply: {:chunk, [stdout: out]}} ->
         send(pid, {:log, %{job: job, out: out}})
-        # Logger.debug("Sending '#{out}' to '#{inspect(pid)}'")
+        Logger.debug("Sending '#{out}' to '#{inspect(pid)}'")
         loop(conn, job, pid)
 
       %Docker.AsyncReply{reply: {:chunk, [stderr: err]}} ->
         send(pid, {:log, %{job: job, err: err}})
-        # Logger.debug("Sending '#{out}' to '#{inspect(pid)}'")
+        Logger.debug("Sending '#{err}' to '#{inspect(pid)}'")
         loop(conn, job, pid)
 
       %Docker.AsyncReply{reply: :done} ->
-        # Logger.debug("Sending done to '#{inspect(pid)}'")
+        Logger.debug("Sending done to '#{inspect(pid)}'")
         send(pid, {:done, %{job: job}})
     end
   end
@@ -79,7 +79,7 @@ defmodule Thesis.JobWorker do
         case Docker.Container.create(conn, "test", %{
                Cmd: job.cmd,
                Image: job.image,
-               HostConfig: %{AutoRemove: true}
+               HostConfig: %{AutoRemove: true, Binds: ["#{job.filepath}:/tmp/submission:ro"]}
              }) do
           {:ok, %{"Id" => id}} ->
             Docker.Container.start(conn, id)
