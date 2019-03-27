@@ -13,7 +13,7 @@ defmodule ThesisWeb.JobLiveView do
 
   def mount(%{user_id: _user_id, job_id: job_id} = _session, socket) do
     if connected?(socket) do
-      Thesis.JobWorker.QueueConsumer.start_link([job_id: job_id])
+      Thesis.JobWorker.QueueConsumer.start_link(job_id: job_id)
     end
 
     {:ok,
@@ -23,15 +23,24 @@ defmodule ThesisWeb.JobLiveView do
      )}
   end
 
-  def handle_info({:reply, %Docker.AsyncReply{reply: {:chunk, [stdout: out]}}} = _reply, socket) do
+  # def handle_info(any, socket) do
+  #   IO.inspect(any)
+  #   {:noreply, socket}
+  # end
+
+  def handle_info(%Docker.AsyncReply{reply: {:chunk, %{"status" => status}}} = _reply, socket) do
+    {:noreply, update(socket, :log_lines, &(&1 ++ ["#{status}\n"]))}
+  end
+
+  def handle_info(%Docker.AsyncReply{reply: {:chunk, [stdout: out]}} = _reply, socket) do
     {:noreply, update(socket, :log_lines, &(&1 ++ [out]))}
   end
 
-  def handle_info({:reply, %Docker.AsyncReply{reply: {:chunk, [stderr: err]}}} = _reply, socket) do
+  def handle_info(%Docker.AsyncReply{reply: {:chunk, [stderr: err]}} = _reply, socket) do
     {:noreply, update(socket, :log_lines, &(&1 ++ [err]))}
   end
 
-  def handle_info({:reply, %Docker.AsyncReply{reply: :done}} = _reply, socket) do
+  def handle_info(%Docker.AsyncReply{reply: :done} = _reply, socket) do
     {:noreply, assign(socket, status: "Done")}
   end
 

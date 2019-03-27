@@ -61,7 +61,17 @@ defmodule Thesis.JobWorker do
   end
 
   def process(docker_conn, %Thesis.Job{} = job) do
-    case Docker.Container.create(docker_conn, "test", %{
+    # NOTE: This is blocking
+    case Docker.Image.pull(docker_conn, job.image) do
+      {:ok, _} ->
+        receive_loop(job)
+
+      {:error, error} ->
+        Logger.error(inspect(error))
+        Thesis.JobWorker.QueueBroadcaster.notify(job.id, {:error, inspect(error)})
+    end
+
+    case Docker.Container.create(docker_conn, job.id, %{
            Cmd: job.cmd,
            Image: job.image,
            HostConfig: %{AutoRemove: true, Binds: ["#{job.filepath}:/tmp/submission:ro"]}
@@ -73,13 +83,15 @@ defmodule Thesis.JobWorker do
         receive_loop(job)
 
       {:error, error} ->
-        Thesis.JobWorker.QueueBroadcaster.notify(job.id, {:error, error})
+        Logger.error(inspect(error))
+        Thesis.JobWorker.QueueBroadcaster.notify(job.id, {:error, inspect(error)})
     end
   end
 end
 
 defmodule Thesis.JobWorker.QueueBroadcaster do
   use GenStage
+  require Logger
 
   def start_link(_opts \\ []) do
     GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -110,6 +122,7 @@ defmodule Thesis.JobWorker.QueueBroadcaster do
   defp dispatch_events(queue, demand, events) do
     case :queue.out(queue) do
       {{:value, event}, queue} ->
+        Logger.debug("Dispatching #{inspect(event)}}")
         dispatch_events(queue, demand - 1, [event | events])
 
       {:empty, queue} ->
@@ -139,7 +152,7 @@ defmodule Thesis.JobWorker.QueueConsumer do
   def handle_events(events, _from, pid) do
     for event <- events do
       {_job_id, reply} = event
-      send(pid, {:reply, reply})
+      send(pid, reply)
     end
 
     {:noreply, [], pid}
