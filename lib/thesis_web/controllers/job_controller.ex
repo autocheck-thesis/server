@@ -8,7 +8,7 @@ defmodule ThesisWeb.JobController do
   end
 
   def show(conn, %{"id" => job_id} = _params) do
-    live_render(conn, ThesisWeb.JobLiveView, session: %{user_id: 0, job_id: job_id})
+    live_render(conn, ThesisWeb.JobLiveView, session: %{user_id: 0, job_id: String.to_integer(job_id)})
   end
 
   def show(conn, _params) do

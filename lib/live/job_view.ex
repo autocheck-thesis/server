@@ -13,7 +13,7 @@ defmodule ThesisWeb.JobLiveView do
 
   def mount(%{user_id: _user_id, job_id: job_id} = _session, socket) do
     if connected?(socket) do
-      GenStage.start_link(__MODULE__, :ok)
+      Thesis.JobWorker.QueueConsumer.start_link([job_id: job_id])
     end
 
     {:ok,
@@ -21,15 +21,6 @@ defmodule ThesisWeb.JobLiveView do
        log_lines: [],
        status: "Waiting to start"
      )}
-  end
-
-  def init(:ok) do
-    {:consumer, :ok, subscribe_to: [:lol]}
-  end
-
-  def handle_info(message, state, socket) do
-    IO.inspect(message)
-    {:noreply, socket}
   end
 
   def handle_info({:reply, %Docker.AsyncReply{reply: {:chunk, [stdout: out]}}} = _reply, socket) do

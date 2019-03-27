@@ -12,7 +12,7 @@ defmodule Thesis.Application do
       ThesisWeb.Endpoint,
       # Starts a worker by calling: Thesis.Worker.start_link(arg)
       # {Thesis.Worker, arg},
-      {Thesis.JobWorker.QueueBroadcaster, :lol}
+      Thesis.JobWorker.QueueBroadcaster
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

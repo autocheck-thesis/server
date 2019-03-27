@@ -51,7 +51,7 @@ defmodule Thesis.JobWorker do
   defp receive_loop(job) do
     receive do
       reply ->
-        Thesis.JobWorker.QueueBroadcaster.notify(:lol, reply)
+        Thesis.JobWorker.QueueBroadcaster.notify(job.id, reply)
 
         # Keep listening for more replies
         with %Docker.AsyncReply{reply: {:chunk, _chunk}} <- reply do
@@ -61,8 +61,6 @@ defmodule Thesis.JobWorker do
   end
 
   def process(docker_conn, %Thesis.Job{} = job) do
-    Phoenix.PubSub.broadcast(Thesis.PubSub, job_topic(job), {:reply, "alive"})
-
     case Docker.Container.create(docker_conn, "test", %{
            Cmd: job.cmd,
            Image: job.image,
@@ -75,7 +73,7 @@ defmodule Thesis.JobWorker do
         receive_loop(job)
 
       {:error, error} ->
-        Phoenix.PubSub.broadcast(Thesis.PubSub, job_topic(job), {:error, error})
+        Thesis.JobWorker.QueueBroadcaster.notify(job.id, {:error, error})
     end
   end
 end
@@ -83,12 +81,12 @@ end
 defmodule Thesis.JobWorker.QueueBroadcaster do
   use GenStage
 
-  def start_link(name) do
-    GenStage.start_link(__MODULE__, :ok, name: name)
+  def start_link(_opts \\ []) do
+    GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  def notify(name, event) do
-    GenStage.cast(name, {:notify, event})
+  def notify(job_id, reply) do
+    GenStage.cast(__MODULE__, {:notify, {job_id, reply}})
   end
 
   def init(:ok) do
@@ -97,6 +95,7 @@ defmodule Thesis.JobWorker.QueueBroadcaster do
 
   def handle_cast({:notify, event}, {queue, pending_demand}) do
     queue = :queue.in(event, queue)
+    # IO.inspect(queue)
     dispatch_events(queue, pending_demand, [])
   end
 
@@ -122,19 +121,27 @@ end
 defmodule Thesis.JobWorker.QueueConsumer do
   use GenStage
 
-  def start_link() do
-    GenStage.start_link(__MODULE__, :ok)
+  @spec start_link(opts :: [job_id: integer(), pid: pid()]) :: GenServer.on_start()
+  def start_link(opts \\ [pid: self()]) do
+    GenStage.start_link(__MODULE__, {Keyword.get(opts, :job_id), Keyword.get(opts, :pid, self())})
   end
 
-  def init(:ok) do
-    {:consumer, :ok, subscribe_to: [Thesis.JobWorker.QueueBroadcaster]}
+  def init({job_id, pid}) do
+    {:consumer, pid,
+     subscribe_to: [
+       {
+         Thesis.JobWorker.QueueBroadcaster,
+         selector: fn {id, _reply} -> id == job_id end
+       }
+     ]}
   end
 
-  def handle_events(events, _from, state) do
+  def handle_events(events, _from, pid) do
     for event <- events do
-      IO.inspect({self(), event})
+      {_job_id, reply} = event
+      send(pid, {:reply, reply})
     end
 
-    {:noreply, [], state}
+    {:noreply, [], pid}
   end
 end
