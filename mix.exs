@@ -40,6 +40,7 @@ defmodule Thesis.MixProject do
       {:jason, "~> 1.0"},
       {:phoenix_live_view, github: "phoenixframework/phoenix_live_view"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:gen_stage, "~> 0.14.1"},
       {:docker, path: "../elixir-docker"},
       {:plug_cowboy, "~> 2.0"}
     ]

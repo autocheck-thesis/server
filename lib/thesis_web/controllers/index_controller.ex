@@ -57,6 +57,9 @@ defmodule ThesisWeb.IndexController do
       filepath: "/Users/nikteg/tmp/submission/"
     }
 
+    {:ok, docker_conn} = Thesis.JobWorker.start_link()
+    Thesis.JobWorker.process(docker_conn, job)
+
     Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.LogLiveView,
       session: %{user_id: 0, job: job}
     )

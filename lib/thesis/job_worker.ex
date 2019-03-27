@@ -1,6 +1,6 @@
 defmodule Thesis.JobWorker do
-  use Agent
   require Logger
+  import Thesis.Helpers
 
   defp construct_https_url(uri = %URI{}) do
     "https://#{uri.host}:#{uri.port}"
@@ -45,52 +45,96 @@ defmodule Thesis.JobWorker do
       ]
     }
 
-    {:ok, conn} = Docker.start_link(docker_server_opts)
-    Agent.start_link(fn -> conn end)
+    Docker.start_link(docker_server_opts)
   end
 
-  def handle_info(_msg, state) do
-    IO.puts("Handle info")
-    {:noreply, state}
-  end
-
-  defp loop(conn, job, pid) do
+  defp receive_loop(job) do
     receive do
-      %Docker.AsyncReply{reply: {:chunk, [stdout: out]}} ->
-        send(pid, {:log, %{job: job, out: out}})
-        Logger.debug("Sending '#{out}' to '#{inspect(pid)}'")
-        loop(conn, job, pid)
+      reply ->
+        Thesis.JobWorker.QueueBroadcaster.notify(:lol, reply)
 
-      %Docker.AsyncReply{reply: {:chunk, [stderr: err]}} ->
-        send(pid, {:log, %{job: job, err: err}})
-        Logger.debug("Sending '#{err}' to '#{inspect(pid)}'")
-        loop(conn, job, pid)
-
-      %Docker.AsyncReply{reply: :done} ->
-        Logger.debug("Sending done to '#{inspect(pid)}'")
-        send(pid, {:done, %{job: job}})
+        # Keep listening for more replies
+        with %Docker.AsyncReply{reply: {:chunk, _chunk}} <- reply do
+          receive_loop(job)
+        end
     end
   end
 
-  def process(worker, %Thesis.Job{} = job, pid \\ self()) do
-    Agent.cast(
-      worker,
-      fn conn ->
-        case Docker.Container.create(conn, "test", %{
-               Cmd: job.cmd,
-               Image: job.image,
-               HostConfig: %{AutoRemove: true, Binds: ["#{job.filepath}:/tmp/submission:ro"]}
-             }) do
-          {:ok, %{"Id" => id}} ->
-            Docker.Container.start(conn, id)
-            Docker.Container.follow(conn, id)
+  def process(docker_conn, %Thesis.Job{} = job) do
+    Phoenix.PubSub.broadcast(Thesis.PubSub, job_topic(job), {:reply, "alive"})
 
-            loop(conn, job, pid)
+    case Docker.Container.create(docker_conn, "test", %{
+           Cmd: job.cmd,
+           Image: job.image,
+           HostConfig: %{AutoRemove: true, Binds: ["#{job.filepath}:/tmp/submission:ro"]}
+         }) do
+      {:ok, %{"Id" => id}} ->
+        Docker.Container.start(docker_conn, id)
+        Docker.Container.follow(docker_conn, id)
 
-          {:error, error} ->
-            send(pid, {:error, error})
-        end
-      end
-    )
+        receive_loop(job)
+
+      {:error, error} ->
+        Phoenix.PubSub.broadcast(Thesis.PubSub, job_topic(job), {:error, error})
+    end
+  end
+end
+
+defmodule Thesis.JobWorker.QueueBroadcaster do
+  use GenStage
+
+  def start_link(name) do
+    GenStage.start_link(__MODULE__, :ok, name: name)
+  end
+
+  def notify(name, event) do
+    GenStage.cast(name, {:notify, event})
+  end
+
+  def init(:ok) do
+    {:producer, {:queue.new(), 0}, dispatcher: GenStage.BroadcastDispatcher}
+  end
+
+  def handle_cast({:notify, event}, {queue, pending_demand}) do
+    queue = :queue.in(event, queue)
+    dispatch_events(queue, pending_demand, [])
+  end
+
+  def handle_demand(incoming_demand, {queue, pending_demand}) do
+    dispatch_events(queue, incoming_demand + pending_demand, [])
+  end
+
+  defp dispatch_events(queue, 0, events) do
+    {:noreply, Enum.reverse(events), {queue, 0}}
+  end
+
+  defp dispatch_events(queue, demand, events) do
+    case :queue.out(queue) do
+      {{:value, event}, queue} ->
+        dispatch_events(queue, demand - 1, [event | events])
+
+      {:empty, queue} ->
+        {:noreply, Enum.reverse(events), {queue, demand}}
+    end
+  end
+end
+
+defmodule Thesis.JobWorker.QueueConsumer do
+  use GenStage
+
+  def start_link() do
+    GenStage.start_link(__MODULE__, :ok)
+  end
+
+  def init(:ok) do
+    {:consumer, :ok, subscribe_to: [Thesis.JobWorker.QueueBroadcaster]}
+  end
+
+  def handle_events(events, _from, state) do
+    for event <- events do
+      IO.inspect({self(), event})
+    end
+
+    {:noreply, [], state}
   end
 end

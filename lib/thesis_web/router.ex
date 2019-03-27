@@ -31,7 +31,10 @@ defmodule ThesisWeb.Router do
     post "/lti", IndexController, :launch
 
     get "/work", IndexController, :work
-    get "/submit", IndexController, :submit
-    post "/submit", IndexController, :submit
+
+    get "/job/submit", JobController, :index
+    post "/job/submit", JobController, :submit
+    get "/job/", JobController, :show
+    get "/job/:id", JobController, :show
   end
 end
