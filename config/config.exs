@@ -15,14 +15,6 @@ config :thesis, ThesisWeb.Endpoint,
   pubsub: [name: Thesis.PubSub, adapter: Phoenix.PubSub.PG2],
   live_view: [
     signing_salt: "YOUR_SECRET"
-  ],
-  live_reload: [
-    patterns: [
-      ~r{priv/static/.*(js|css|png|jpeg|jpg|gif)$},
-      ~r{web/views/.*(ex)$},
-      ~r{web/templates/.*(eex)$},
-      ~r{web/live/.*(ex)$}
-    ]
   ]
 
 # Configures Elixir's Logger
