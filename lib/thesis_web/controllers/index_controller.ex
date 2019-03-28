@@ -12,23 +12,33 @@ defmodule ThesisWeb.IndexController do
     |> put_session(:oauth_consumer_key, params["oauth_consumer_key"])
     |> put_session(:lis_result_sourcedid, params["lis_result_sourcedid"])
     |> put_session(:lis_outcome_service_url, params["lis_outcome_service_url"])
+    |> put_session(:roles, params["roles"])
     |> redirect(to: "/")
   end
 
   def index(conn, _params) do
-    # user_id = get_session(conn, :user_id)
+    user_id = get_session(conn, :user_id)
+    user_roles = get_session(conn, :roles)
 
-    # if user_id do
-    #   conn
-    #   |> render("index.html", user: user_id)
-    # else
-    #   conn
-    #   |> put_status(403)
-    #   |> put_view(ThesisWeb.ErrorView)
-    #   |> render(:"403")
-    # end
+    if user_id && user_roles do
+      cond do
+        user_roles =~ "Student" ->
+          conn |> text("You are a student, #{user_id}.")
 
-    Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.TestLiveView, session: %{})
+        user_roles =~ "Instructor" ->
+          conn |> text("You are a teacher, #{user_id}.")
+
+        true ->
+          conn |> text("You dont match any role.")
+      end
+    else
+      conn
+      |> put_status(403)
+      |> put_view(ThesisWeb.ErrorView)
+      |> render(:"403")
+    end
+
+    # Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.TestLiveView, session: %{})
   end
 
   def work(conn, _params) do
