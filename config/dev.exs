@@ -74,3 +74,12 @@ config :phoenix, :plug_init_mode, :runtime
 #   url: "https://192.168.64.6:2375",
 #   certfile: "~/.docker/machine/machines/dinghy/cert.pem",
 #   keyfile: "~/.docker/machine/machines/dinghy/key.pem"
+
+config :eventstore, EventStore.Storage,
+  serializer: EventStore.TermSerializer,
+  username: "postgres",
+  password: "postgres",
+  database: "thesis_dev",
+  hostname: "server_db_1.docker",
+  pool_size: 10,
+  pool_overflow: 5

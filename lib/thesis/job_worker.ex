@@ -1,6 +1,14 @@
 defmodule Thesis.JobWorker do
+  defmodule Job do
+    @enforce_keys [:id, :image, :cmd, :filename, :filepath, :stream_id]
+    defstruct [:id, :image, :cmd, :filename, :filepath, :stream_id]
+  end
+
+  defmodule(Output, do: defstruct([:text]))
+  defmodule(Done, do: defstruct([]))
+  defmodule(Error, do: defstruct([:text]))
+
   require Logger
-  import Thesis.Helpers
 
   defp construct_https_url(uri = %URI{}) do
     "https://#{uri.host}:#{uri.port}"
@@ -48,27 +56,33 @@ defmodule Thesis.JobWorker do
     Docker.start_link(docker_server_opts)
   end
 
-  defp receive_loop(job) do
-    receive do
-      reply ->
-        Thesis.JobWorker.QueueBroadcaster.notify(job.id, reply)
+  defp default_event(job_id), do: %EventStore.EventData{metadata: %{job_id: job_id}}
 
-        # Keep listening for more replies
-        with %Docker.AsyncReply{reply: {:chunk, _chunk}} <- reply do
-          receive_loop(job)
-        end
-    end
-  end
+  defp pull_event(data, job_id),
+    do: %EventStore.EventData{
+      default_event(job_id)
+      | event_type: "Thesis.JobWorker.Pull",
+        data: data
+    }
 
-  def process(docker_conn, %Thesis.Job{} = job) do
-    # NOTE: This is blocking
+  defp follow_event(data, job_id),
+    do: %EventStore.EventData{
+      default_event(job_id)
+      | event_type: "Thesis.JobWorker.Follow",
+        data: data
+    }
+
+  def process(docker_conn, %Job{} = job) do
     case Docker.Image.pull(docker_conn, job.image) do
       {:ok, _} ->
-        receive_loop(job)
+        pull_loop(job)
 
       {:error, error} ->
         Logger.error(inspect(error))
-        Thesis.JobWorker.QueueBroadcaster.notify(job.id, {:error, inspect(error)})
+
+        EventStore.append_to_stream(job.stream_id, :any_version, [
+          pull_event(%Error{text: inspect(error)}, job.id)
+        ])
     end
 
     case Docker.Container.create(docker_conn, job.id, %{
@@ -80,81 +94,57 @@ defmodule Thesis.JobWorker do
         Docker.Container.start(docker_conn, id)
         Docker.Container.follow(docker_conn, id)
 
-        receive_loop(job)
+        follow_loop(job)
 
       {:error, error} ->
         Logger.error(inspect(error))
-        Thesis.JobWorker.QueueBroadcaster.notify(job.id, {:error, inspect(error)})
+
+        EventStore.append_to_stream(job.stream_id, :any_version, [
+          follow_event(%Error{text: inspect(error)}, job.id)
+        ])
     end
   end
-end
 
-defmodule Thesis.JobWorker.QueueBroadcaster do
-  use GenStage
-  require Logger
+  defp pull_loop(job) do
+    receive do
+      %Docker.AsyncReply{reply: {:chunk, chunk}} ->
+        text =
+          case chunk do
+            %{"status" => text} -> text
+          end
 
-  def start_link(_opts \\ []) do
-    GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
-  end
+        EventStore.append_to_stream(job.stream_id, :any_version, [
+          pull_event(%Output{text: text}, job.id)
+        ])
 
-  def notify(job_id, reply) do
-    GenStage.cast(__MODULE__, {:notify, {job_id, reply}})
-  end
+        pull_loop(job)
 
-  def init(:ok) do
-    {:producer, {:queue.new(), 0}, dispatcher: GenStage.BroadcastDispatcher}
-  end
-
-  def handle_cast({:notify, event}, {queue, pending_demand}) do
-    queue = :queue.in(event, queue)
-    # IO.inspect(queue)
-    dispatch_events(queue, pending_demand, [])
-  end
-
-  def handle_demand(incoming_demand, {queue, pending_demand}) do
-    dispatch_events(queue, incoming_demand + pending_demand, [])
-  end
-
-  defp dispatch_events(queue, 0, events) do
-    {:noreply, Enum.reverse(events), {queue, 0}}
-  end
-
-  defp dispatch_events(queue, demand, events) do
-    case :queue.out(queue) do
-      {{:value, event}, queue} ->
-        Logger.debug("Dispatching #{inspect(event)}}")
-        dispatch_events(queue, demand - 1, [event | events])
-
-      {:empty, queue} ->
-        {:noreply, Enum.reverse(events), {queue, demand}}
+      %Docker.AsyncReply{reply: :done} ->
+        EventStore.append_to_stream(job.stream_id, :any_version, [
+          pull_event(%Done{}, job.id)
+        ])
     end
   end
-end
 
-defmodule Thesis.JobWorker.QueueConsumer do
-  use GenStage
+  defp follow_loop(job) do
+    receive do
+      %Docker.AsyncReply{reply: {:chunk, chunk}} ->
+        text =
+          case chunk do
+            [stdout: text] -> text
+            [stderr: text] -> text
+          end
 
-  @spec start_link(opts :: [job_id: integer(), pid: pid()]) :: GenServer.on_start()
-  def start_link(opts \\ [pid: self()]) do
-    GenStage.start_link(__MODULE__, {Keyword.get(opts, :job_id), Keyword.get(opts, :pid, self())})
-  end
+        EventStore.append_to_stream(job.stream_id, :any_version, [
+          follow_event(%Output{text: text}, job.id)
+        ])
 
-  def init({job_id, pid}) do
-    {:consumer, pid,
-     subscribe_to: [
-       {
-         Thesis.JobWorker.QueueBroadcaster,
-         selector: fn {id, _reply} -> id == job_id end
-       }
-     ]}
-  end
+        follow_loop(job)
 
-  def handle_events(events, _from, pid) do
-    for event <- events do
-      {_job_id, reply} = event
-      send(pid, reply)
+      %Docker.AsyncReply{reply: :done} ->
+        EventStore.append_to_stream(job.stream_id, :any_version, [
+          follow_event(%Done{}, job.id)
+        ])
     end
-
-    {:noreply, [], pid}
   end
 end

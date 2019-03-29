@@ -8,7 +8,11 @@ defmodule ThesisWeb.JobController do
   end
 
   def show(conn, %{"id" => job_id} = _params) do
-    live_render(conn, ThesisWeb.JobLiveView, session: %{user_id: 0, job_id: job_id})
+    {:ok, events} = EventStore.read_stream_forward(job_id)
+
+    live_render(conn, ThesisWeb.JobLiveView,
+      session: %{user_id: 0, job_id: job_id, events: events}
+    )
   end
 
   def show(conn, _params) do
@@ -22,8 +26,10 @@ defmodule ThesisWeb.JobController do
     image = determine_image(language)
     internal_cmd = determine_internal_cmd(language, file.filename)
 
-    job = %Thesis.Job{
-      id: :crypto.strong_rand_bytes(10) |> Base.encode16(),
+    job_id = :crypto.strong_rand_bytes(10) |> Base.encode16()
+
+    job = %Thesis.JobWorker.Job{
+      id: job_id,
       image: image,
       cmd: [
         "sh",
@@ -34,7 +40,8 @@ defmodule ThesisWeb.JobController do
         """
       ],
       filename: file.filename,
-      filepath: "/Users/nikteg/tmp/submission/"
+      filepath: "/Users/nikteg/tmp/submission/",
+      stream_id: job_id
     }
 
     {:ok, docker_conn} = Thesis.JobWorker.start_link()

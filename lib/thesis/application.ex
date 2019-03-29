@@ -9,10 +9,9 @@ defmodule Thesis.Application do
     # List all child processes to be supervised
     children = [
       # Start the endpoint when the application starts
-      ThesisWeb.Endpoint,
+      ThesisWeb.Endpoint
       # Starts a worker by calling: Thesis.Worker.start_link(arg)
       # {Thesis.Worker, arg},
-      Thesis.JobWorker.QueueBroadcaster
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
