@@ -73,36 +73,42 @@ defmodule Thesis.JobWorker do
     }
 
   def process(docker_conn, %Job{} = job) do
-    case Docker.Image.pull(docker_conn, job.image) do
-      {:ok, _} ->
-        pull_loop(job)
+    EventStore.append_to_stream(job.stream_id, :any_version, [
+      pull_event(%Output{text: "Running job #{job.id}"}, job.id)
+    ])
 
-      {:error, error} ->
-        Logger.error(inspect(error))
+    Task.async(fn ->
+      case Docker.Image.pull(docker_conn, job.image) do
+        {:ok, _} ->
+          pull_loop(job)
 
-        EventStore.append_to_stream(job.stream_id, :any_version, [
-          pull_event(%Error{text: inspect(error)}, job.id)
-        ])
-    end
+        {:error, error} ->
+          Logger.error(inspect(error))
 
-    case Docker.Container.create(docker_conn, job.id, %{
-           Cmd: job.cmd,
-           Image: job.image,
-           HostConfig: %{AutoRemove: true, Binds: ["#{job.filepath}:/tmp/submission:ro"]}
-         }) do
-      {:ok, %{"Id" => id}} ->
-        Docker.Container.start(docker_conn, id)
-        Docker.Container.follow(docker_conn, id)
+          EventStore.append_to_stream(job.stream_id, :any_version, [
+            pull_event(%Error{text: inspect(error)}, job.id)
+          ])
+      end
 
-        follow_loop(job)
+      case Docker.Container.create(docker_conn, job.id, %{
+             Cmd: job.cmd,
+             Image: job.image,
+             HostConfig: %{AutoRemove: true, Binds: ["#{job.filepath}:/tmp/submission:ro"]}
+           }) do
+        {:ok, %{"Id" => id}} ->
+          Docker.Container.start(docker_conn, id)
+          Docker.Container.follow(docker_conn, id)
 
-      {:error, error} ->
-        Logger.error(inspect(error))
+          follow_loop(job)
 
-        EventStore.append_to_stream(job.stream_id, :any_version, [
-          follow_event(%Error{text: inspect(error)}, job.id)
-        ])
-    end
+        {:error, error} ->
+          Logger.error(inspect(error))
+
+          EventStore.append_to_stream(job.stream_id, :any_version, [
+            follow_event(%Error{text: inspect(error)}, job.id)
+          ])
+      end
+    end)
   end
 
   defp pull_loop(job) do
