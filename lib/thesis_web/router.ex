@@ -33,7 +33,8 @@ defmodule ThesisWeb.Router do
     get "/work", IndexController, :work
 
     get "/job/submit", JobController, :index
-    post "/job/submit", JobController, :submit
+    post "/job/submit/student", JobController, :submit_student
+    post "/job/submit/teacher", JobController, :submit_teacher
     get "/job/", JobController, :show
     get "/job/:id", JobController, :show
   end

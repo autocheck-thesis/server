@@ -4,7 +4,10 @@ defmodule ThesisWeb.JobController do
   require Logger
 
   def index(conn, _params) do
-    render(conn, "index.html")
+    render(conn, "index.html", [
+      assignment_id: get_session(conn, :assignment_id),
+      role: get_session(conn, :role)
+    ])
   end
 
   def show(conn, %{"id" => job_id} = _params) do
@@ -12,35 +15,52 @@ defmodule ThesisWeb.JobController do
   end
 
   def show(conn, _params) do
-    redirect(conn, to: ThesisWeb.Router.Helpers.job_path(conn, :submit))
+    redirect(conn, to: ThesisWeb.Router.Helpers.job_path(conn, :index))
   end
 
-  def submit(conn, %{"file" => file} = _params) do
-    File.cp(file.path, "/Users/nikteg/tmp/submission/#{file.filename}")
+  def submit_student(conn, %{"file" => file} = _params) do
+    assignment_id = get_session(conn, "assignment_id")
 
-    language = determine_language(file.filename)
-    image = determine_image(language)
-    internal_cmd = determine_internal_cmd(language, file.filename)
+    case :ets.lookup(:assignment_tests, assignment_id) do
+      [] ->
+        redirect(conn, Routes.job_path(conn, :index))
+      [{_, test_file_path} | _] ->
+        File.cp(file.path, "D:/tmp/submission/#{file.filename}")
 
-    job = %Thesis.Job{
-      id: :crypto.strong_rand_bytes(10) |> Base.encode16(),
-      image: image,
-      cmd: [
-        "sh",
-        "-c",
-        """
-        cd /tmp/submission
-        #{internal_cmd}
-        """
-      ],
-      filename: file.filename,
-      filepath: "/Users/nikteg/tmp/submission/"
-    }
+        language = determine_language(test_file_path)
+        image = determine_image(language)
+        internal_cmd = determine_internal_cmd(language, test_file_path)
 
-    {:ok, docker_conn} = Thesis.JobWorker.start_link()
-    Thesis.JobWorker.process(docker_conn, job)
+        job = %Thesis.Job{
+          id: :crypto.strong_rand_bytes(10) |> Base.encode16(),
+          image: image,
+          cmd: [
+            "sh",
+            "-c",
+            """
+            cd /tmp/submission
+            #{internal_cmd}
+            """
+          ],
+          filename: test_file_path,
+          filepath: "D:/tmp/submission/"
+        }
 
-    redirect(conn, to: ThesisWeb.Router.Helpers.job_path(conn, :show, job.id))
+        {:ok, docker_conn} = Thesis.JobWorker.start_link()
+        Thesis.JobWorker.process(docker_conn, job)
+
+        redirect(conn, to: ThesisWeb.Router.Helpers.job_path(conn, :show, job.id))
+    end
+  end
+
+  def submit_teacher(conn, %{"file" => file} = _params) do
+    assignment_id = get_session(conn, "assignment_id")
+    File.cp(file.path, "D:/tmp/submission/#{file.filename}")
+    :ets.insert(:assignment_tests, {assignment_id, file.filename})
+
+    conn
+    |> put_flash(:info, "Success")
+    |> redirect(to: Routes.job_path(conn, :index))
   end
 
   defp determine_language(filename) do

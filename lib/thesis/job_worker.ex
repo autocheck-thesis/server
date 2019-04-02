@@ -10,7 +10,7 @@ defmodule Thesis.JobWorker do
     [
       docker_url:
         case System.get_env("DOCKER_HOST") do
-          nil -> Application.get_env(:docker, :url, "https://localhost:2376")
+          nil -> Application.get_env(:docker, :url, "http://localhost:2375")
           url -> url |> URI.parse() |> construct_https_url
         end,
       docker_certfile:
