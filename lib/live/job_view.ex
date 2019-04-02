@@ -40,6 +40,12 @@ defmodule ThesisWeb.JobLiveView do
     {:noreply, update(socket, :log_lines, &(&1 ++ [err]))}
   end
 
+  def handle_info(%Docker.AsyncReply{reply: {:chunk, chunks}} = _reply, socket) do
+    for chunk <- Keyword.values(chunks) do
+      {:noreply, update(socket, :log_lines, &(&1 ++ [chunk]))}
+    end
+  end
+
   def handle_info(%Docker.AsyncReply{reply: :done} = _reply, socket) do
     {:noreply, assign(socket, status: "Done")}
   end

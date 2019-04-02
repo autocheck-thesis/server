@@ -23,8 +23,8 @@ defmodule ThesisWeb.JobController do
 
     case :ets.lookup(:assignment_tests, assignment_id) do
       [] ->
-        redirect(conn, Routes.job_path(conn, :index))
-      [{_, test_file_path} | _] ->
+        redirect(conn, to: Routes.job_path(conn, :index))
+      [{_, test_file_path}] ->
         File.cp(file.path, "D:/tmp/submission/#{file.filename}")
 
         language = determine_language(test_file_path)
