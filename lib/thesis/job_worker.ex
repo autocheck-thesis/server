@@ -134,11 +134,15 @@ defmodule Thesis.JobWorker do
 
   defp follow_loop(job) do
     receive do
-      %Docker.AsyncReply{reply: {:chunk, chunk}} ->
+      %Docker.AsyncReply{reply: {:chunk, chunks}} ->
         text =
-          case chunk do
+          case chunks do
             [stdout: text] -> text
             [stderr: text] -> text
+            chunks ->
+              chunks
+              |> Keyword.values()
+              |> Enum.join()
           end
 
         EventStore.append_to_stream(job.stream_id, :any_version, [
