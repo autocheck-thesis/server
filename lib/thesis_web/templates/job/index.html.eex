@@ -1,0 +1,8 @@
+<p>
+    Assignment id: <%= @assignment_id %><br>
+    Role: <%= @role %>
+</p>
+<form action="/job/submit/<%= String.downcase @role %>" method="post" enctype="multipart/form-data">
+  <input type="file" name="file" id="file">
+  <input type="submit" value="Upload" name="submit">
+</form>

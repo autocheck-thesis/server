@@ -43,6 +43,8 @@ defmodule Thesis.MixProject do
       {:phoenix_ecto, "~> 4.0"},
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0"},
+      {:gen_stage, "~> 0.14.1"},
+      {:eventstore, "~> 0.16.1"},
       {:docker, path: "../elixir-docker"},
       {:plug_cowboy, "~> 2.0"}
     ]

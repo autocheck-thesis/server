@@ -13,6 +13,7 @@ defmodule ThesisWeb.IndexController do
     |> put_session(:lis_result_sourcedid, params["lis_result_sourcedid"])
     |> put_session(:lis_outcome_service_url, params["lis_outcome_service_url"])
     |> put_session(:roles, params["roles"])
+    |> put_session(:assignment_id, params["ext_lti_assignment_id"])
     |> redirect(to: "/")
   end
 
@@ -20,13 +21,20 @@ defmodule ThesisWeb.IndexController do
     user_id = get_session(conn, :user_id)
     user_roles = get_session(conn, :roles)
 
+    Logger.debug(get_session(conn, :assignment_id))
+    Logger.debug(user_roles)
+
     if user_id && user_roles do
       cond do
-        user_roles =~ "Student" ->
-          conn |> text("You are a student, #{user_id}.")
+        user_roles =~ "Learner" ->
+          conn
+          |> put_session(:role, "Student")
+          |> text("You are a student, #{user_id}.")
 
         user_roles =~ "Instructor" ->
-          conn |> text("You are a teacher, #{user_id}.")
+          conn
+          |> put_session(:role, "Teacher")
+          |> text("You are a teacher, #{user_id}.")
 
         true ->
           conn |> text("You dont match any role.")
@@ -39,13 +47,5 @@ defmodule ThesisWeb.IndexController do
     end
 
     # Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.TestLiveView, session: %{})
-  end
-
-  def work(conn, _params) do
-    user_id = get_session(conn, :user_id)
-
-    Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.LogLiveView,
-      session: %{user_id: user_id, images: ["ubuntu", "alpine"]}
-    )
   end
 end
