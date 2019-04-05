@@ -69,7 +69,7 @@ defmodule Thesis.Coderunner do
 
   def process(docker_conn, %Thesis.Job{} = job) do
     EventStore.append_to_stream(job.id, :any_version, [
-      pull_event(%Output{text: "Running job #{job.id}"}, job.id)
+      pull_event(%Output{text: "--- Running job #{job.id} ---"}, job.id)
     ])
 
     Task.async(fn ->
@@ -91,16 +91,34 @@ defmodule Thesis.Coderunner do
              HostConfig: %{AutoRemove: true}
            }) do
         {:ok, %{"Id" => id}} ->
-          Docker.Container.start(docker_conn, id)
-          Docker.Container.follow(docker_conn, id)
+          case Docker.Container.start(docker_conn, id) do
+            :ok ->
+              Docker.Container.follow(docker_conn, id)
 
-          follow_loop(job)
+              follow_loop(job)
 
-          Logger.debug("Waiting to finish...")
+              Logger.debug("Waiting to finish...")
 
-          {:ok, %{"StatusCode" => _status_code}} = Docker.Container.wait(docker_conn, id)
-          Logger.debug("Finished")
-          job |> Thesis.Job.finish() |> Thesis.Repo.update!()
+              {:ok, %{"StatusCode" => status_code}} = Docker.Container.wait(docker_conn, id)
+
+              Logger.debug("Finished with status code #{status_code}")
+
+              EventStore.append_to_stream(job.id, :any_version, [
+                follow_event(
+                  %Output{text: "--- Finished with status code: #{status_code} ---"},
+                  job.id
+                )
+              ])
+
+              job |> Thesis.Job.finish() |> Thesis.Repo.update!()
+
+            {:error, error} ->
+              Logger.error(inspect(error))
+
+              EventStore.append_to_stream(job.id, :any_version, [
+                follow_event(%Error{text: inspect(error)}, job.id)
+              ])
+          end
 
         {:error, error} ->
           Logger.error(inspect(error))
