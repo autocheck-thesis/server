@@ -79,7 +79,13 @@ config :eventstore, EventStore.Storage,
   serializer: EventStore.TermSerializer,
   username: "postgres",
   password: "postgres",
-  database: "thesis_dev",
+  database: "thesis_dev_events",
   hostname: "server_db_1.docker",
   pool_size: 10,
   pool_overflow: 5
+
+config :thesis, Thesis.Repo,
+  database: "thesis_dev",
+  username: "postgres",
+  password: "postgres",
+  hostname: "server_db_1.docker"

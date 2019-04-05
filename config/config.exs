@@ -34,11 +34,11 @@ config :phoenix,
 
 config :thesis, ecto_repos: [Thesis.Repo]
 
-config :thesis, Thesis.Repo,
-  database: "thesis_repo",
-  username: "postgres",
-  password: "postgres",
-  hostname: "server_db_1.docker"
+# config :thesis, Thesis.Repo,
+#   database: "thesis_repo",
+#   username: "postgres",
+#   password: "postgres",
+#   hostname: "localhost"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

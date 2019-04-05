@@ -1,9 +1,4 @@
-defmodule Thesis.JobWorker do
-  defmodule Job do
-    @enforce_keys [:id, :image, :cmd, :filename, :filepath, :stream_id]
-    defstruct [:id, :image, :cmd, :filename, :filepath, :stream_id]
-  end
-
+defmodule Thesis.Coderunner do
   defmodule(Output, do: defstruct([:text]))
   defmodule(Done, do: defstruct([]))
   defmodule(Error, do: defstruct([:text]))
@@ -61,19 +56,19 @@ defmodule Thesis.JobWorker do
   defp pull_event(data, job_id),
     do: %EventStore.EventData{
       default_event(job_id)
-      | event_type: "Thesis.JobWorker.Pull",
+      | event_type: "Coderunner.Pull",
         data: data
     }
 
   defp follow_event(data, job_id),
     do: %EventStore.EventData{
       default_event(job_id)
-      | event_type: "Thesis.JobWorker.Follow",
+      | event_type: "Coderunner.Follow",
         data: data
     }
 
-  def process(docker_conn, %Job{} = job) do
-    EventStore.append_to_stream(job.stream_id, :any_version, [
+  def process(docker_conn, %Thesis.Job{} = job) do
+    EventStore.append_to_stream(job.id, :any_version, [
       pull_event(%Output{text: "Running job #{job.id}"}, job.id)
     ])
 
@@ -85,15 +80,15 @@ defmodule Thesis.JobWorker do
         {:error, error} ->
           Logger.error(inspect(error))
 
-          EventStore.append_to_stream(job.stream_id, :any_version, [
+          EventStore.append_to_stream(job.id, :any_version, [
             pull_event(%Error{text: inspect(error)}, job.id)
           ])
       end
 
       case Docker.Container.create(docker_conn, job.id, %{
-             Cmd: job.cmd,
+             Cmd: ["sh", "-c", job.cmd],
              Image: job.image,
-             HostConfig: %{AutoRemove: true, Binds: ["#{job.filepath}:/tmp/submission:ro"]}
+             HostConfig: %{AutoRemove: true}
            }) do
         {:ok, %{"Id" => id}} ->
           Docker.Container.start(docker_conn, id)
@@ -101,10 +96,16 @@ defmodule Thesis.JobWorker do
 
           follow_loop(job)
 
+          Logger.debug("Waiting to finish...")
+
+          {:ok, %{"StatusCode" => _status_code}} = Docker.Container.wait(docker_conn, id)
+          Logger.debug("Finished")
+          job |> Thesis.Job.finish() |> Thesis.Repo.update!()
+
         {:error, error} ->
           Logger.error(inspect(error))
 
-          EventStore.append_to_stream(job.stream_id, :any_version, [
+          EventStore.append_to_stream(job.id, :any_version, [
             follow_event(%Error{text: inspect(error)}, job.id)
           ])
       end
@@ -116,17 +117,18 @@ defmodule Thesis.JobWorker do
       %Docker.AsyncReply{reply: {:chunk, chunk}} ->
         text =
           case chunk do
+            %{"status" => text, "progress" => progress} -> "#{text}: #{progress}"
             %{"status" => text} -> text
           end
 
-        EventStore.append_to_stream(job.stream_id, :any_version, [
+        EventStore.append_to_stream(job.id, :any_version, [
           pull_event(%Output{text: text}, job.id)
         ])
 
         pull_loop(job)
 
       %Docker.AsyncReply{reply: :done} ->
-        EventStore.append_to_stream(job.stream_id, :any_version, [
+        EventStore.append_to_stream(job.id, :any_version, [
           pull_event(%Done{}, job.id)
         ])
     end
@@ -137,22 +139,26 @@ defmodule Thesis.JobWorker do
       %Docker.AsyncReply{reply: {:chunk, chunks}} ->
         text =
           case chunks do
-            [stdout: text] -> text
-            [stderr: text] -> text
+            [stdout: text] ->
+              text
+
+            [stderr: text] ->
+              text
+
             chunks ->
               chunks
               |> Keyword.values()
               |> Enum.join()
           end
 
-        EventStore.append_to_stream(job.stream_id, :any_version, [
+        EventStore.append_to_stream(job.id, :any_version, [
           follow_event(%Output{text: text}, job.id)
         ])
 
         follow_loop(job)
 
       %Docker.AsyncReply{reply: :done} ->
-        EventStore.append_to_stream(job.stream_id, :any_version, [
+        EventStore.append_to_stream(job.id, :any_version, [
           follow_event(%Done{}, job.id)
         ])
     end

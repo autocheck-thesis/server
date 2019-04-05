@@ -1,0 +1,9 @@
+<p>
+    Assignment id: <%= @assignment_id %><br>
+    Assignment name: <%= @assignment_name %><br>
+    Role: <%= @role %>
+</p>
+<%= form_for @conn, Routes.submission_path(@conn, :submit, @assignment_id, @assignment_name), [multipart: true], fn f -> %>
+  <%= file_input f, :file %>
+  <%= submit "Upload" %>
+<% end %>
