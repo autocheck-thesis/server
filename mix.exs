@@ -19,7 +19,7 @@ defmodule Thesis.MixProject do
   def application do
     [
       mod: {Thesis.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :phoenix_ecto, :runtime_tools]
     ]
   end
 
@@ -40,6 +40,9 @@ defmodule Thesis.MixProject do
       {:jason, "~> 1.0"},
       {:phoenix_live_view, github: "phoenixframework/phoenix_live_view"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix_ecto, "~> 4.0"},
+      {:ecto_sql, "~> 3.0"},
+      {:postgrex, ">= 0.0.0"},
       {:docker, path: "../elixir-docker"},
       {:plug_cowboy, "~> 2.0"}
     ]
