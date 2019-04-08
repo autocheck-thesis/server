@@ -5,4 +5,32 @@
 #log code {
   overflow: auto;
   max-height: 480px;
+  font-size: 1em;
+}
+
+#log code div {
+  padding: 0 0.5rem;
+  position: relative;
+}
+
+#log code div::before {
+  position: absolute;
+  display: block;
+  content: "";
+  margin-left: -1em;
+}
+
+#log code div.init::before {
+  color: #0069d9;
+  content: "\2022";
+}
+
+#log code div.text::before {
+  color: #ccc;
+  content: "\003e";
+}
+
+#log code div.done::before {
+  color: #00d900;
+  content: "\2713";
 }

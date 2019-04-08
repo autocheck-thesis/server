@@ -1,11 +1,11 @@
 defmodule ThesisWeb.SubmissionLiveView do
   use Phoenix.LiveView
-  alias Thesis.Coderunner.{Output, Error, Done}
+  alias Thesis.Coderunner.{Init, PullOutput, FollowOutput, PullDone, FollowDone, Error}
 
   def render(assigns) do
     ~L"""
       <h2>Build log for submission <%= @submission.id %></h2>
-      <pre id="log"><code><%= for line <- @log_lines do %><span><%= line %><br /></span><% end %></code></pre>
+      <pre id="log"><code><%= for {type, text} <- @log_lines do %><div class="<%= type %>"><%= text %><br /></div><% end %></code></pre>
     """
   end
 
@@ -35,19 +35,25 @@ defmodule ThesisWeb.SubmissionLiveView do
   end
 
   defp map_events(events) do
-    Enum.map(events, fn %EventStore.RecordedEvent{event_type: event_type, data: data} ->
+    Enum.map(events, fn %EventStore.RecordedEvent{data: data, metadata: %{job_id: job_id}} ->
       case data do
-        %Output{text: text} ->
-          String.trim(text)
+        %Init{} ->
+          {:init, "Coderunner started job #{job_id}"}
+
+        %PullOutput{text: text} ->
+          {:text, String.trim(text)}
+
+        %FollowOutput{text: text} ->
+          {:text, String.trim(text)}
+
+        %PullDone{} ->
+          {:done, "Image fetching done. Will now execute the job..."}
+
+        %FollowDone{exit_code: code} ->
+          {:done, "Process execution successful with exit code: #{code}"}
 
         %Error{text: text} ->
-          String.trim(text)
-
-        %Done{} ->
-          case event_type do
-            "Coderunner.Pull" -> "--- Image fetching finished ---"
-            "Coderunner.Follow" -> "--- Execution finished ---"
-          end
+          {:error, String.trim(text)}
       end
     end)
   end
