@@ -1,13 +1,23 @@
 defmodule ThesisWeb.SubmissionController do
   use ThesisWeb, :controller
   import Phoenix.LiveView.Controller, only: [live_render: 3]
+  import Ecto.Query, only: [from: 2]
   require Logger
 
   def index(conn, %{"assignment_id" => assignment_id, "assignment_name" => assignment_name}) do
+    submissions =
+      Thesis.Repo.all(
+        from(Thesis.Submission,
+          where: [assignment_id: ^assignment_id],
+          order_by: [desc: :inserted_at]
+        )
+      )
+
     render(conn, "index.html",
       assignment_id: assignment_id,
       assignment_name: assignment_name,
-      role: get_session(conn, :role)
+      role: get_session(conn, :role),
+      submissions: submissions
     )
   end
 

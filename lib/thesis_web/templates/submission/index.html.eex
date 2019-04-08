@@ -1,3 +1,4 @@
+<h2>Upload submission</h2>
 <p>
     Assignment id: <%= @assignment_id %><br>
     Assignment name: <%= @assignment_name %><br>
@@ -7,3 +8,9 @@
   <%= file_input f, :file %>
   <%= submit "Upload" %>
 <% end %>
+<h2>Previous submissions</h2>
+<ul>
+<%= for submission <- @submissions do %>
+  <li><a href="/submission/<%= submission.id %>"><%= submission.id %></a> at <%= submission.inserted_at %></li>
+<% end %>
+</ul>
