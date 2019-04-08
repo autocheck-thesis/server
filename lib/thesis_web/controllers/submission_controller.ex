@@ -11,6 +11,10 @@ defmodule ThesisWeb.SubmissionController do
     )
   end
 
+  def index(conn, _params) do
+    conn |> send_resp(400, "Assignment id and name must be specified.") |> halt()
+  end
+
   def show(conn, %{"id" => submission_id}) do
     submission = Thesis.Repo.get!(Thesis.Submission, submission_id) |> Thesis.Repo.preload(:jobs)
 
@@ -22,6 +26,10 @@ defmodule ThesisWeb.SubmissionController do
     live_render(conn, ThesisWeb.SubmissionLiveView,
       session: %{user_id: 0, submission: submission, job: job, events: events}
     )
+  end
+
+  def show(conn, _params) do
+    conn |> send_resp(400, "Submission id and name must be specified.") |> halt()
   end
 
   def submit(conn, %{
