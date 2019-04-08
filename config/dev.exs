@@ -89,3 +89,6 @@ config :thesis, Thesis.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "server_db_1.docker"
+
+config :thesis,
+  uploads_url: "http://hostmachine.docker:4000/uploads/"

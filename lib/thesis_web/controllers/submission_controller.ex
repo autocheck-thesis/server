@@ -42,13 +42,16 @@ defmodule ThesisWeb.SubmissionController do
     submission =
       Thesis.Submission.create(assignment_id, assignment_name, user) |> Thesis.Repo.insert!()
 
-    File.cp(file.path, Path.join("uploads", submission.id <> Path.extname(file.filename)))
+    filename = submission.id <> Path.extname(file.filename)
+    File.cp(file.path, Path.join("uploads", filename))
 
     # TODO: Add to job queue
 
-    language = determine_language(file.filename)
-    image = determine_image(language)
-    cmd = determine_internal_cmd(language, file.filename)
+    IO.inspect(Application.get_env(:thesis, :uploads_url))
+
+    image = determine_image(filename)
+    file_url = "#{Application.get_env(:thesis, :uploads_url)}#{filename}"
+    cmd = determine_internal_cmd(file_url)
 
     job = Thesis.Job.create(image, cmd, submission.id, submission) |> Thesis.Repo.insert!()
 
@@ -66,26 +69,29 @@ defmodule ThesisWeb.SubmissionController do
     end
   end
 
-  defp determine_image(language) do
-    case language do
+  defp determine_image(filename) do
+    case determine_language(filename) do
       :java -> "openjdk:13-alpine"
       :python -> "python:alpine"
       :unknown -> "alpine"
     end
   end
 
-  defp determine_internal_cmd(language, filename) do
-    # case language do
-    #   :java -> "java #{filename}"
-    #   :python -> "python #{filename}"
-    #   :unknown -> "file #{filename}"
-    # end
+  defp determine_internal_cmd(file_url) do
+    filename = Path.basename(file_url)
+
+    cmd =
+      case determine_language(file_url) do
+        :java -> "java #{filename}"
+        :python -> "python #{filename}"
+        :unknown -> "file #{filename}"
+      end
+
     """
-    for i in $(seq 1 10)
-    do
-      echo $i
-      sleep 0.1
-    done
+    echo "Fetching submission file..."
+    wget -O #{filename} "#{file_url}"
+    echo "Running '#{cmd}'"
+    #{cmd}
     """
   end
 end

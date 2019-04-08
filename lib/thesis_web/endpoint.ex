@@ -7,6 +7,12 @@ defmodule ThesisWeb.Endpoint do
     websocket: true,
     longpoll: false
 
+  # Serve uploads
+  plug Plug.Static,
+    at: "/uploads",
+    from: Path.expand("uploads/"),
+    gzip: true
+
   # Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phx.digest
@@ -16,9 +22,6 @@ defmodule ThesisWeb.Endpoint do
     from: :thesis,
     gzip: false,
     only: ~w(css fonts images js favicon.ico robots.txt)
-
-  # Serve uploads
-  plug Plug.Static, at: "/uploads", from: {:thesis, "uploads/"}
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

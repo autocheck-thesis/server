@@ -7,7 +7,7 @@ defmodule Thesis.Repo.Migrations.CreateJobs do
       add(:submission_id, references(:submissions, type: :uuid))
       add(:image, :string)
       add(:filename, :string)
-      add(:cmd, :string)
+      add(:cmd, :text)
       add(:finished, :boolean)
 
       timestamps()
