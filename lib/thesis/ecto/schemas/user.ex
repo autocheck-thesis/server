@@ -10,7 +10,7 @@ defmodule Thesis.User do
 
   schema "users" do
     field(:lti_user_id, :string)
-    has_many(:submissions, Thesis.Submission)
+    has_many(:submissions, {"author_id", Thesis.Submission})
 
     timestamps()
   end
