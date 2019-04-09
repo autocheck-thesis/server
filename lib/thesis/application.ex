@@ -8,6 +8,8 @@ defmodule Thesis.Application do
   def start(_type, _args) do
     :ets.new(:assignment_tests, [:public, :named_table])
 
+    File.mkdir("uploads/")
+
     # List all child processes to be supervised
     children = [
       # Start the endpoint when the application starts
