@@ -78,14 +78,14 @@ config :phoenix, :plug_init_mode, :runtime
 config :eventstore, EventStore.Storage,
   serializer: EventStore.TermSerializer,
   username: "postgres",
-  password: "postgres",
+  password: "pill2Qzl",
   database: "thesis_dev_events",
-  hostname: "server_db_1.docker",
+  hostname: "localhost",
   pool_size: 10,
   pool_overflow: 5
 
 config :thesis, Thesis.Repo,
-  database: "thesis_dev",
+  database: "thesis_dev2",
   username: "postgres",
-  password: "postgres",
-  hostname: "server_db_1.docker"
+  password: "pill2Qzl",
+  hostname: "localhost"

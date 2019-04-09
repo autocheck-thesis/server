@@ -1,0 +1,7 @@
+<form action="/assignment/<%= @assignment_id %>/<%= @assignment_name %>" method="post">
+  <label for="dsl">Define tests for the assignment.</label>
+  <textarea id="dsl" name="dsl" rows="30" cols="40">
+    <%= saved_dsl(@assignment_id, @assignment_name) %>
+  </textarea>
+  <button type="submit">Send</button>
+</form>

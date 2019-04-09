@@ -48,7 +48,7 @@ defmodule ThesisWeb.SubmissionController do
 
     language = determine_language(file.filename)
     image = determine_image(language)
-    cmd = determine_internal_cmd(language, file.filename)
+    cmd = Thesis.Repo.get_by!(Thesis.Assignment, [assignment_id: assignment_id, name: assignment_name]).cmd
 
     job = Thesis.Job.create(image, cmd, submission.id, submission) |> Thesis.Repo.insert!()
 
