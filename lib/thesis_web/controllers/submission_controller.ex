@@ -5,22 +5,24 @@ defmodule ThesisWeb.SubmissionController do
   require Logger
 
   def index(conn, %{"assignment_id" => assignment_id}) do
-    with assignment <- Thesis.Repo.get(Thesis.Assignment, assignment_id),
-         submissions <-
-           Thesis.Repo.all(
-             from(Thesis.Submission,
-               where: [assignment_id: ^assignment_id],
-               order_by: [desc: :inserted_at]
-             )
-           ) do
-      render(conn, "index.html",
-        assignment: assignment,
-        role: get_session(conn, :role),
-        submissions: submissions
-      )
-    else
-      nil -> raise "Assignment not found"
-      error -> raise error
+    case Thesis.Repo.get(Thesis.Assignment, assignment_id) do
+      nil ->
+        raise "Assignment not found"
+
+      assignment ->
+        submissions =
+          Thesis.Repo.all(
+            from(Thesis.Submission,
+              where: [assignment_id: ^assignment_id],
+              order_by: [desc: :inserted_at]
+            )
+          )
+
+        render(conn, "index.html",
+          assignment: assignment,
+          role: get_session(conn, :role),
+          submissions: submissions
+        )
     end
   end
 
@@ -51,30 +53,47 @@ defmodule ThesisWeb.SubmissionController do
       }) do
     user = get_session(conn, :user)
 
-    with assignment <- Thesis.Repo.get(Thesis.Assignment, assignment_id),
-         submission_changeset <-
-           Thesis.Submission.changeset(%Thesis.Submission{})
-           |> Ecto.Changeset.put_assoc(:author, user)
-           |> Ecto.Changeset.put_assoc(:assignment, assignment),
-         {:ok, submission} <- Thesis.Repo.insert(submission_changeset) do
-      filename = submission.id <> Path.extname(file.filename)
-      File.cp(file.path, Path.join("uploads", filename))
+    case Thesis.Repo.get(Thesis.Assignment, assignment_id) do
+      nil ->
+        raise "Assignment not found"
 
-      # TODO: Add to job queue
+      assignment ->
+        case Thesis.Repo.insert(
+               Thesis.Submission.changeset(%Thesis.Submission{})
+               |> Ecto.Changeset.put_assoc(:author, user)
+               |> Ecto.Changeset.put_assoc(:assignment, assignment)
+             ) do
+          {:ok, submission} ->
+            filename = submission.id <> Path.extname(file.filename)
+            File.cp(file.path, Path.join("uploads", filename))
 
-      image = determine_image(filename)
-      file_url = "#{Application.get_env(:thesis, :uploads_url)}#{filename}"
-      cmd = determine_internal_cmd(file_url)
+            # TODO: Add to job queue
 
-      job = Thesis.Job.create(image, cmd, submission.id, submission) |> Thesis.Repo.insert!()
+            image = determine_image(filename)
+            file_url = "#{Application.get_env(:thesis, :uploads_url)}#{filename}"
+            cmd = determine_internal_cmd(file_url)
 
-      {:ok, coderunner} = Thesis.Coderunner.start_link()
-      Thesis.Coderunner.process(coderunner, job)
+            case Thesis.Repo.insert(
+                   Thesis.Job.changeset(%Thesis.Job{}, %{
+                     "image" => image,
+                     "cmd" => cmd,
+                     "filename" => filename
+                   })
+                   |> Ecto.Changeset.put_assoc(:submission, submission)
+                 ) do
+              {:ok, job} ->
+                {:ok, coderunner} = Thesis.Coderunner.start_link()
+                Thesis.Coderunner.process(coderunner, job)
 
-      redirect(conn, to: Routes.submission_path(conn, :show, submission.id))
-    else
-      nil -> raise "Assignment not found"
-      error -> raise error
+                redirect(conn, to: Routes.submission_path(conn, :show, submission.id))
+
+              {:error, error} ->
+                raise error
+            end
+
+          {:error, error} ->
+            raise error
+        end
     end
   end
 

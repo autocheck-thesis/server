@@ -3,14 +3,15 @@ defmodule ThesisWeb.AssignmentController do
   require Logger
 
   def index(conn, %{"assignment_id" => assignment_id}) do
-    with assignment <- Thesis.Repo.get(Thesis.Assignment, assignment_id) do
-      render(conn, "assignment.html",
-        assignment: assignment,
-        role: get_session(conn, :role)
-      )
-    else
-      nil -> raise "Assignment not found"
-      error -> raise error
+    case Thesis.Repo.get(Thesis.Assignment, assignment_id) do
+      nil ->
+        raise "Assignment not found"
+
+      assignment ->
+        render(conn, "assignment.html",
+          assignment: assignment,
+          role: get_session(conn, :role)
+        )
     end
   end
 

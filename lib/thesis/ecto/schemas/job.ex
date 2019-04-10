@@ -22,15 +22,6 @@ defmodule Thesis.Job do
     |> cast(params, @required_fields)
   end
 
-  def create(image, cmd, filename, submission) do
-    changeset(%__MODULE__{}, %{
-      "image" => image,
-      "cmd" => cmd,
-      "filename" => filename
-    })
-    |> put_assoc(:submission, submission)
-  end
-
   def finish(job) do
     job |> change(finished: true)
   end

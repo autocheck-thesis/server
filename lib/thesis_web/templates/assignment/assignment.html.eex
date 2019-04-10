@@ -4,6 +4,7 @@
     Assignment name: <%= @assignment.name %><br>
     Role: <%= @role %>
 </p>
+<a href="<%= Routes.submission_path(@conn, :index, @assignment.id) %>">Go to submission page</a>
 <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [], fn f -> %>
   <%= textarea f, :dsl %>
   <%= submit "Save" %>
