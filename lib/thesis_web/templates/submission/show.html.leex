@@ -1,0 +1,2 @@
+<h2>Build log for submission <%= @submission.id %></h2>
+<pre id="log"><code><%= for {type, text} <- @log_lines do %><div class="<%= type %>"><%= text %><br /></div><% end %></code></pre>

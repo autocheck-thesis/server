@@ -1,6 +1,5 @@
 defmodule ThesisWeb.SubmissionController do
   use ThesisWeb, :controller
-  import Phoenix.LiveView.Controller, only: [live_render: 3]
   import Ecto.Query, only: [from: 2]
   require Logger
 

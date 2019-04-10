@@ -3,10 +3,7 @@ defmodule ThesisWeb.SubmissionLiveView do
   alias Thesis.Coderunner.{Init, PullOutput, FollowOutput, PullDone, FollowDone, Error}
 
   def render(assigns) do
-    ~L"""
-      <h2>Build log for submission <%= @submission.id %></h2>
-      <pre id="log"><code><%= for {type, text} <- @log_lines do %><div class="<%= type %>"><%= text %><br /></div><% end %></code></pre>
-    """
+    ThesisWeb.SubmissionView.render("show.html", assigns)
   end
 
   def mount(

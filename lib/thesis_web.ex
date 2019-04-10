@@ -21,6 +21,8 @@ defmodule ThesisWeb do
     quote do
       use Phoenix.Controller, namespace: ThesisWeb
 
+      import Phoenix.LiveView.Controller, only: [live_render: 3]
+
       import Plug.Conn
       import ThesisWeb.Gettext
       alias ThesisWeb.Router.Helpers, as: Routes

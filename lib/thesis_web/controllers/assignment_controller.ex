@@ -8,7 +8,7 @@ defmodule ThesisWeb.AssignmentController do
         raise "Assignment not found"
 
       assignment ->
-        render(conn, "assignment.html",
+        render(conn, "index.html",
           assignment: assignment,
           role: get_session(conn, :role)
         )
