@@ -1,0 +1,10 @@
+<h2>Configure assignment</h2>
+<p>
+    Assignment id: <%= @assignment.id %><br>
+    Assignment name: <%= @assignment.name %><br>
+    Role: <%= @role %>
+</p>
+<%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [], fn f -> %>
+  <%= textarea f, :dsl %>
+  <%= submit "Save" %>
+<% end %>

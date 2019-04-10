@@ -38,6 +38,8 @@ defmodule ThesisWeb do
 
       import Phoenix.LiveView, only: [live_render: 2, live_render: 3]
 
+      use Phoenix.HTML
+
       import ThesisWeb.ErrorHelpers
       import ThesisWeb.Gettext
       alias ThesisWeb.Router.Helpers, as: Routes

@@ -7,17 +7,26 @@ defmodule ThesisWeb.IndexController do
   plug :fetch_session
 
   def launch(conn, params) do
-    user_id = params["user_id"]
-    user = Thesis.User.find_or_create(user_id)
-    conn = put_session(conn, :user, user)
+    with %{
+           "user_id" => lti_user_id,
+           "roles" => roles,
+           "ext_lti_assignment_id" => assignment_id,
+           "resource_link_title" => assignment_name
+         } <- params,
+         {:ok, user} <- Thesis.Repo.get_or_insert(Thesis.User, %{lti_user_id: lti_user_id}),
+         {:ok, assignment} <-
+           Thesis.Repo.get_or_insert(Thesis.Assignment, %{
+             id: assignment_id,
+             name: assignment_name
+           }) do
+      role = determine_role(roles)
 
-    if params["ext_lti_assignment_id"] && params["custom_canvas_assignment_title"] do
-      assignment_id = params["ext_lti_assignment_id"]
-      assignment_name = params["custom_canvas_assignment_title"]
-
-      redirect(conn, to: Routes.submission_path(conn, :index, assignment_id, assignment_name))
+      conn
+      |> put_session(:user, user)
+      |> put_session(:role, role)
+      |> redirect_user(role, assignment)
     else
-      text(conn, "No assignment specified.")
+      error -> raise error
     end
   end
 
@@ -25,7 +34,28 @@ defmodule ThesisWeb.IndexController do
     user = get_session(conn, :user)
 
     conn |> text("Welcome back user #{user.id} with lti_user_id #{user.lti_user_id}.")
+  end
 
-    # Phoenix.LiveView.Controller.live_render(conn, ThesisWeb.TestLiveView, session: %{})
+  defp redirect_user(conn, role, assignment) do
+    case role do
+      :student ->
+        redirect(conn, to: Routes.submission_path(conn, :index, assignment.id))
+
+      :teacher ->
+        redirect(conn, to: Routes.assignment_path(conn, :index, assignment.id))
+    end
+  end
+
+  defp determine_role(roles) do
+    cond do
+      roles =~ "Learner" ->
+        :student
+
+      roles =~ "Instructor" ->
+        :teacher
+
+      true ->
+        :unknown
+    end
   end
 end
