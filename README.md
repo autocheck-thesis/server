@@ -13,7 +13,7 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 
 If the server runs without HTTPS, the browser will block the iframe from loading ([see 3) here](https://canvas.instructure.com/courses/913512/pages/launch-url))
 
-Therefore, we also listen on HTTPS connections on [`localhost:4001`](https://localhost:4001).
+Therefore, we also listen for HTTPS connections on [`localhost:4001`](https://localhost:4001).
 
 ## Learn more
 
