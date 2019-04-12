@@ -171,7 +171,8 @@ defmodule Thesis.Coderunner do
             text
         end
 
-      String.trim(text)
+      # TODO: Maybe this is too aggressive
+      String.trim_trailing(text)
     end)
     |> Enum.join("\n")
   end

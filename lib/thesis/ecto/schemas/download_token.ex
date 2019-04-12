@@ -1,27 +1,20 @@
-defmodule Thesis.Job do
+defmodule Thesis.DownloadToken do
   use Ecto.Schema
   import Ecto.Changeset
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
-  schema "jobs" do
-    field(:image, :string)
-    field(:cmd, :string)
-    field(:finished, :boolean, default: false)
+  schema "download_tokens" do
     belongs_to(:submission, Thesis.Submission)
 
     timestamps()
   end
 
-  @required_fields [:image, :cmd]
+  @required_fields []
 
   def changeset(%__MODULE__{} = struct, params \\ %{}) do
     struct
     |> cast(params, @required_fields)
-  end
-
-  def finish(job) do
-    job |> change(finished: true)
   end
 end

@@ -1,13 +1,10 @@
-defmodule Thesis.Repo.Migrations.CreateJobs do
+defmodule Thesis.Repo.Migrations.CreateDownloadTokens do
   use Ecto.Migration
 
   def change do
-    create table(:jobs, primary_key: false) do
+    create table(:download_tokens, primary_key: false) do
       add(:id, :uuid, primary_key: true)
       add(:submission_id, references(:submissions, type: :uuid))
-      add(:image, :string)
-      add(:cmd, :text)
-      add(:finished, :boolean)
 
       timestamps()
     end

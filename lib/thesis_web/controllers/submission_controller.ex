@@ -57,30 +57,48 @@ defmodule ThesisWeb.SubmissionController do
         raise "Assignment not found"
 
       assignment ->
+        # TODO: Check if valid file type etc...
         case Thesis.Repo.insert(
                Thesis.Submission.changeset(%Thesis.Submission{})
                |> Ecto.Changeset.put_assoc(:author, user)
                |> Ecto.Changeset.put_assoc(:assignment, assignment)
              ) do
           {:ok, submission} ->
-            filename = submission.id <> Path.extname(file.filename)
-            File.cp(file.path, Path.join("uploads", filename))
+            File.cp(file.path, Path.join("uploads", submission.id))
 
             # TODO: Add to job queue
 
-            image = determine_image(filename)
-            file_url = "#{Application.get_env(:thesis, :uploads_url)}#{filename}"
-            cmd = determine_internal_cmd(file_url)
-
-            case Thesis.Repo.insert(
-                   Thesis.Job.changeset(%Thesis.Job{}, %{
-                     "image" => image,
-                     "cmd" => cmd,
-                     "filename" => filename
-                   })
+            case Ecto.Multi.new()
+                 |> Ecto.Multi.insert(
+                   :token,
+                   Thesis.DownloadToken.changeset(%Thesis.DownloadToken{})
                    |> Ecto.Changeset.put_assoc(:submission, submission)
-                 ) do
-              {:ok, job} ->
+                 )
+                 |> Ecto.Multi.insert(
+                   :job,
+                   fn %{token: token} ->
+                     download_url =
+                       Application.get_env(:thesis, :submission_download_hostname) <>
+                         Routes.submission_path(conn, :download, token.id)
+
+                     {image, cmd} = determine_image_and_cmd(file.filename)
+
+                     full_cmd =
+                       determine_internal_cmd(
+                         download_url,
+                         file.filename,
+                         cmd
+                       )
+
+                     Thesis.Job.changeset(%Thesis.Job{}, %{
+                       "image" => image,
+                       "cmd" => full_cmd
+                     })
+                     |> Ecto.Changeset.put_assoc(:submission, submission)
+                   end
+                 )
+                 |> Thesis.Repo.transaction() do
+              {:ok, %{job: job, token: _token}} ->
                 {:ok, coderunner} = Thesis.Coderunner.start_link()
                 Thesis.Coderunner.process(coderunner, job)
 
@@ -96,6 +114,21 @@ defmodule ThesisWeb.SubmissionController do
     end
   end
 
+  def download(conn, %{"token_id" => id}) do
+    case Thesis.Repo.get(Thesis.DownloadToken, id) do
+      nil ->
+        raise "Could not find download token"
+
+      token ->
+        # TODO: Uncomment to enable download token removal (One-time-use tokens)
+        # case Thesis.Repo.delete(token) do
+        #   {:ok, _} -> send_file(conn, 200, Path.join("uploads", token.submission_id))
+        #   {:error, error} -> raise error
+        # end
+        send_file(conn, 200, Path.join("uploads", token.submission_id))
+    end
+  end
+
   defp determine_language(filename) do
     case Path.extname(filename) do
       ".java" -> :java
@@ -104,27 +137,24 @@ defmodule ThesisWeb.SubmissionController do
     end
   end
 
-  defp determine_image(filename) do
+  defp determine_image_and_cmd(filename) do
     case determine_language(filename) do
-      :java -> "openjdk:13-alpine"
-      :python -> "python:alpine"
-      :unknown -> "alpine"
+      :java ->
+        {"openjdk:13-alpine", "java \"#{filename}\""}
+
+      :python ->
+        {"python:alpine", "python \"#{filename}\""}
+
+      :unknown ->
+        {"alpine", "cat \"#{filename}\""}
     end
   end
 
-  defp determine_internal_cmd(file_url) do
-    filename = Path.basename(file_url)
-
-    cmd =
-      case determine_language(file_url) do
-        :java -> "java #{filename}"
-        :python -> "python #{filename}"
-        :unknown -> "file #{filename}"
-      end
-
+  defp determine_internal_cmd(download_url, filename, cmd) do
     """
-    echo "Fetching submission file..."
-    wget -O #{filename} "#{file_url}"
+    echo "wget -O "#{filename}" "#{download_url}""
+    wget -O "#{filename}" "#{download_url}"
+    cat "#{filename}"
     echo "Running '#{cmd}'"
     #{cmd}
     """

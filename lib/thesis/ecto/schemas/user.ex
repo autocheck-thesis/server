@@ -1,7 +1,6 @@
 defmodule Thesis.User do
   use Ecto.Schema
   import Ecto.Changeset
-  import Ecto.Query, only: [from: 2]
 
   require Logger
 
@@ -20,22 +19,5 @@ defmodule Thesis.User do
   def changeset(%__MODULE__{} = struct, params \\ %{}) do
     struct
     |> cast(params, @required_fields)
-  end
-
-  def find_or_create(lti_user_id) do
-    case Thesis.Repo.one(from(user in Thesis.User, where: user.lti_user_id == ^lti_user_id)) do
-      nil ->
-        user =
-          Thesis.User.changeset(%Thesis.User{}, %{"lti_user_id" => lti_user_id})
-          |> Thesis.Repo.insert!()
-
-        Logger.debug("Creating user at launch: #{inspect(user)}")
-
-        user
-
-      user ->
-        Logger.debug("Found existing user at launch: #{inspect(user)}")
-        user
-    end
   end
 end

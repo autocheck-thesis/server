@@ -38,10 +38,10 @@ defmodule ThesisWeb.SubmissionLiveView do
           {:init, "Coderunner started job #{job_id}"}
 
         %PullOutput{text: text} ->
-          {:text, String.trim(text)}
+          {:text, text}
 
         %FollowOutput{text: text} ->
-          {:text, String.trim(text)}
+          {:text, text}
 
         %PullDone{} ->
           {:done, "Image fetching done. Will now execute the job..."}
@@ -50,7 +50,7 @@ defmodule ThesisWeb.SubmissionLiveView do
           {:done, "Process execution successful with exit code: #{code}"}
 
         %Error{text: text} ->
-          {:error, String.trim(text)}
+          {:error, text}
       end
     end)
   end

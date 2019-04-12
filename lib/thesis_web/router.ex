@@ -35,6 +35,7 @@ defmodule ThesisWeb.Router do
     get "/submission/submit", SubmissionController, :index
     get "/submission/submit/:assignment_id", SubmissionController, :index
     post "/submission/submit/:assignment_id", SubmissionController, :submit
+    get "/submission/download/:token_id", SubmissionController, :download
     get "/submission/:id", SubmissionController, :show
 
     get "/assignment/:assignment_id", AssignmentController, :index
