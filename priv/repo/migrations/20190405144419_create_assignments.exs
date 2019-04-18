@@ -5,6 +5,7 @@ defmodule Thesis.Repo.Migrations.CreateAssignments do
     create table(:assignments, primary_key: false) do
       add(:id, :binary_id, primary_key: true)
       add(:name, :string)
+      add(:dsl, :string)
 
       timestamps()
     end

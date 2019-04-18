@@ -1,19 +1,21 @@
 defmodule Thesis.DSL do
   require Logger
 
+  @accepted_keywords [
+    :__block__,
+    :@,
+    :step,
+  ]
+
   def dsl_code() do
     """
-    reqf "hello.py"
-
-    test "Basic test" do
-      dir "/tmp/foobar"
-      cmd "java $af"
-      test_source "blablabla"
-      xd(dode)
+    step "Basic test" do
+      command "echo 'peace bruv'"
+      command "echo 'eeyyyy'"
     end
 
-    test "Advanced test" do
-      exptect_exit_code 1, 4, "17"
+    step "Advanced test" do
+      command "echo 'yolo dyd'"
     end
     """
   end
@@ -23,24 +25,22 @@ defmodule Thesis.DSL do
   end
 
   def parse_dsl(dsl) do
-    Code.string_to_quoted(dsl, existing_atoms_only: false)
+    Code.string_to_quoted(dsl, existing_atoms_only: true)
     |> case do
       {:ok, quouted_form} ->
         parse_top_level(quouted_form)
-        |> List.flatten
-        |> List.foldl(%{}, fn x, acc -> if is_tuple(x) do Map.put(acc, :cmd, elem(x, 1)) else acc end end) #TODO: Jesus..
       {:error, error} ->
-        Logger.error(error)
+        raise error
     end
   end
 
   defp parse_top_level({:__block__, [], statements}), do: Enum.map(statements, &(parse_statement(&1)))
-  defp parse_top_level(test), do: [parse_statement(test)]
+  defp parse_top_level(test),                         do: [parse_statement(test)]
 
-  defp parse_statement({:reqf, _line, required_files}), do: required_files
-  defp parse_statement({:test, _line, [_test_name, [do: {:__block__, [], test_params}]]}), do: Enum.map(test_params, &(parse_test_param(&1)))
-  defp parse_statement({:test, _line, [_test_name, [do: test_param]]}), do: [parse_test_param(test_param)]
+  # defp parse_statement({:reqf, _line, required_files}), do: required_files
+  defp parse_statement({:step, _line, [step_name, [do: {:__block__, [], step_params}]]}), do: %{step_name: step_name, params: Enum.map(step_params, &(parse_step_param(&1)))}
+  defp parse_statement({:step, _line, [step_name, [do: step_param]]}),                    do: %{step_name: step_name, params: [parse_step_param(step_param)]}
 
-  defp parse_test_param({:cmd, _line, [cmd | []]}), do: {:cmd, cmd}
-  defp parse_test_param(_whatever), do: :todo
+  defp parse_step_param({:command, _line, [command | []]}), do: {:command, command}
+  defp parse_step_param(_whatever),                         do: :todo # TODO: Implement "this keyword on line bla bla is not supported"
 end

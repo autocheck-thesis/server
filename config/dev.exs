@@ -92,3 +92,5 @@ config :thesis, Thesis.Repo,
 
 config :thesis,
   submission_download_hostname: "http://hostmachine.docker:4000"
+
+import_config "local.exs"
