@@ -83,12 +83,12 @@ defmodule ThesisWeb.SubmissionController do
 
                      {image, cmd} = determine_image_and_cmd(file.filename)
 
-                     full_cmd =
-                       determine_internal_cmd(
-                         download_url,
-                         file.filename,
-                         cmd
-                       )
+                     full_cmd = Thesis.DSL.parse_dsl(assignment.dsl)
+                      #  determine_internal_cmd(
+                      #    download_url,
+                      #    file.filename,
+                      #    cmd
+                      #  )
 
                      Thesis.Job.changeset(%Thesis.Job{}, %{
                        "image" => image,
