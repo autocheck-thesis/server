@@ -4,12 +4,17 @@ defmodule Thesis.DSL do
   @accepted_keywords [
     :__block__,
     :@,
+    :configuration,
     :step,
     :command,
   ]
 
   def dsl_code() do
     """
+    @configuration "elixir",
+      version: "1.7",
+      gris: 1337
+
     step "Basic test" do
       command "echo 'peace bruv'"
       command "echo 'eeyyyy'"
@@ -53,6 +58,7 @@ defmodule Thesis.DSL do
   defp parse_top_level(test),                         do: [parse_statement(test)]
 
   # defp parse_statement({:reqf, _line, required_files}), do: required_files
+
   defp parse_statement({:step, _line, [step_name, [do: {:__block__, [], step_params}]]}), do: %{step_name: step_name, commands: Enum.map(step_params, &(parse_step_command(&1)))}
   defp parse_statement({:step, _line, [step_name, [do: step_param]]}),                    do: %{step_name: step_name, commands: [parse_step_command(step_param)]}
 
