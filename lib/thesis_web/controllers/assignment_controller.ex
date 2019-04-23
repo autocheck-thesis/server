@@ -2,7 +2,7 @@ defmodule ThesisWeb.AssignmentController do
   use ThesisWeb, :controller
   require Logger
 
-  def index(conn, %{"assignment_id" => assignment_id}) do
+  def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
     case Thesis.Repo.get(Thesis.Assignment, assignment_id) do
       nil ->
         raise "Assignment not found"
@@ -10,7 +10,7 @@ defmodule ThesisWeb.AssignmentController do
       assignment ->
         render(conn, "index.html",
           assignment: assignment,
-          role: get_session(conn, :role)
+          role: role
         )
     end
   end

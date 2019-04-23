@@ -1,9 +1,6 @@
 defmodule ThesisWeb.Router do
   use ThesisWeb, :router
-
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
+  import ThesisWeb.Auth
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -12,13 +9,8 @@ defmodule ThesisWeb.Router do
     plug Phoenix.LiveView.Flash
   end
 
-  scope "/api", ThesisWeb do
-    pipe_through :api
-  end
-
-  scope "/grade", ThesisWeb do
-    get "/", GradeController, :grade
-    post "/", GradeController, :grade_post
+  pipeline :auth do
+    plug :check_auth
   end
 
   scope "/", ThesisWeb do
@@ -29,8 +21,14 @@ defmodule ThesisWeb.Router do
     get "/lti", IndexController, :index
     post "/", IndexController, :launch
     post "/lti", IndexController, :launch
+  end
 
-    get "/work", IndexController, :work
+  scope "/", ThesisWeb do
+    pipe_through [:browser, :auth]
+
+    # TODO: Grade controller is currently broken
+    # get "/grade", GradeController, :grade
+    # post "/grade", GradeController, :grade_post
 
     get "/submission/submit", SubmissionController, :index
     get "/submission/submit/:assignment_id", SubmissionController, :index

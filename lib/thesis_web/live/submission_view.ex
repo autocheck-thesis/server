@@ -7,7 +7,7 @@ defmodule ThesisWeb.SubmissionLiveView do
   end
 
   def mount(
-        %{user_id: _user_id, submission: submission, job: job, events: events} = _session,
+        %{submission: submission, job: job, events: events} = _session,
         socket
       ) do
     if connected?(socket) do

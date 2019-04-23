@@ -3,7 +3,7 @@ defmodule ThesisWeb.SubmissionController do
   import Ecto.Query, only: [from: 2]
   require Logger
 
-  def index(conn, %{"assignment_id" => assignment_id}) do
+  def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
     case Thesis.Repo.get(Thesis.Assignment, assignment_id) do
       nil ->
         raise "Assignment not found"
@@ -19,7 +19,7 @@ defmodule ThesisWeb.SubmissionController do
 
         render(conn, "index.html",
           assignment: assignment,
-          role: get_session(conn, :role),
+          role: role,
           submissions: submissions
         )
     end
@@ -38,7 +38,7 @@ defmodule ThesisWeb.SubmissionController do
     {:ok, events} = EventStore.read_stream_forward(job.id)
 
     live_render(conn, ThesisWeb.SubmissionLiveView,
-      session: %{user_id: 0, submission: submission, job: job, events: events}
+      session: %{submission: submission, job: job, events: events}
     )
   end
 
@@ -46,12 +46,10 @@ defmodule ThesisWeb.SubmissionController do
     conn |> send_resp(400, "Submission id and name must be specified.") |> halt()
   end
 
-  def submit(conn, %{
+  def submit(%Plug.Conn{assigns: %{user: user}} = conn, %{
         "file" => file,
         "assignment_id" => assignment_id
       }) do
-    user = get_session(conn, :user)
-
     case Thesis.Repo.get(Thesis.Assignment, assignment_id) do
       nil ->
         raise "Assignment not found"

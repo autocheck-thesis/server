@@ -4,7 +4,6 @@ defmodule ThesisWeb.IndexController do
   require Logger
 
   plug PlugLti when action in [:launch]
-  plug :fetch_session
 
   def launch(conn, params) do
     with %{
@@ -31,9 +30,7 @@ defmodule ThesisWeb.IndexController do
   end
 
   def index(conn, _params) do
-    user = get_session(conn, :user)
-
-    conn |> text("Welcome back user #{user.id} with lti_user_id #{user.lti_user_id}.")
+    render(conn, "index.html")
   end
 
   defp redirect_user(conn, role, assignment) do
