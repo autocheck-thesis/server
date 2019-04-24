@@ -5,19 +5,25 @@ defmodule ThesisWeb.IndexController do
 
   plug PlugLti when action in [:launch]
 
-  def launch(conn, params) do
-    with %{
-           "user_id" => lti_user_id,
-           "roles" => roles,
-           "ext_lti_assignment_id" => assignment_id,
-           "resource_link_title" => assignment_name
-         } <- params,
-         {:ok, user} <- Thesis.Repo.get_or_insert(Thesis.User, %{lti_user_id: lti_user_id}),
+  def launch(
+        conn,
+        %{
+          "user_id" => lti_user_id,
+          "roles" => roles,
+          "ext_lti_assignment_id" => assignment_id,
+          "resource_link_title" => assignment_name
+        } = _params
+      ) do
+    with {:ok, user} <-
+           Thesis.Repo.get_or_insert(
+             Thesis.User,
+             %{lti_user_id: lti_user_id}
+           ),
          {:ok, assignment} <-
-           Thesis.Repo.get_or_insert(Thesis.Assignment, %{
-             id: assignment_id,
-             name: assignment_name
-           }) do
+           Thesis.Repo.get_or_insert(
+             Thesis.Assignment,
+             %{id: assignment_id, name: assignment_name}
+           ) do
       role = determine_role(roles)
 
       conn
