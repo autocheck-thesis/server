@@ -1,6 +1,12 @@
 defmodule ThesisWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :thesis
 
+  def init(_key, config) do
+    File.mkdir("uploads/")
+
+    {:ok, config}
+  end
+
   socket "/live", Phoenix.LiveView.Socket
 
   socket "/socket", ThesisWeb.UserSocket,

@@ -17,10 +17,25 @@ defmodule Thesis.MixProject do
   #
   # Type `mix help compile.app` for more information.
   def application do
-    [
-      mod: {Thesis.Application, []},
-      extra_applications: [:logger, :phoenix_ecto, :runtime_tools]
-    ]
+    # Specifying applications instead of extra_applications
+    # makes Elixir not start application dependencies automatically.
+    # The result is that we don't start applications such as 'eventstore'
+    # when running tests with `mix test`.
+    #
+    # If we want to have tests with a database connection we should
+    # remove this conditional and specify a proper database configuration
+    # in `config/test.exs`
+    if Mix.env() == :test do
+      [
+        mod: {Thesis.Application, []},
+        applications: [:logger, :runtime_tools]
+      ]
+    else
+      [
+        mod: {Thesis.Application, []},
+        extra_applications: [:logger, :runtime_tools]
+      ]
+    end
   end
 
   # Specifies which paths to compile per environment.

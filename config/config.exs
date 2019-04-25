@@ -17,6 +17,8 @@ config :thesis, ThesisWeb.Endpoint,
     signing_salt: "YOUR_SECRET"
   ]
 
+config :thesis, :children, [ThesisWeb.Endpoint, Thesis.Repo]
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

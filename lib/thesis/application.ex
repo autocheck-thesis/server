@@ -6,18 +6,8 @@ defmodule Thesis.Application do
   use Application
 
   def start(_type, _args) do
-    :ets.new(:assignment_tests, [:public, :named_table])
-
-    File.mkdir("uploads/")
-
     # List all child processes to be supervised
-    children = [
-      # Start the endpoint when the application starts
-      ThesisWeb.Endpoint,
-      # Starts a worker by calling: Thesis.Worker.start_link(arg)
-      # {Thesis.Worker, arg},
-      {Thesis.Repo, []}
-    ]
+    children = Application.get_env(:thesis, :children)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
