@@ -8,6 +8,9 @@ defmodule Thesis.ExtractorTest do
   defp non_existing_targz_archive(), do: File.cwd!() <> "/test/non-existing.tar.gz"
   defp non_existing_file(), do: "/dev/null"
 
+  defp evil_header_zip_archive(), do: File.cwd!() <> "/test/10GB.zip"
+  defp evil_header_targz_archive(), do: File.cwd!() <> "/test/10GB.tar.gz"
+
   test "fail for non existing archives" do
     assert {:error, _} = peek_size(non_existing_zip_archive())
     assert {:error, _} = peek_size(non_existing_targz_archive())
@@ -20,6 +23,11 @@ defmodule Thesis.ExtractorTest do
 
   test "peek size for .tar.gz archive" do
     assert {:ok, 104} = peek_size(existing_targz_archive())
+  end
+
+  test "handle evil headers" do
+    assert {:error, :bad_eocd} = extract(evil_header_zip_archive())
+    assert {:error, _} = extract(evil_header_targz_archive())
   end
 
   test "handles extraction size limit" do

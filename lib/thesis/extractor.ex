@@ -47,6 +47,9 @@ defmodule Thesis.Extractor do
       {:ok, size} when size > limit ->
         {:error, "Decompressed size #{size} bytes is larger than the limit #{limit} bytes."}
 
+      {:ok, size} when size == 0 ->
+        {:error, "Decompressed size is 0 bytes."}
+
       {:ok, _} ->
         {:ok, "Awesome"}
 
