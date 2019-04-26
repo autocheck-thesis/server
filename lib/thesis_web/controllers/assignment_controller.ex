@@ -15,6 +15,6 @@ defmodule ThesisWeb.AssignmentController do
     end
   end
 
-  def submit(conn, _params) do
+  def submit(_conn, _params) do
   end
 end
