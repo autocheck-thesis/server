@@ -19,6 +19,7 @@ defmodule Thesis.Job do
   def changeset(%__MODULE__{} = struct, params \\ %{}) do
     struct
     |> cast(params, @required_fields)
+    |> cast_assoc(:submission)
   end
 
   def finish(job) do

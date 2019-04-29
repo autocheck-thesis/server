@@ -7,8 +7,9 @@ defmodule ThesisWeb.Auth do
     role = get_session(conn, :role)
 
     if user && role do
-      assign(conn, :user, user)
-      assign(conn, :role, role)
+      conn
+      |> assign(:user, user)
+      |> assign(:role, role)
     else
       conn
       |> put_flash(:danger, "You need to be signed in to access that page")
