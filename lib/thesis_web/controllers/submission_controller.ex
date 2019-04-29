@@ -131,12 +131,12 @@ defmodule ThesisWeb.SubmissionController do
     end
   end
 
-  defp remove_download_token(token) do
-    case Thesis.Repo.delete(token) do
-      {:ok, _} -> :ok
-      {:error, error} -> raise error
-    end
-  end
+  # defp remove_download_token(token) do
+  #   case Thesis.Repo.delete(token) do
+  #     {:ok, _} -> :ok
+  #     {:error, error} -> raise error
+  #   end
+  # end
 
   defp get_files(submission_id) do
     submission =
@@ -151,6 +151,10 @@ defmodule ThesisWeb.SubmissionController do
     token = get_download_token(id)
     # TODO: Uncomment to enable download token removal (One-time-use tokens)
     # remove_download_token(token)
-    render(conn, "download.json", data: get_files(token.submission_id))
+    data =
+      get_files(token.submission_id)
+      |> Enum.map(fn file -> %Thesis.File{file | contents: Base.encode64(file.contents)} end)
+
+    render(conn, "download.json", data: data)
   end
 end
