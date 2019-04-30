@@ -41,7 +41,7 @@ defmodule ThesisWeb.Endpoint do
   plug Plug.Logger
 
   plug Plug.Parsers,
-    parsers: [:urlencoded, :multipart, :json],
+    parsers: [:urlencoded, {:multipart, length: 550_000_000}, :json],
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
 

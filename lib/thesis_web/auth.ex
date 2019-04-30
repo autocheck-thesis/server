@@ -12,9 +12,9 @@ defmodule ThesisWeb.Auth do
       |> assign(:role, role)
     else
       conn
-      |> put_flash(:danger, "You need to be signed in to access that page")
-      |> redirect(to: ThesisWeb.Router.Helpers.index_path(conn, :index))
-      |> halt()
+      |> put_status(:unauthorized)
+      |> put_view(ThesisWeb.ErrorView)
+      |> render(:"403")
     end
   end
 end

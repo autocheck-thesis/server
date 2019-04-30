@@ -11,7 +11,11 @@ use Mix.Config
 config :thesis, ThesisWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "Uqz3utAOWmiwz3MsYCCB4QKjKg7bReiKg1wj4z5ryAEHCQMHioxz6JtQTlULGPtm",
-  render_errors: [view: ThesisWeb.ErrorView, accepts: ~w(json)],
+  render_errors: [
+    view: ThesisWeb.ErrorView,
+    accepts: ~w(html),
+    layout: {ThesisWeb.ErrorView, "error.html"}
+  ],
   pubsub: [name: Thesis.PubSub, adapter: Phoenix.PubSub.PG2],
   live_view: [
     signing_salt: "YOUR_SECRET"

@@ -3,6 +3,19 @@ defmodule Thesis.Extractor do
   Record.defrecord(:file_info, Record.extract(:file_info, from_lib: "kernel/include/file.hrl"))
   Record.defrecord(:zip_file, Record.extract(:zip_file, from_lib: "stdlib/include/zip.hrl"))
 
+  defmodule InvalidArchive do
+    defexception [:reason]
+
+    def exception(reason), do: %__MODULE__{reason: reason}
+    def message(%__MODULE__{reason: reason}), do: Thesis.Extractor.format_error(reason)
+  end
+
+  def format_error(:bad_eocd), do: "Bad central directory in archive"
+  def format_error(:timeout), do: "Decompression timed out"
+  def format_error(:size_is_zero), do: "Decompressed size is 0 bytes"
+  def format_error(:out_of_memory), do: "Ran out of memory when decompressing"
+  def format_error(reason), do: inspect(reason)
+
   def peek_size(path) do
     archive_type = determine_archive_type(path)
     peek_size(path, archive_type)
@@ -36,6 +49,17 @@ defmodule Thesis.Extractor do
     end
   end
 
+  def extract!(path, opts \\ []) do
+    case extract(path, opts) do
+      {:ok, result} ->
+        result
+
+      {:error, reason} ->
+        IO.inspect(reason)
+        raise __MODULE__.InvalidArchive, reason
+    end
+  end
+
   def extract(path, opts \\ []) do
     # 550 MB
     limit = Keyword.get(opts, :limit, 576_716_800)
@@ -44,10 +68,10 @@ defmodule Thesis.Extractor do
 
     case peek_size(path, archive_type) do
       {:ok, size} when size > limit ->
-        {:error, "Decompressed size #{size} bytes is larger than the limit #{limit} bytes."}
+        {:error, {:size_too_big, size, limit}}
 
       {:ok, size} when size == 0 ->
-        {:error, "Decompressed size is 0 bytes."}
+        {:error, :size_is_zero}
 
       {:ok, _} ->
         pid = self()
@@ -63,16 +87,16 @@ defmodule Thesis.Extractor do
             receive do
               result -> result
             after
-              60000 -> {:error, "Timeout"}
+              60000 -> {:error, :timeout}
             end
 
           {:DOWN, _, _, _, :killed} ->
-            {:error, "Out of memory"}
+            {:error, :out_of_memory}
 
           {:DOWN, _, _, _, reason} ->
             {:error, inspect(reason)}
         after
-          60000 -> {:error, "Timeout"}
+          60000 -> {:error, :timeout}
         end
 
       {:error, _} = error ->

@@ -1,5 +1,6 @@
 defmodule ThesisWeb.IndexController do
   use ThesisWeb, :controller
+  import Thesis.Repo, only: [get_or_insert: 2]
 
   require Logger
 
@@ -14,25 +15,17 @@ defmodule ThesisWeb.IndexController do
           "resource_link_title" => assignment_name
         } = _params
       ) do
-    with {:ok, user} <-
-           Thesis.Repo.get_or_insert(
-             Thesis.User,
-             %{lti_user_id: lti_user_id}
-           ),
-         {:ok, assignment} <-
-           Thesis.Repo.get_or_insert(
-             Thesis.Assignment,
-             %{id: assignment_id, name: assignment_name}
-           ) do
-      role = determine_role(roles)
+    {:ok, user} = get_or_insert(Thesis.User, %{lti_user_id: lti_user_id})
 
-      conn
-      |> put_session(:user, user)
-      |> put_session(:role, role)
-      |> redirect_user(role, assignment)
-    else
-      error -> raise error
-    end
+    {:ok, assignment} =
+      get_or_insert(Thesis.Assignment, %{id: assignment_id, name: assignment_name})
+
+    role = determine_role(roles)
+
+    conn
+    |> put_session(:user, user)
+    |> put_session(:role, role)
+    |> redirect_user(role, assignment)
   end
 
   def index(conn, _params) do
