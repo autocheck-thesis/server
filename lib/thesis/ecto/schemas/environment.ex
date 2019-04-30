@@ -1,8 +1,8 @@
-defmodule Thesis.Configuration do
+defmodule Thesis.Environment do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "configurations" do
+  schema "environments" do
     field :dsl, :string
     field :name, :string
 
@@ -10,8 +10,8 @@ defmodule Thesis.Configuration do
   end
 
   @doc false
-  def changeset(configuration, attrs) do
-    configuration
+  def changeset(environment, attrs) do
+    environment
     |> cast(attrs, [:name, :dsl])
     |> validate_required([:name, :dsl])
     |> unique_constraint(:name)
