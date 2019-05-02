@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Iframe</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="form-wrapper">
+      <form id="post_form">
+        <div><span>url:</span><input type="text" name="url" value="https://localhost:4001/lti" /></div>
+        <div><span>secret:</span><input type="text" name="secret" value="secret" /></div>
+      </form>
+      <form id="lti_form" target="target" method="post">
+        <div><span>oauth_consumer_key:</span><input type="text" name="oauth_consumer_key" value="test" /></div>
+        <div><span>oauth_signature_method:</span><input type="text" name="oauth_signature_method" value="HMAC-SHA1" disabled /></div>
+        <div><span>oauth_timestamp:</span><input type="text" name="oauth_timestamp" value="1556790376" /></div>
+        <div><span>oauth_nonce:</span><input type="text" name="oauth_nonce" value="coGMXFC1STiTGMGASMyl7ah2P1RCPRCS3LIaC9Tc" /></div>
+        <div><span>oauth_version:</span><input type="text" name="oauth_version" value="1.0" disabled /></div>
+        <div><span>context_id:</span><input type="text" name="context_id" value="f3481718fe31df83ae45fc946d0a17da042ba0eb" /></div>
+        <div><span>context_label:</span><input type="text" name="context_label" value="Python 102" /></div>
+        <div><span>context_title:</span><input type="text" name="context_title" value="Python 102" /></div>
+        <div><span>custom_canvas_assignment_points_possible:</span><input type="text" name="custom_canvas_assignment_points_possible" value="10" /></div>
+        <div><span>custom_canvas_assignment_title:</span><input type="text" name="custom_canvas_assignment_title" value="Phoenix Test" /></div>
+        <div><span>custom_canvas_enrollment_state:</span><input type="text" name="custom_canvas_enrollment_state" value="active" /></div>
+        <div><span>ext_ims_lis_basic_outcome_url:</span><input type="text" name="ext_ims_lis_basic_outcome_url" value="https://canvas.straffrabatt.se/api/lti/v1/tools/6/ext_grade_passback" /></div>
+        <div><span>ext_lti_assignment_id:</span><input type="text" name="ext_lti_assignment_id" value="9ab78406-0774-4ce4-8434-c5fb0dfb257a" /></div>
+        <div><span>ext_outcome_data_values_accepted:</span><input type="text" name="ext_outcome_data_values_accepted" value="url,text" /></div>
+        <div><span>ext_outcome_result_total_score_accepted:</span><input type="text" name="ext_outcome_result_total_score_accepted" value="true" /></div>
+        <div><span>ext_outcome_submission_submitted_at_accepted:</span><input type="text" name="ext_outcome_submission_submitted_at_accepted" value="true" /></div>
+        <div><span>ext_outcomes_tool_placement_url:</span><input type="text" name="ext_outcomes_tool_placement_url" value="https://canvas.straffrabatt.se/api/lti/v1/turnitin/outcomes_placement/6" /></div>
+        <div>
+          <span>ext_roles:</span>
+          <select name="ext_roles" disabled>
+            <option>urn:lti:instrole:ims/lis/Administrator,urn:lti:instrole:ims/lis/Instructor,urn:lti:role:ims/lis/Instructor,urn:lti:sysrole:ims/lis/SysAdmin,urn:lti:sysrole:ims/lis/User</option>
+            <option>urn:lti:instrole:ims/lis/Student,urn:lti:role:ims/lis/Learner,urn:lti:sysrole:ims/lis/User</option>
+          </select>
+        </div>
+        <div><span>launch_presentation_document_target:</span><input type="text" name="launch_presentation_document_target" value="iframe" /></div>
+        <div><span>launch_presentation_locale:</span><input type="text" name="launch_presentation_locale" value="en" /></div>
+        <div><span>launch_presentation_return_url:</span><input type="text" name="launch_presentation_return_url" value="https://canvas.straffrabatt.se/courses/3/external_content/success/external_tool_redirect" /></div>
+        <div><span>lis_outcome_service_url:</span><input type="text" name="lis_outcome_service_url" value="https://canvas.straffrabatt.se/api/lti/v1/tools/6/grade_passback" /></div>
+        <div><span>lti_message_type:</span><input type="text" name="lti_message_type" value="basic-lti-launch-request" /></div>
+        <div><span>lti_version:</span><input type="text" name="lti_version" value="LTI-1p0" disabled /></div>
+        <div><span>oauth_callback:</span><input type="text" name="oauth_callback" value="about:blank" /></div>
+        <div><span>resource_link_id:</span><input type="text" name="resource_link_id" value="4a9e1d3398aca8c685193a610b564463318b8445" /></div>
+        <div><span>resource_link_title:</span><input type="text" name="resource_link_title" value="Phoenix Test" /></div>
+        <div>
+          <span>roles:</span>
+          <select name="roles">
+            <option>Instructor,urn:lti:instrole:ims/lis/Administrator</option>
+            <option>Learner</option>
+          </select>
+        </div>
+        <div><span>tool_consumer_info_product_family_code:</span><input type="text" name="tool_consumer_info_product_family_code" value="canvas" /></div>
+        <div><span>tool_consumer_info_version:</span><input type="text" name="tool_consumer_info_version" value="cloud" /></div>
+        <div><span>tool_consumer_instance_contact_email:</span><input type="text" name="tool_consumer_instance_contact_email" value="notifications@unknowndomain.example.com" /></div>
+        <div><span>tool_consumer_instance_guid:</span><input type="text" name="tool_consumer_instance_guid" value="SQrpnhEU1ONYrdNvBAcRN29SgXt5ZWrp4DifImLz:canvas-lms" /></div>
+        <div><span>tool_consumer_instance_name:</span><input type="text" name="tool_consumer_instance_name" value="Master Thesis" /></div>
+        <div><span>user_id:</span><input type="text" name="user_id" value="e6ade06d2aca05a833515b26d30c2ef9e2c94b3c" /></div>
+        <div><span></span><button type="submit" id="launch">Launch</button></div>
+      </form>
+      <button id="collapse">Collapse form</button>
+      <button id="expand">Expand form</button>
+    </div>
+    <div id="placeholder">Edit LTI launch parameters above and press launch</div>
+    <iframe id="target" name="target" class="hidden"></iframe>
+    <script src="./oauth-signature.min.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>
