@@ -55,3 +55,5 @@ lti_form.addEventListener("submit", () => {
 
   return true;
 });
+
+window.addEventListener("beforeunload", e => (e.returnValue = "Data will be lost if you leave the page, are you sure?"));
