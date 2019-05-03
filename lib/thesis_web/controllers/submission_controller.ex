@@ -6,25 +6,97 @@ defmodule ThesisWeb.SubmissionController do
   def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
     assignment = Thesis.Repo.get!(Thesis.Assignment, assignment_id)
 
-    submissions =
-      Thesis.Repo.all(
-        from(Thesis.Submission,
-          where: [assignment_id: ^assignment_id],
-          order_by: [desc: :inserted_at]
-        )
-      )
-
     render(conn, "index.html",
       assignment: assignment,
-      role: role,
-      submissions: submissions
+      role: role
     )
+  end
+
+  def previous(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
+    assignment =
+      Thesis.Repo.get!(Thesis.Assignment, assignment_id)
+      |> Thesis.Repo.preload(
+        submissions:
+          from(s in Thesis.Submission, order_by: [desc: s.inserted_at], preload: [:files])
+      )
+
+    render(conn, "previous.html",
+      assignment: assignment,
+      role: role,
+      submissions: assignment.submissions
+    )
+  end
+
+  defp calculate_diff(nil, new_files) do
+    Enum.map(new_files, fn %Thesis.File{name: name, contents: text} ->
+      diff =
+        case Thesis.Diff.diff_text(nil, text) do
+          {:ok, {:diff, diff}} -> diff
+          {:ok, :nodiff} -> []
+        end
+
+      %{type: :added, name: name, diff: diff}
+    end)
+  end
+
+  defp calculate_diff(old_files, new_files) do
+    old_files_map =
+      Map.new(old_files, fn %Thesis.File{name: name, contents: text} -> {name, text} end)
+
+    new_files_map =
+      Map.new(new_files, fn %Thesis.File{name: name, contents: text} -> {name, text} end)
+
+    old_files_set = MapSet.new(Map.keys(old_files_map))
+    new_files_set = MapSet.new(Map.keys(new_files_map))
+
+    added_files_set = MapSet.difference(new_files_set, old_files_set)
+    removed_files_set = MapSet.difference(old_files_set, new_files_set)
+    same_files_set = MapSet.intersection(old_files_set, new_files_set)
+
+    IO.inspect(added_files_set, label: "Added files")
+    IO.inspect(removed_files_set, label: "Removed files")
+    IO.inspect(same_files_set, label: "Changed files")
+
+    Enum.map(added_files_set, fn name ->
+      text = Map.get(new_files_map, name)
+
+      diff =
+        case Thesis.Diff.diff_text(nil, text) do
+          {:ok, {:diff, diff}} -> diff
+          {:ok, :nodiff} -> []
+        end
+
+      %{type: :added, name: name, diff: diff}
+    end) ++
+      Enum.map(same_files_set, fn name ->
+        old_text = Map.get(old_files_map, name)
+        new_text = Map.get(new_files_map, name)
+
+        {type, diff} =
+          case Thesis.Diff.diff_text(old_text, new_text) do
+            {:ok, {:diff, diff}} -> {:changed, diff}
+            {:ok, :nodiff} -> {:unchanged, []}
+          end
+
+        %{type: type, name: name, diff: diff}
+      end) ++
+      Enum.map(removed_files_set, fn name ->
+        text = Map.get(old_files_map, name)
+
+        diff =
+          case Thesis.Diff.diff_text(text, nil) do
+            {:ok, {:diff, diff}} -> diff
+            {:ok, :nodiff} -> []
+          end
+
+        %{type: :removed, name: name, diff: diff}
+      end)
   end
 
   def show(conn, %{"id" => submission_id}) do
     submission =
       Thesis.Repo.get!(Thesis.Submission, submission_id)
-      |> Thesis.Repo.preload(:jobs)
+      |> Thesis.Repo.preload([:jobs, :assignment])
 
     # first job
     job = hd(submission.jobs)
@@ -32,7 +104,41 @@ defmodule ThesisWeb.SubmissionController do
     {:ok, events} = EventStore.read_stream_forward(job.id)
 
     live_render(conn, ThesisWeb.SubmissionLiveView,
-      session: %{submission: submission, job: job, events: events}
+      session: %{
+        submission: submission,
+        assignment: submission.assignment,
+        job: job,
+        events: events
+      }
+    )
+  end
+
+  def files(conn, %{"id" => submission_id}) do
+    submission =
+      Thesis.Repo.get!(Thesis.Submission, submission_id)
+      |> Thesis.Repo.preload([:files, :assignment])
+
+    assignment_id = submission.assignment_id
+    inserted_at = submission.inserted_at
+
+    previous_submission =
+      Thesis.Repo.one(
+        from(s in Thesis.Submission,
+          where: s.assignment_id == ^assignment_id and s.inserted_at < ^inserted_at,
+          order_by: [desc: s.inserted_at],
+          limit: 1,
+          preload: [:files]
+        )
+      )
+
+    diff = calculate_diff(previous_submission && previous_submission.files, submission.files)
+
+    IO.inspect(diff)
+
+    render(conn, "files.html",
+      submission: submission,
+      assignment: submission.assignment,
+      diff: diff
     )
   end
 

@@ -35,10 +35,11 @@ defmodule ThesisWeb.Router do
     # get "/grade", GradeController, :grade
     # post "/grade", GradeController, :grade_post
 
-    get "/submission/submit", SubmissionController, :index
     get "/submission/submit/:assignment_id", SubmissionController, :index
     post "/submission/submit/:assignment_id", SubmissionController, :submit
+    get "/submission/previous/:assignment_id", SubmissionController, :previous
     get "/submission/:id", SubmissionController, :show
+    get "/submission/:id/files", SubmissionController, :files
 
     get "/assignment/:assignment_id", AssignmentController, :index
     post "/assignment/:assignment_id", AssignmentController, :submit

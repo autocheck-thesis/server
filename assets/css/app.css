@@ -1,36 +1,74 @@
 /* This file is for your main application css. */
 
-@import "./phoenix.css";
+/* @import "./phoenix.css"; */
 
-#log code {
-  overflow: auto;
-  max-height: 480px;
-  font-size: 1em;
+body {
+  padding: 1rem;
 }
 
-#log code div {
+pre {
+  margin: 0;
+  overflow: auto;
+  max-height: 480px;
+  font-size: 0.8em;
+  line-height: 1rem;
+}
+
+pre code div {
   padding: 0 0.5rem;
   position: relative;
 }
 
-#log code div::before {
+pre code div::before {
   position: absolute;
   display: block;
   content: "";
   margin-left: -1em;
 }
 
-#log code div.init::before {
+pre code div.init::before {
   color: #0069d9;
   content: "\2022";
 }
 
-#log code div.text::before {
+pre code div.text::before {
   color: #ccc;
   content: "\003e";
 }
 
-#log code div.done::before {
+pre code div.done::before {
   color: #00d900;
   content: "\2713";
+}
+
+.file .header > .icon {
+  font-size: 1em;
+}
+
+.file .header.added > .icon {
+  color: #6abb28;
+}
+
+.file .header.removed > .icon {
+  color: #bb2828;
+}
+
+.file .header.changed > .icon {
+  color: #284abb;
+}
+
+.file {
+  margin-bottom: 1rem;
+}
+
+.file pre .add {
+  background: #e6ffed;
+}
+
+.file pre .del {
+  background: #ffeef0;
+}
+
+.submissions {
+  padding: 1rem;
 }

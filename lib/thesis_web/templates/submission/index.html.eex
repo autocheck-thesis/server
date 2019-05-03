@@ -1,16 +1,21 @@
-<h2>Upload submission</h2>
-<p>
-    Assignment id: <%= @assignment.id %><br>
-    Assignment name: <%= @assignment.name %><br>
-    Role: <%= @role %>
-</p>
-<%= form_for @conn, Routes.submission_path(@conn, :submit, @assignment.id), [multipart: true], fn f -> %>
-  <%= file_input f, :file %>
-  <%= submit "Upload" %>
-<% end %>
-<h2>Previous submissions</h2>
-<ul>
-<%= for submission <- @submissions do %>
-  <li><a href="/submission/<%= submission.id %>"><%= submission.id %></a> at <%= submission.inserted_at %></li>
-<% end %>
-</ul>
+<h2><%= @assignment.name %></h2>
+<div class="ui grid">
+  <div class="three wide column">
+    <div class="ui vertical pointing fluid menu">
+      <a class="active item" href="<%= Routes.submission_path(@conn, :index, @assignment.id) %>">
+        Upload
+      </a>
+      <a class="item" href="<%= Routes.submission_path(@conn, :previous, @assignment.id) %>">
+        Previous submissions
+      </a>
+    </div>
+  </div>
+  <div class="thirteen wide column">
+    <div class="ui segment">
+    <%= form_for @conn, Routes.submission_path(@conn, :submit, @assignment.id), [multipart: true], fn f -> %>
+      <%= file_input f, :file %>
+      <%= submit "Upload" %>
+    <% end %>
+    </div>
+  </div>
+</div>

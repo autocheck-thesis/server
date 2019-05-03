@@ -1,0 +1,38 @@
+<h2><%= @assignment.name %></h2>
+<div class="ui grid">
+  <div class="three wide column">
+    <div class="ui vertical pointing fluid menu">
+      <a class="item" href="<%= Routes.submission_path(@conn, :index, @assignment.id) %>">
+        Upload
+      </a>
+      <a class="active item" href="<%= Routes.submission_path(@conn, :previous, @assignment.id) %>">
+        Previous submissions
+      </a>
+    </div>
+  </div>
+  <div class="thirteen wide column">
+    <div class="ui segment divided items submissions">
+      <%= for submission <- @submissions do %>
+        <div class="item">
+          <i class="large github middle aligned icon"></i>
+          <div class="content">
+            <div class="header"><a href="/submission/<%= submission.id %>"><%= submission.id %></a></div>
+            <div class="meta">
+              Added at <%= submission.inserted_at %>
+            </div>
+            <div class="meta ui list">
+              <%= for %{name: name} <- submission.files do %>
+                <div class="item">
+                  <i class="file icon"></i>
+                  <div class="content">
+                  <div class="header"><%= name %></div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

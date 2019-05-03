@@ -1,5 +1,5 @@
 class HelloWorld {
   public static void main(String[] args) {
-    System.out.println("I'm in Java");
+    System.out.println("I'm in Java and it is made of rocks!");
   }
 }

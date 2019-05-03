@@ -3,11 +3,11 @@ defmodule ThesisWeb.SubmissionLiveView do
   alias Thesis.Coderunner.{Init, PullOutput, FollowOutput, PullDone, FollowDone, Error}
 
   def render(assigns) do
-    ThesisWeb.SubmissionView.render("show.html", assigns)
+    ThesisWeb.SubmissionView.render("log.html", assigns)
   end
 
   def mount(
-        %{submission: submission, job: job, events: events} = _session,
+        %{submission: submission, assignment: assignment, job: job, events: events} = _session,
         socket
       ) do
     if connected?(socket) do
@@ -17,6 +17,7 @@ defmodule ThesisWeb.SubmissionLiveView do
     {:ok,
      assign(socket,
        submission: submission,
+       assignment: assignment,
        log_lines: map_events(events)
      )}
   end
