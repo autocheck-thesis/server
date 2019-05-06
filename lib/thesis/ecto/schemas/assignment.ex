@@ -9,6 +9,7 @@ defmodule Thesis.Assignment do
     field(:name, :string)
     field(:dsl, :string)
     has_many(:submissions, Thesis.Submission)
+    has_one(:configuration, Thesis.Configuration)
 
     timestamps()
   end
@@ -17,6 +18,7 @@ defmodule Thesis.Assignment do
   def changeset(assignment, attrs \\ %{}) do
     assignment
     |> cast(attrs, [:id, :name, :dsl])
+    |> cast_assoc(:configuration)
     |> validate_required([:id, :name])
   end
 end
