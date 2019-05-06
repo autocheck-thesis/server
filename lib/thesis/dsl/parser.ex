@@ -65,6 +65,9 @@ defmodule Thesis.DSL.Parser do
     |> Map.put(:image, apply(env, :image, environment_params))
   end
 
+  defp parse_statement({:@, _meta, [{:required_files, _meta2, file_names}]}, state),
+    do: Map.put(state, :required_files, file_names)
+
   defp parse_statement({:step, _meta, [step_name, [do: {:__block__, [], step_params}]]}, state),
     do: parse_statement(step_name, step_params, state)
 
