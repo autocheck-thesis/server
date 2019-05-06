@@ -72,3 +72,7 @@ pre code div.done::before {
 .submissions {
   padding: 1rem;
 }
+
+#code-editor {
+  min-height: 500px;
+}

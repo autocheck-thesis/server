@@ -43,3 +43,30 @@ if (target) {
 
   target.scrollTop = target.scrollHeight;
 }
+
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api.js";
+import "monaco-editor/esm/vs/editor/browser/controller/coreCommands.js";
+// import "monaco-editor/esm/vs/editor/contrib/find/findController.js";
+
+import { registerRulesForLanguage } from "monaco-ace-tokenizer";
+import ElixirHighlightRules from "monaco-ace-tokenizer/lib/ace/definitions/elixir";
+
+monaco.languages.register({
+  id: "elixir"
+});
+registerRulesForLanguage("elixir", new ElixirHighlightRules());
+
+monaco.editor.create(document.getElementById("code-editor"), {
+  value: `@environment "elixir",
+  version: "1.7"
+
+step "Basic test" do
+  format "test.ex"
+  help
+end
+
+step "Advanced test" do
+  command "echo 'yolo dyd'"
+end`,
+  language: "elixir"
+});
