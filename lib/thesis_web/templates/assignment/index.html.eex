@@ -6,6 +6,8 @@
 </p>
 <a href="<%= Routes.submission_path(@conn, :index, @assignment.id) %>">Go to submission page</a>
 <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [], fn f -> %>
-  <%= textarea f, :dsl %>
+  <textarea id="dsl" name="dsl" rows="30">
+    <%= @assignment.dsl %>
+  </textarea>
   <%= submit "Save" %>
 <% end %>

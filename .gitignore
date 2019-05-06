@@ -9,6 +9,7 @@ erl_crash.dump
 *.ez
 *.beam
 /config/*.secret.exs
+/config/local.exs
 npm-debug.log
 /assets/node_modules/
 /priv/static/
