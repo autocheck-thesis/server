@@ -11,11 +11,12 @@
     </div>
   </div>
   <div class="ui thirteen wide column form">
-    <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [], fn f -> %>
+    <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [id: "configuration-form"], fn f -> %>
       <div class="field">
         <label>Configuration</label>
-        <textarea id="dsl" name="dsl" rows="30"><%= @assignment.dsl %></textarea>
+        <div id="code-editor"></div>
       </div>
+      <%= hidden_input(f, :dsl, value: @assignment.dsl) %>
       <div class="field">
         <%= submit "Save", class: "ui button" %>
       </div>

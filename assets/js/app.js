@@ -44,29 +44,34 @@ if (target) {
   target.scrollTop = target.scrollHeight;
 }
 
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api.js";
-import "monaco-editor/esm/vs/editor/browser/controller/coreCommands.js";
-// import "monaco-editor/esm/vs/editor/contrib/find/findController.js";
+const code_editor = document.getElementById("code-editor");
 
-import { registerRulesForLanguage } from "monaco-ace-tokenizer";
-import ElixirHighlightRules from "monaco-ace-tokenizer/lib/ace/definitions/elixir";
+if (code_editor) {
+  (async function() {
+    const monaco = await import("monaco-editor/esm/vs/editor/editor.api.js");
+    // await import("monaco-editor/esm/vs/editor/browser/controller/coreCommands.js");
 
-monaco.languages.register({
-  id: "elixir"
-});
-registerRulesForLanguage("elixir", new ElixirHighlightRules());
+    const { registerRulesForLanguage } = await import("monaco-ace-tokenizer");
+    const { default: ElixirHighlightRules } = await import("monaco-ace-tokenizer/lib/ace/definitions/elixir");
 
-monaco.editor.create(document.getElementById("code-editor"), {
-  value: `@environment "elixir",
-  version: "1.7"
+    monaco.languages.register({ id: "elixir" });
+    registerRulesForLanguage("elixir", new ElixirHighlightRules());
 
-step "Basic test" do
-  format "test.ex"
-  help
-end
+    const configuration_form = document.getElementById("configuration-form");
+    const dsl_input = configuration_form.elements["dsl"];
 
-step "Advanced test" do
-  command "echo 'yolo dyd'"
-end`,
-  language: "elixir"
-});
+    const editor = monaco.editor.create(code_editor, {
+      value: dsl_input.value,
+      language: "elixir",
+      minimap: {
+        enabled: false
+      },
+      scrollBeyondLastLine: false
+    });
+
+    configuration_form.addEventListener("submit", e => {
+      dsl_input.value = editor.getValue();
+      // console.log(dsl_input.value, code_editor.innerText);
+    });
+  })();
+}

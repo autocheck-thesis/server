@@ -74,5 +74,17 @@ pre code div.done::before {
 }
 
 #code-editor {
-  min-height: 500px;
+  height: 20rem;
+  border: 1px solid rgba(34, 36, 38, 0.15);
+  border-radius: 0.28571429rem;
+}
+
+#code-editor textarea {
+  resize: none;
+  border: none;
+  background: none;
+  color: none;
+  /* width: 0 !important; */
+  min-height: 0;
+  padding: 0;
 }
