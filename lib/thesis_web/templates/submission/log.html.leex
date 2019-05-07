@@ -1,18 +1,5 @@
-<h2><%= @assignment.name %></h2>
 <div class="ui grid">
-  <div class="three wide column">
-    <div class="ui vertical pointing fluid menu">
-      <a class="active item" href="<%= Routes.submission_path(@socket, :show, @submission.id) %>">
-        Build log
-      </a>
-      <a class="item" href="<%= Routes.submission_path(@socket, :files, @submission.id) %>">
-        Files
-      </a>
-      <a class="item" href="<%= Routes.submission_path(@socket, :submit, @assignment.id) %>">
-        <i class="arrow left icon"></i> Back
-      </a>
-    </div>
-  </div>
+  <%= render("sidebar.html", items: submission_sidebar_items(@socket, @submission), active_item: "Build log") %>
   <div class="thirteen wide column">
     <div class="ui segment">
       <pre id="log"><code><%= for {type, text} <- @log_lines do %><div class="<%= type %>"><%= text %><br /></div><% end %></code></pre>

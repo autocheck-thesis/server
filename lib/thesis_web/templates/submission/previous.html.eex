@@ -1,15 +1,5 @@
-<h2><%= @assignment.name %></h2>
 <div class="ui grid">
-  <div class="three wide column">
-    <div class="ui vertical pointing fluid menu">
-      <a class="item" href="<%= Routes.submission_path(@conn, :index, @assignment.id) %>">
-        Upload
-      </a>
-      <a class="active item" href="<%= Routes.submission_path(@conn, :previous, @assignment.id) %>">
-        Previous submissions
-      </a>
-    </div>
-  </div>
+  <%= render("sidebar.html", items: main_sidebar_items(@conn, @assignment), active_item: "Previous submissions") %>
   <div class="thirteen wide column">
     <div class="ui segment divided items submissions">
       <%= for submission <- @submissions do %>
