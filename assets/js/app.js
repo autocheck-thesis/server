@@ -69,6 +69,35 @@ if (code_editor) {
       scrollBeyondLastLine: false
     });
 
+    function debounce(func, wait, immediate) {
+      var timeout;
+      return function() {
+        var context = this,
+          args = arguments;
+        var later = function() {
+          timeout = null;
+          if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+      };
+    }
+
+    const validate_configuration = debounce(() => {
+      const form_data = new FormData();
+      form_data.append("configuration", editor.getValue());
+      fetch("/assignment/validate_configuration", {
+        method: "POST",
+        body: form_data
+      })
+        .then(res => res.text())
+        .then(text => console.log(text));
+    }, 2000);
+
+    editor.onDidChangeModelContent(e => validate_configuration());
+
     configuration_form.addEventListener("submit", e => {
       dsl_input.value = editor.getValue();
       // console.log(dsl_input.value, code_editor.innerText);

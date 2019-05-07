@@ -21,4 +21,13 @@ defmodule ThesisWeb.AssignmentController do
 
     redirect(conn, to: Routes.assignment_path(conn, :index, assignment_id))
   end
+
+  def validate_configuration(%Plug.Conn{assigns: %{role: :teacher}} = conn, %{
+        "configuration" => configuration
+      }) do
+    case Thesis.DSL.Parser.parse_dsl(configuration) do
+      {:error, error} -> conn |> put_status(:bad_request) |> text(error)
+      _ -> text(conn, "OK")
+    end
+  end
 end

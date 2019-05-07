@@ -41,8 +41,9 @@ defmodule ThesisWeb.Router do
     get "/submission/:id", SubmissionController, :show
     get "/submission/:id/files", SubmissionController, :files
 
-    get "/assignment/:assignment_id", AssignmentController, :index
-    post "/assignment/:assignment_id", AssignmentController, :submit
+    get "/assignment/configure/:assignment_id", AssignmentController, :index
+    post "/assignment/configure/:assignment_id", AssignmentController, :submit
+    post "/assignment/validate_configuration", AssignmentController, :validate_configuration
   end
 
   scope "/", ThesisWeb do
