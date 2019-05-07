@@ -12,12 +12,14 @@ defmodule ThesisWeb.AssignmentController do
   end
 
   def submit(conn, %{"assignment_id" => assignment_id, "dsl" => dsl}) do
-    case Thesis.Repo.get(Thesis.Assignment, assignment_id) do
-      nil -> raise "Assignment not found"
-      assignment -> assignment
-    end
-    |> Thesis.Assignment.changeset(%{dsl: dsl})
-    |> Thesis.Repo.update()
+    assignment =
+      Thesis.Repo.get!(Thesis.Assignment, assignment_id)
+      |> Thesis.Assignment.changeset(%{dsl: dsl})
+      |> Thesis.Repo.update!()
+      |> Thesis.Repo.preload(:configuration)
+
+    Thesis.DSL.Parser.parse_dsl(dsl)
+    |> Thesis.DSL.Parser.persist(assignment)
 
     redirect(conn, to: Routes.assignment_path(conn, :index, assignment_id))
   end
