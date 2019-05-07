@@ -14,6 +14,14 @@ defmodule ThesisWeb.AssignmentController do
         limit: 1
       )
     )
+    |> case do
+      [] -> nil
+      [configuration] -> configuration
+    end
+
+    IO.puts("HEEEEEEEEEEEEEEEEEEEEEEEEEEJ")
+    IO.inspect(configuration)
+    IO.puts("HEEEEEEEEEEEEEEEEEEEEEEEEEEJ")
 
     render(conn, "index.html",
       assignment: assignment,

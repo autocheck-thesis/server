@@ -16,7 +16,7 @@
         <label>Configuration</label>
         <div id="code-editor"></div>
       </div>
-      <%= hidden_input(f, :dsl, value: @assignment.dsl) %>
+      <%= hidden_input(f, :dsl, value: @configuration && @configuration.code || "") %>
       <div class="field">
         <%= submit "Save", class: "ui button" %>
       </div>
