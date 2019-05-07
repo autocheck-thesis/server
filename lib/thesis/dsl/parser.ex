@@ -35,41 +35,6 @@ defmodule Thesis.DSL.Parser do
     end
   end
 
-  def persist(
-        %{
-          environment_name: environment_name,
-          image: image,
-          required_files: required_files,
-          steps: steps
-        } = _parsed_dsl,
-        assignment
-      ) do
-    case assignment.configuration do
-      nil -> %Thesis.Configuration{assignment: assignment}
-      configuration -> configuration
-    end
-    |> Thesis.Configuration.changeset(%{
-      environment: environment_name,
-      image: image,
-      required_files: required_files,
-      steps: steps
-    })
-    |> Thesis.Repo.insert_or_update!()
-  end
-
-  # defp parsed_dsl_to_command(parsed_dsl) do
-  #   Enum.map(
-  #     parsed_dsl,
-  #     fn step ->
-  #       """
-  #       echo "Executing step: #{step.step_name}"
-  #       #{Enum.join(step.commands, "\n")}
-  #       """
-  #     end
-  #   )
-  #   |> Enum.join("\n")
-  # end
-
   defp parse_top_level({:__block__, [], statements}), do: parse_top_level(statements)
 
   defp parse_top_level(statements),
