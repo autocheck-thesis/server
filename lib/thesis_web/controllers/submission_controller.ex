@@ -74,8 +74,12 @@ defmodule ThesisWeb.SubmissionController do
 
         {type, diff} =
           case Thesis.Diff.diff_text(old_text, new_text) do
-            {:ok, {:diff, diff}} -> {:changed, diff}
-            {:ok, :nodiff} -> {:unchanged, []}
+            {:ok, {:diff, diff}} ->
+              {:changed, diff}
+
+            {:ok, :nodiff} ->
+              diff = new_text |> String.split("\n") |> Enum.map(fn line -> {:eq, line} end)
+              {:unchanged, diff}
           end
 
         %{type: type, name: name, diff: diff}
