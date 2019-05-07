@@ -19,10 +19,6 @@ defmodule ThesisWeb.AssignmentController do
       [configuration] -> configuration
     end
 
-    IO.puts("HEEEEEEEEEEEEEEEEEEEEEEEEEEJ")
-    IO.inspect(configuration)
-    IO.puts("HEEEEEEEEEEEEEEEEEEEEEEEEEEJ")
-
     render(conn, "index.html",
       assignment: assignment,
       configuration: configuration,
@@ -31,7 +27,7 @@ defmodule ThesisWeb.AssignmentController do
   end
 
   def submit(conn, %{"assignment_id" => assignment_id, "dsl" => dsl}) do
-    Thesis.Configuration.changeset(%Thesis.Configuration{code: dsl})
+    Thesis.Configuration.changeset(%Thesis.Configuration{code: dsl, assignment_id: assignment_id})
     |> Thesis.Repo.insert!()
 
     redirect(conn, to: Routes.assignment_path(conn, :index, assignment_id))
