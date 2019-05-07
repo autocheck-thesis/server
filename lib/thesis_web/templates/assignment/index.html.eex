@@ -1,13 +1,25 @@
-<h2>Configure assignment</h2>
-<p>
-    Assignment id: <%= @assignment.id %><br>
-    Assignment name: <%= @assignment.name %><br>
-    Role: <%= @role %>
-</p>
-<a href="<%= Routes.submission_path(@conn, :index, @assignment.id) %>">Go to submission page</a>
-<%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [], fn f -> %>
-  <textarea id="dsl" name="dsl" rows="30">
-    <%= @assignment.dsl %>
-  </textarea>
-  <%= submit "Save" %>
-<% end %>
+<h2>Configure assignment: <%= @assignment.name %></h2>
+<div class="ui grid">
+  <div class="three wide column">
+    <div class="ui vertical pointing fluid menu">
+      <a class="active item" href="<%= Routes.assignment_path(@conn, :index, @assignment.id) %>">
+        Configure
+      </a>
+      <a class="item" href="<%= Routes.submission_path(@conn, :index, @assignment.id) %>">
+        Go to submission page
+      </a>
+    </div>
+  </div>
+  <div class="ui thirteen wide column form">
+    <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [id: "configuration-form"], fn f -> %>
+      <div class="field">
+        <label>Configuration</label>
+        <div id="code-editor"></div>
+      </div>
+      <%= hidden_input(f, :dsl, value: @configuration && @configuration.code || "") %>
+      <div class="field">
+        <%= submit "Save", class: "ui button" %>
+      </div>
+    <% end %>
+  </div>
+</div>
