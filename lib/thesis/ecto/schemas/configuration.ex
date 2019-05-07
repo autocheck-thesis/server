@@ -7,19 +7,15 @@ defmodule Thesis.Configuration do
 
   schema "configurations" do
     belongs_to(:assignment, Thesis.Assignment)
-    has_many(:steps, Thesis.Step)
-    field(:environment, :string)
-    field(:image, :string)
-    field(:required_files, {:array, :string})
+    field(:code, :string)
 
     timestamps()
   end
 
   @doc false
-  def changeset(configuration, attrs) do
+  def changeset(configuration, attrs \\ %{}) do
     configuration
-    |> cast(attrs, [:environment, :image, :required_files])
-    |> cast_assoc(:steps)
-    |> validate_required([:environment, :image, :required_files])
+    |> cast(attrs, [:code])
+    |> validate_required([:code])
   end
 end

@@ -7,9 +7,8 @@ defmodule Thesis.Assignment do
 
   schema "assignments" do
     field(:name, :string)
-    field(:dsl, :string)
     has_many(:submissions, Thesis.Submission)
-    has_one(:configuration, Thesis.Configuration)
+    has_many(:configuration, Thesis.Configuration)
 
     timestamps()
   end
@@ -17,7 +16,7 @@ defmodule Thesis.Assignment do
   @doc false
   def changeset(assignment, attrs \\ %{}) do
     assignment
-    |> cast(attrs, [:id, :name, :dsl])
+    |> cast(attrs, [:id, :name])
     |> cast_assoc(:configuration)
     |> validate_required([:id, :name])
   end
