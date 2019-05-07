@@ -7,19 +7,30 @@ const roles = lti_form.querySelector("select[name='roles']");
 const ext_roles = lti_form.querySelector("select[name='ext_roles']");
 const collapse = document.getElementById("collapse");
 const expand = document.getElementById("expand");
+const newtab = document.getElementById("newtab");
 
 // Add form expand and collapse toggle buttons
 collapse.addEventListener("click", () => form_wrapper.classList.add("collapsed"));
 
 expand.addEventListener("click", () => form_wrapper.classList.remove("collapsed"));
 
+newtab.addEventListener("change", e => {
+  if (e.target.checked) {
+    lti_form.setAttribute("target", "_blank");
+  } else {
+    lti_form.setAttribute("target", "target");
+  }
+});
+
 // Sync `roles` with `ext_roles`
 roles.addEventListener("change", () => (ext_roles.selectedIndex = roles.selectedIndex));
 
 lti_form.addEventListener("submit", () => {
-  // Show our iframe
-  placeholder.classList.add("hidden");
-  iframe.classList.remove("hidden");
+  if (lti_form.getAttribute("target") == "target") {
+    // Show our iframe
+    placeholder.classList.add("hidden");
+    iframe.classList.remove("hidden");
+  }
 
   // Remove prior oauth_signature element from the form
   const oauthElement = lti_form.querySelector("input[name='oauth_signature']");

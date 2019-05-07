@@ -18,8 +18,8 @@ iframe {
   display: none !important;
 }
 
-input,
-select {
+form input,
+form select {
   margin: 0.1rem;
   padding: 0.1rem;
   border: 1px solid lightgray;
@@ -27,8 +27,8 @@ select {
   height: 1.5rem;
 }
 
-input[disabled],
-select[disabled] {
+form input[disabled],
+form select[disabled] {
   background: lightgray;
 }
 
@@ -56,11 +56,12 @@ button#launch {
   display: none;
 }
 
-#form-wrapper #collapse,
-#form-wrapper #expand {
+#form-wrapper #buttons {
   position: absolute;
   top: 8px;
   right: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 #placeholder {
