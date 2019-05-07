@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
   </head>
   <body>
-    <main role="main">
+    <main role="main" id="main-container">
       <%= for {type, message} <- get_flash(@conn) do %>
         <p class="alert alert-<%= type %>" role="alert"><%= message %></p>
       <% end %>

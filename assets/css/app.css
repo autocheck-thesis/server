@@ -1,6 +1,12 @@
 /* This file is for your main application css. */
 
 /* @import "./phoenix.css"; */
+@import "./main-container.css";
+
+:root {
+  --pre-file-size: 0.9em;
+  --pre-line-height: 1rem;
+}
 
 body {
   padding: 1rem;
@@ -10,8 +16,8 @@ pre {
   margin: 0;
   overflow: auto;
   max-height: 480px;
-  font-size: 0.8em;
-  line-height: 1rem;
+  font-size: var(--pre-file-size);
+  line-height: var(--pre-line-height);
 }
 
 pre code div {
@@ -87,4 +93,13 @@ pre code div.done::before {
   /* width: 0 !important; */
   min-height: 0;
   padding: 0;
+}
+
+pre#log {
+  padding-left: 0.5rem;
+}
+
+.file pre.segment {
+  font-size: var(--pre-file-size);
+  line-height: var(--pre-line-height);
 }
