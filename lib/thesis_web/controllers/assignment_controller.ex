@@ -6,18 +6,14 @@ defmodule ThesisWeb.AssignmentController do
   def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
     assignment = Thesis.Repo.get!(Thesis.Assignment, assignment_id)
 
-    configuration = Thesis.Repo.all(
+    configuration = Thesis.Repo.one(
       from(
         Thesis.Configuration,
         where: [assignment_id: ^assignment_id],
-        order_by: :inserted_at,
+        order_by: [desc: :inserted_at],
         limit: 1
       )
     )
-    |> case do
-      [] -> nil
-      [configuration] -> configuration
-    end
 
     render(conn, "index.html",
       assignment: assignment,
