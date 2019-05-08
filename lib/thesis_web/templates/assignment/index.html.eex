@@ -1,6 +1,6 @@
 <h2>Configure assignment: <%= @assignment.name %></h2>
 <div class="ui grid">
-  <div class="three wide column">
+  <div class="four wide column">
     <div class="ui vertical pointing fluid menu">
       <a class="active item" href="<%= Routes.assignment_path(@conn, :index, @assignment.id) %>">
         Configure
@@ -10,7 +10,7 @@
       </a>
     </div>
   </div>
-  <div class="ui thirteen wide column form">
+  <div class="ui twelve wide column form">
     <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [id: "configuration-form"], fn f -> %>
       <div class="field">
         <label>Configuration</label>

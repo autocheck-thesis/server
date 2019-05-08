@@ -1,6 +1,6 @@
 <div class="ui grid">
   <%= render("sidebar.html", items: submission_sidebar_items(@socket, @submission), active_item: "Build log") %>
-  <div class="thirteen wide column">
+  <div class="twelve wide column">
     <div class="ui segment">
       <pre id="log"><code><%= for {type, text} <- @log_lines do %><div class="<%= type %>"><%= text %><br /></div><% end %></code></pre>
     </div>

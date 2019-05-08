@@ -1,9 +1,9 @@
 <div class="ui grid">
   <%= render("sidebar.html", items: submission_sidebar_items(@conn, @submission), active_item: "Files") %>
-  <div class="thirteen wide column">
+  <div class="twelve wide column">
     <%= for %{type: type, name: name, diff: diff} <- @diff do %>
       <div class="file">
-        <h4 class="ui top attached block header <%= type %>">
+        <h4 class="ui segment top attached block header <%= type %>">
           <i class="<%= file_header_icon(type) %> icon"></i>
           <div class="middle aligned content"><%= name %></div>
         </h4>

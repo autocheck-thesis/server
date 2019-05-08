@@ -1,6 +1,6 @@
 <div class="ui grid">
   <%= render("sidebar.html", items: main_sidebar_items(@conn, @assignment), active_item: "Previous submissions") %>
-  <div class="thirteen wide column">
+  <div class="twelve wide column">
     <div class="ui segment divided items submissions">
       <%= for submission <- @submissions do %>
         <div class="item">

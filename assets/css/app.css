@@ -12,6 +12,10 @@ body {
   padding: 1rem;
 }
 
+body.iframe {
+  padding: 0 2px;
+}
+
 pre {
   margin: 0;
   overflow: auto;
