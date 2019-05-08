@@ -1,4 +1,4 @@
-defmodule Thesis.DSL.Elixir do
+defmodule Thesis.Configuration.Elixir do
   def image({:version, version}) do
     "elixir:#{version}-alpine"
   end
