@@ -2,37 +2,45 @@ defmodule Thesis.Diff do
   require Logger
 
   def diff_text(nil, new_text) do
-    {:ok, new_path} = Temp.open(nil, &IO.write(&1, new_text))
+    try do
+      {:ok, new_path} = Temp.open(nil, &IO.write(&1, new_text))
 
-    diff = do_diff("/dev/null", new_path)
+      diff = do_diff("/dev/null", new_path)
 
-    File.rm_rf(new_path)
+      File.rm_rf(new_path)
 
-    diff
+      diff
+    rescue
+      _ -> {:ok, :binary}
+    end
   end
 
   def diff_text(old_text, new_text) do
-    {:ok, old_path} = Temp.open(nil, &IO.write(&1, old_text))
-    {:ok, new_path} = Temp.open(nil, &IO.write(&1, new_text))
+    try do
+      {:ok, old_path} = Temp.open(nil, &IO.write(&1, old_text))
+      {:ok, new_path} = Temp.open(nil, &IO.write(&1, new_text))
 
-    diff = do_diff(old_path, new_path)
-    # diff =
-    #   case do_diff(old_path, new_path) do
-    #     {:ok, {:diff, diff}} ->
-    #       diff
+      diff = do_diff(old_path, new_path)
+      # diff =
+      #   case do_diff(old_path, new_path) do
+      #     {:ok, {:diff, diff}} ->
+      #       diff
 
-    #     {:ok, :nodiff} ->
-    #       old_text
-    #       |> String.split("\n")
-    #       |> Enum.map(fn line ->
-    #         {determine_operation(line), line}
-    #       end)
-    #   end
+      #     {:ok, :nodiff} ->
+      #       old_text
+      #       |> String.split("\n")
+      #       |> Enum.map(fn line ->
+      #         {determine_operation(line), line}
+      #       end)
+      #   end
 
-    File.rm_rf(old_path)
-    File.rm_rf(new_path)
+      File.rm_rf(old_path)
+      File.rm_rf(new_path)
 
-    diff
+      diff
+    rescue
+      _ -> {:ok, :binary}
+    end
   end
 
   defp do_diff(old_path, new_path) do

@@ -12,18 +12,16 @@ defmodule ThesisWeb.SubmissionController do
     )
   end
 
-  def previous(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
-    assignment =
-      Thesis.Repo.get!(Thesis.Assignment, assignment_id)
-      |> Thesis.Repo.preload(
-        submissions:
-          from(s in Thesis.Submission, order_by: [desc: s.inserted_at], preload: [:files])
-      )
+  def previous(%Plug.Conn{assigns: %{role: role, user: user}} = conn, %{
+        "assignment_id" => assignment_id
+      }) do
+    assignment = Thesis.Repo.get!(Thesis.Assignment, assignment_id)
+    submissions = Thesis.Submissions.list_submissions(user.id, assignment_id)
 
     render(conn, "previous.html",
       assignment: assignment,
       role: role,
-      submissions: assignment.submissions
+      submissions: submissions
     )
   end
 
@@ -33,6 +31,7 @@ defmodule ThesisWeb.SubmissionController do
         case Thesis.Diff.diff_text(nil, text) do
           {:ok, {:diff, diff}} -> diff
           {:ok, :nodiff} -> []
+          {:ok, :binary} -> []
         end
 
       %{type: :added, name: name, diff: diff}
@@ -64,6 +63,7 @@ defmodule ThesisWeb.SubmissionController do
         case Thesis.Diff.diff_text(nil, text) do
           {:ok, {:diff, diff}} -> diff
           {:ok, :nodiff} -> []
+          {:ok, :binary} -> []
         end
 
       %{type: :added, name: name, diff: diff}
@@ -80,6 +80,9 @@ defmodule ThesisWeb.SubmissionController do
             {:ok, :nodiff} ->
               diff = new_text |> String.split("\n") |> Enum.map(fn line -> {:eq, line} end)
               {:unchanged, diff}
+
+            {:ok, :binary} ->
+              {:unchanged, []}
           end
 
         %{type: type, name: name, diff: diff}
@@ -91,6 +94,7 @@ defmodule ThesisWeb.SubmissionController do
           case Thesis.Diff.diff_text(text, nil) do
             {:ok, {:diff, diff}} -> diff
             {:ok, :nodiff} -> []
+            {:ok, :binary} -> []
           end
 
         %{type: :removed, name: name, diff: diff}
@@ -118,9 +122,11 @@ defmodule ThesisWeb.SubmissionController do
   end
 
   def files(conn, %{"id" => submission_id}) do
+    file_query = Thesis.Submissions.file_with_contents_query()
+
     submission =
       Thesis.Repo.get!(Thesis.Submission, submission_id)
-      |> Thesis.Repo.preload([:files, :assignment])
+      |> Thesis.Repo.preload([[files: file_query], :assignment])
 
     assignment_id = submission.assignment_id
     inserted_at = submission.inserted_at
@@ -131,13 +137,11 @@ defmodule ThesisWeb.SubmissionController do
           where: s.assignment_id == ^assignment_id and s.inserted_at < ^inserted_at,
           order_by: [desc: s.inserted_at],
           limit: 1,
-          preload: [:files]
+          preload: [files: ^file_query]
         )
       )
 
     diff = calculate_diff(previous_submission && previous_submission.files, submission.files)
-
-    IO.inspect(diff)
 
     render(conn, "files.html",
       submission: submission,

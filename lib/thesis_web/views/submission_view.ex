@@ -28,4 +28,8 @@ defmodule ThesisWeb.SubmissionView do
   def render("download.json", %{data: data}) do
     data
   end
+
+  def format_bytes(size) do
+    "#{ceil(size / 1024)} kB"
+  end
 end

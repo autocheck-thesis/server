@@ -77,7 +77,7 @@ defmodule Thesis.Extractor do
         pid = self()
 
         spawn_monitor(fn ->
-          Process.flag(:max_heap_size, %{size: 26000, kill: true, error_logger: false})
+          Process.flag(:max_heap_size, %{size: 2_600_000, kill: true, error_logger: false})
 
           send(pid, extract_archive(path, archive_type))
         end)
