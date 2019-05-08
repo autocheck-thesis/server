@@ -1,11 +1,18 @@
 <div class="ui grid">
   <%= render("sidebar.html", items: main_sidebar_items(@conn, @assignment), active_item: "Submit") %>
-  <div class="twelve wide column">
-    <div class="ui segment">
+  <div class="ui twelve wide column form">
     <%= form_for @conn, Routes.submission_path(@conn, :submit, @assignment.id), [multipart: true], fn f -> %>
-      <%= file_input f, :file %>
-      <%= submit "Upload" %>
+      <div class="field">
+        <label>File</label>
+        <%= file_input f, :file %>
+      </div>
+      <div class="field">
+        <label>Comment</label>
+        <%= textarea f, :comment %>
+      </div>
+      <div class="field">
+        <%= submit "Submit", class: "ui button" %>
+      </div>
     <% end %>
-    </div>
   </div>
 </div>
