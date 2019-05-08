@@ -222,13 +222,37 @@ defmodule ThesisWeb.SubmissionController do
     submission.files
   end
 
+  defp get_configuration(submission_id) do
+    submission =
+      Thesis.Submission
+      |> preload(:assignment)
+      |> Thesis.Repo.get!(submission_id)
+
+    configuration = Thesis.Repo.one(
+      from(
+        Thesis.Configuration,
+        where: [assignment_id: ^submission.assignment.id],
+        order_by: [desc: :inserted_at],
+        limit: 1
+      )
+    )
+
+    Thesis.DSL.Parser.parse_dsl(configuration.code)
+  end
+
   def download(conn, %{"token_id" => id}) do
     token = get_download_token(id)
     # TODO: Uncomment to enable download token removal (One-time-use tokens)
     # remove_download_token(token)
-    data =
+
+    files =
       get_files(token.submission_id)
       |> Enum.map(fn file -> %Thesis.File{file | contents: Base.encode64(file.contents)} end)
+
+    data = 
+      get_configuration(token.submission_id)
+      |> Map.put(:files, files)
+      |> IO.inspect()
 
     render(conn, "download.json", data: data)
   end
