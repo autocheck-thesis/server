@@ -1,4 +1,4 @@
-defmodule Thesis.DSL.Parser do
+defmodule Thesis.Configuration.Parser do
   require Logger
 
   @parse_state %{
@@ -25,9 +25,10 @@ defmodule Thesis.DSL.Parser do
     Code.string_to_quoted!(dsl)
   end
 
-  def parse_dsl(dsl) do
-    case Code.string_to_quoted(dsl, existing_atoms_only: true) do
+  def parse(configuration_code) do
+    case Code.string_to_quoted(configuration_code, existing_atoms_only: true) do
       {:ok, quouted_form} ->
+<<<<<<< HEAD:lib/thesis/dsl/parser.ex
         try do
           parse_top_level(quouted_form)
         rescue
@@ -37,6 +38,21 @@ defmodule Thesis.DSL.Parser do
 
       {:error, {line, description, token}} ->
         {:error, %{line: line, description: description, token: token}}
+=======
+        {:ok, parse_top_level(quouted_form)}
+
+      {:error, {line, error, token}} ->
+        {:error, "Line #{line}: #{error}#{token}"}
+>>>>>>> Renamed DSL to Configuration:lib/thesis/configuration/parser.ex
+    end
+  end
+
+  def parse!(configuration_code) do
+    case parse(configuration_code) do
+      {:ok, configuration} ->
+        configuration
+      {:error, error} ->
+        raise error
     end
   end
 
@@ -52,7 +68,6 @@ defmodule Thesis.DSL.Parser do
     env = get_environment(environment)
 
     Map.put(state, :environment, env)
-    |> Map.put(:environment_name, environment)
     |> Map.put(:image, apply(env, :image, environment_params))
   end
 
@@ -92,7 +107,7 @@ defmodule Thesis.DSL.Parser do
   def get_environment(environment) do
     case environment do
       "elixir" ->
-        Thesis.DSL.Elixir
+        Thesis.Configuration.Elixir
 
       environment ->
         raise "Environment not supported: #{environment}"
