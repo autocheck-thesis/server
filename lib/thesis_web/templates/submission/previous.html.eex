@@ -4,7 +4,7 @@
     <div class="ui segment divided items submissions">
       <%= for submission <- @submissions do %>
         <div class="item">
-          <i class="large github middle aligned icon"></i>
+          <i class="large archive middle aligned icon"></i>
           <div class="content">
             <div class="header"><a href="/submission/<%= submission.id %>"><%= submission.id %></a></div>
             <div class="meta">
