@@ -31,6 +31,10 @@ defmodule Thesis.Assignments do
     |> Repo.one()
   end
 
+  def get_or_insert!(attrs \\ %{}) do
+    Repo.get_or_insert!(Assignment, attrs)
+  end
+
   def create_configuration!(attrs \\ %{}) do
     %Configuration{}
     |> Configuration.changeset(attrs)

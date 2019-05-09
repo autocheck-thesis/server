@@ -2,14 +2,14 @@ defmodule Thesis.User do
   use Ecto.Schema
   import Ecto.Changeset
 
-  require Logger
+  alias Thesis.Submissions.Submission
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
   schema "users" do
     field(:lti_user_id, :string)
-    has_many(:submissions, {"author_id", Thesis.Submission})
+    has_many(:submissions, {"author_id", Submission})
 
     timestamps()
   end
