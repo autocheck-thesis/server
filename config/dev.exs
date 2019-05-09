@@ -85,6 +85,7 @@ config :eventstore, EventStore.Storage,
   pool_overflow: 5
 
 config :thesis, Thesis.Repo,
+  # log: false,
   database: "thesis_dev",
   username: "postgres",
   password: "postgres",

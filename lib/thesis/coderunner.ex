@@ -47,8 +47,6 @@ defmodule Thesis.Coderunner do
       ) do
     Logger.debug("Starting process of job #{job.id}")
 
-    append_to_stream(job, %Init{})
-
     pull_image(docker_conn, job)
     {:reply, :ok, %{state | docker_conn: docker_conn, job: job, phase: :pulling_image}}
   end
@@ -204,6 +202,10 @@ defmodule Thesis.Coderunner do
           path -> path <> "/key.pem"
         end
     ]
+  end
+
+  def start_event_stream(job) do
+    append_to_stream(job, %Init{})
   end
 
   defp append_to_stream(job, event) when not is_list(event) do

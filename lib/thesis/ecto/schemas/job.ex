@@ -2,6 +2,8 @@ defmodule Thesis.Job do
   use Ecto.Schema
   import Ecto.Changeset
 
+  import Honeydew.EctoPollQueue.Schema
+
   alias Thesis.Submissions.Submission
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -14,6 +16,8 @@ defmodule Thesis.Job do
     belongs_to(:submission, Submission)
 
     timestamps()
+
+    honeydew_fields(:run_jobs)
   end
 
   @required_fields [:image, :cmd]

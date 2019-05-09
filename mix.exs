@@ -62,6 +62,7 @@ defmodule Thesis.MixProject do
       {:eventstore, "~> 0.16.1"},
       {:docker, path: "../elixir-docker"},
       {:temp, "~> 0.4"},
+      {:honeydew, "~> 1.4.0"},
       {:plug_cowboy, "~> 2.0"}
     ]
   end

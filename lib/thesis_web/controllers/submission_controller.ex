@@ -92,10 +92,12 @@ defmodule ThesisWeb.SubmissionController do
         Routes.submission_path(conn, :download, token.id)
 
     job =
-      Submissions.create_job!(submission, %{image: "python:alpine", cmd: "echo '#{download_url}'"})
+      Submissions.create_job!(submission, %{
+        image: "python:alpine",
+        cmd: "echo '#{download_url}'"
+      })
 
-    {:ok, coderunner} = Thesis.Coderunner.start_link()
-    Thesis.Coderunner.process(coderunner, job)
+    Thesis.Coderunner.start_event_stream(job)
 
     redirect(conn, to: Routes.submission_path(conn, :show, submission.id))
   end
