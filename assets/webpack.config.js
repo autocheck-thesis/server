@@ -7,13 +7,17 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = (env, options) => ({
   optimization: {
-    minimizer: [new UglifyJsPlugin({ cache: true, parallel: true, sourceMap: false }), new OptimizeCSSAssetsPlugin({})]
+    minimizer: [
+      new UglifyJsPlugin({ cache: true, parallel: true, sourceMap: false }),
+      new OptimizeCSSAssetsPlugin({})
+    ]
   },
   entry: {
     "./js/app.js": ["./js/app.js"].concat(glob.sync("./vendor/**/*.js"))
   },
   output: {
     filename: "app.js",
+    chunkFilename: "[name].chunk.js",
     path: path.resolve(__dirname, "../priv/static/js"),
     publicPath: "/js/"
   },
@@ -35,5 +39,13 @@ module.exports = (env, options) => ({
   plugins: [
     new MiniCssExtractPlugin({ filename: "../css/app.css" }),
     new CopyWebpackPlugin([{ from: "static/", to: "../" }])
-  ]
+  ],
+  stats: {
+    hash: false,
+    version: false,
+    timings: false,
+    assets: false,
+    chunks: false,
+    children: false
+  }
 });

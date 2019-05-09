@@ -54,11 +54,17 @@ const code_editor = document.getElementById("code-editor");
 
 if (code_editor) {
   (async function() {
-    const monaco = await import("monaco-editor/esm/vs/editor/editor.api.js");
+    const monaco = await import(
+      /* webpackChunkName: "editor" */ "monaco-editor/esm/vs/editor/editor.api.js"
+    );
     // await import("monaco-editor/esm/vs/editor/browser/controller/coreCommands.js");
 
-    const { registerRulesForLanguage } = await import("monaco-ace-tokenizer");
+    const { registerRulesForLanguage } = await import(
+      /* webpackChunkName: "ace-tokener" */ "monaco-ace-tokenizer"
+    );
     const { default: ElixirHighlightRules } = await import(
+      /* webpackChunkName: "ace-tokener-elixir" */
+
       "monaco-ace-tokenizer/lib/ace/definitions/elixir"
     );
 
