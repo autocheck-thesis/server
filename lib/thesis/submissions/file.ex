@@ -1,7 +1,8 @@
-defmodule Thesis.File do
+defmodule Thesis.Submissions.File do
   use Ecto.Schema
   import Ecto.Changeset
-  import Ecto.Query, only: [from: 2]
+
+  alias Thesis.Submissions.Submission
 
   @derive {Jason.Encoder, only: [:name, :contents]}
 
@@ -12,7 +13,7 @@ defmodule Thesis.File do
     field(:contents, :binary)
     field(:name, :string)
     field(:size, :integer, virtual: true)
-    belongs_to(:submission, Thesis.Submission)
+    belongs_to(:submission, Submission)
   end
 
   @doc false
@@ -20,9 +21,5 @@ defmodule Thesis.File do
     file
     |> cast(attrs, [:name, :contents])
     |> validate_required([:name, :contents])
-  end
-
-  def get_without_contents(name) do
-    from(f in __MODULE__, select: [:name])
   end
 end

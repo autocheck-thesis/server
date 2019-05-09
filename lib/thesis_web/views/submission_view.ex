@@ -16,7 +16,7 @@ defmodule ThesisWeb.SubmissionView do
       %{title: "Files", href: Routes.submission_path(conn, :files, submission.id)},
       %{
         title: "Back to assignment",
-        href: Routes.submission_path(conn, :submit, submission.assignment)
+        href: Routes.submission_path(conn, :submit, submission.assignment_id)
       }
     ]
 

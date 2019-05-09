@@ -38,17 +38,22 @@ pre code div::before {
 
 pre code div.init::before {
   color: #0069d9;
-  content: "\2022";
+  content: "•";
 }
 
 pre code div.text::before {
   color: #ccc;
-  content: "\003e";
+  content: ">";
 }
 
 pre code div.done::before {
   color: #00d900;
-  content: "\2713";
+  content: "✓";
+}
+
+pre code div.error::before {
+  color: #bb2828;
+  content: "✗";
 }
 
 .file .header > .icon {

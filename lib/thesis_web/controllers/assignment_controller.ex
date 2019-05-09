@@ -1,19 +1,12 @@
 defmodule ThesisWeb.AssignmentController do
   use ThesisWeb, :controller
-  import Ecto.Query, only: [from: 2]
   require Logger
 
-  def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
-    assignment = Thesis.Repo.get!(Thesis.Assignment, assignment_id)
+  alias Thesis.Assignments
 
-    configuration = Thesis.Repo.one(
-      from(
-        Thesis.Configuration,
-        where: [assignment_id: ^assignment_id],
-        order_by: [desc: :inserted_at],
-        limit: 1
-      )
-    )
+  def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
+    assignment = Assignments.get!(assignment_id)
+    configuration = Assignments.get_latest_configuration!(assignment_id)
 
     render(conn, "index.html",
       assignment: assignment,
@@ -23,8 +16,7 @@ defmodule ThesisWeb.AssignmentController do
   end
 
   def submit(conn, %{"assignment_id" => assignment_id, "dsl" => dsl}) do
-    Thesis.Configuration.changeset(%Thesis.Configuration{code: dsl, assignment_id: assignment_id})
-    |> Thesis.Repo.insert!()
+    Assignments.create_configuration!(%{code: dsl, assignment_id: assignment_id})
 
     redirect(conn, to: Routes.assignment_path(conn, :index, assignment_id))
   end

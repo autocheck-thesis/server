@@ -7,7 +7,7 @@ defmodule ThesisWeb.SubmissionLiveView do
   end
 
   def mount(
-        %{submission: submission, assignment: assignment, job: job, events: events} = _session,
+        %{submission: submission, job: job, events: events} = _session,
         socket
       ) do
     if connected?(socket) do
@@ -17,8 +17,15 @@ defmodule ThesisWeb.SubmissionLiveView do
     {:ok,
      assign(socket,
        submission: submission,
-       assignment: assignment,
        log_lines: map_events(events)
+     )}
+  end
+
+  def mount(%{submission: submission} = _session, socket) do
+    {:ok,
+     assign(socket,
+       submission: submission,
+       log_lines: [{:error, "No job specified"}]
      )}
   end
 
