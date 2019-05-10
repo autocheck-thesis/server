@@ -29,9 +29,9 @@ defmodule ThesisWeb.AssignmentController do
   def validate_configuration(%Plug.Conn{assigns: %{role: :teacher}} = conn, %{
         "configuration" => configuration
       }) do
-    case Thesis.DSL.Parser.parse_dsl(configuration) do
+    case Thesis.Configuration.validate(configuration) do
+      :ok -> json(conn, "OK")
       {:error, error} -> conn |> put_status(:bad_request) |> json(%{error: error})
-      _ -> json(conn, "OK")
     end
   end
 end

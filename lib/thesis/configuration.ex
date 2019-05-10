@@ -6,6 +6,13 @@ defmodule Thesis.Configuration do
     |> Map.get(:required_files, [])
   end
 
+  def get_testing_fields(configuration_code) do
+    relevant_fields = [:image, :steps]
+
+    Parser.parse!(configuration_code)
+    |> Enum.filter(fn {k, _v} -> k in relevant_fields end)
+  end
+
   def validate(configuration_code) do
     case Parser.parse(configuration_code) do
       {:ok, _} -> :ok

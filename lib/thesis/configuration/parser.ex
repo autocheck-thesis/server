@@ -1,26 +1,6 @@
 defmodule Thesis.Configuration.Parser do
   require Logger
 
-  @parse_state %{
-    steps: []
-  }
-
-  def dsl_code() do
-    """
-    @environment "elixir",
-      version: "1.7"
-
-    step "Basic test" do
-      format "test.ex"
-      help
-    end
-
-    step "Advanced test" do
-      command "echo 'yolo dyd'"
-    end
-    """
-  end
-
   def parse_dsl_raw(dsl) do
     Code.string_to_quoted!(dsl)
   end
@@ -51,6 +31,7 @@ defmodule Thesis.Configuration.Parser do
     case parse(configuration_code) do
       {:ok, configuration} ->
         configuration
+
       {:error, error} ->
         raise error
     end
@@ -59,7 +40,7 @@ defmodule Thesis.Configuration.Parser do
   defp parse_top_level({:__block__, [], statements}), do: parse_top_level(statements)
 
   defp parse_top_level(statements),
-    do: Enum.reduce(statements, @parse_state, &parse_statement(&1, &2))
+    do: Enum.reduce(statements, %{steps: []}, &parse_statement(&1, &2))
 
   defp parse_statement(
          {:@, _meta, [{:environment, _meta2, [environment, environment_params]}]},
