@@ -18,7 +18,7 @@ defmodule ThesisWeb.IndexController do
       ) do
     user = Accounts.get_or_insert!(%{lti_user_id: lti_user_id})
     assignment = Assignments.get_or_insert!(%{id: assignment_id, name: assignment_name})
-    role = determine_role(roles)
+    role = Accounts.determine_role(roles)
 
     conn
     |> put_session(:user, user)
@@ -37,19 +37,6 @@ defmodule ThesisWeb.IndexController do
 
       :teacher ->
         redirect(conn, to: Routes.assignment_path(conn, :index, assignment.id))
-    end
-  end
-
-  defp determine_role(roles) do
-    cond do
-      roles =~ "Learner" ->
-        :student
-
-      roles =~ "Instructor" ->
-        :teacher
-
-      true ->
-        :unknown
     end
   end
 end
