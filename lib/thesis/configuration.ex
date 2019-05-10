@@ -10,7 +10,7 @@ defmodule Thesis.Configuration do
     relevant_fields = [:image, :steps]
 
     Parser.parse!(configuration_code)
-    |> Enum.filter(fn {k, _v} -> k in relevant_fields)
+    |> Enum.filter(fn {k, _v} -> k in relevant_fields end)
   end
 
   def validate(configuration_code) do
