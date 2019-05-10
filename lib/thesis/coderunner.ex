@@ -12,6 +12,10 @@ defmodule Thesis.Coderunner do
 
   require Logger
 
+  def start(opts \\ []) do
+    GenServer.start(__MODULE__, opts)
+  end
+
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts)
   end

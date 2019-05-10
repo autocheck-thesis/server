@@ -8,7 +8,7 @@ defmodule Thesis.Submissions.JobWorker do
 
     Logger.debug("Starting coderunner for job #{id}")
 
-    {:ok, coderunner} = Thesis.Coderunner.start_link()
+    {:ok, coderunner} = Thesis.Coderunner.start()
     Thesis.Coderunner.process(coderunner, job)
 
     Submissions.finish_job!(job)
