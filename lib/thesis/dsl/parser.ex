@@ -28,7 +28,12 @@ defmodule Thesis.DSL.Parser do
   def parse_dsl(dsl) do
     case Code.string_to_quoted(dsl, existing_atoms_only: true) do
       {:ok, quouted_form} ->
-        parse_top_level(quouted_form)
+        try do
+          parse_top_level(quouted_form)
+        rescue
+          error ->
+            {:error, Exception.message(error)}
+        end
 
       {:error, {line, error, token}} ->
         {:error, "Line #{line}: #{error}#{token}"}
