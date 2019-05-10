@@ -1,6 +1,6 @@
 defmodule ThesisWeb.IndexController do
   use ThesisWeb, :controller
-  import Thesis.Repo, only: [get_or_insert!: 2]
+  alias Thesis.Accounts
   alias Thesis.Assignments
 
   require Logger
@@ -16,7 +16,7 @@ defmodule ThesisWeb.IndexController do
           "resource_link_title" => assignment_name
         } = _params
       ) do
-    user = get_or_insert!(Thesis.User, %{lti_user_id: lti_user_id})
+    user = Accounts.get_or_insert!(%{lti_user_id: lti_user_id})
     assignment = Assignments.get_or_insert!(%{id: assignment_id, name: assignment_name})
     role = determine_role(roles)
 

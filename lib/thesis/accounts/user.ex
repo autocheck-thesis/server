@@ -1,4 +1,4 @@
-defmodule Thesis.User do
+defmodule Thesis.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 

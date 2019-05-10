@@ -2,6 +2,7 @@ defmodule Thesis.Submissions.Submission do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Thesis.Accounts.{User}
   alias Thesis.Assignments.Assignment
   alias Thesis.Submissions.{File, Job}
 
@@ -10,7 +11,7 @@ defmodule Thesis.Submissions.Submission do
 
   schema "submissions" do
     belongs_to(:assignment, Assignment)
-    belongs_to(:author, Thesis.User)
+    belongs_to(:author, User)
     has_many(:jobs, Job)
     has_many(:files, File)
 
