@@ -1,11 +1,11 @@
 defmodule ThesisWeb.SubmissionController do
   use ThesisWeb, :controller
-  import Ecto.Query, only: [from: 2, preload: 2]
-  require Logger
 
   alias Thesis.Assignments
   alias Thesis.Submissions
   alias Thesis.Submissions.File
+
+  require Logger
 
   def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
     assignment = Assignments.get!(assignment_id)
