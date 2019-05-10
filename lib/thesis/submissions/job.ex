@@ -1,4 +1,4 @@
-defmodule Thesis.Job do
+defmodule Thesis.Submissions.Job do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -25,9 +25,5 @@ defmodule Thesis.Job do
   def changeset(%__MODULE__{} = struct, params \\ %{}) do
     struct
     |> cast(params, @required_fields)
-  end
-
-  def finish(job) do
-    job |> change(finished: true)
   end
 end

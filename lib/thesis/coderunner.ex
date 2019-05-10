@@ -8,6 +8,8 @@ defmodule Thesis.Coderunner do
   defmodule(FollowDone, do: defstruct([:exit_code]))
   defmodule(Error, do: defstruct([:text]))
 
+  alias Thesis.Submissions.Job
+
   require Logger
 
   def start_link(opts \\ []) do
@@ -113,7 +115,7 @@ defmodule Thesis.Coderunner do
     {:noreply, state}
   end
 
-  def process(pid, %Thesis.Job{} = job) do
+  def process(pid, %Job{} = job) do
     GenServer.call(pid, {:process, job})
   end
 

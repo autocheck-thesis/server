@@ -3,7 +3,7 @@ defmodule Thesis.Submissions.Submission do
   import Ecto.Changeset
 
   alias Thesis.Assignments.Assignment
-  alias Thesis.Submissions.File
+  alias Thesis.Submissions.{File, Job}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -11,7 +11,7 @@ defmodule Thesis.Submissions.Submission do
   schema "submissions" do
     belongs_to(:assignment, Assignment)
     belongs_to(:author, Thesis.User)
-    has_many(:jobs, Thesis.Job)
+    has_many(:jobs, Job)
     has_many(:files, File)
 
     timestamps()

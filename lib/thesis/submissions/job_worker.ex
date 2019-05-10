@@ -1,19 +1,16 @@
-defmodule Thesis.JobWorker do
-  alias Thesis.Repo
-  alias Thesis.Job
+defmodule Thesis.Submissions.JobWorker do
+  alias Thesis.Submissions
 
   require Logger
 
   def run(id) do
-    job = Repo.get(Job, id)
+    job = Submissions.get_job!(id)
 
     Logger.debug("Starting coderunner for job #{id}")
 
     {:ok, coderunner} = Thesis.Coderunner.start_link()
     Thesis.Coderunner.process(coderunner, job)
 
-    job
-    |> Ecto.Changeset.change(%{finished: true})
-    |> Repo.update!()
+    Submissions.finish_job!(job)
   end
 end

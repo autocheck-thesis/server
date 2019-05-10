@@ -1,7 +1,7 @@
 defmodule Thesis.Submissions do
   alias Thesis.Repo
   alias Thesis.SharedQuery
-  alias Thesis.Submissions.{Submission, File, DownloadToken}
+  alias Thesis.Submissions.{Submission, File, DownloadToken, Job}
 
   defmodule Query do
     import Ecto.Query
@@ -137,11 +137,21 @@ defmodule Thesis.Submissions do
     |> Repo.insert!()
   end
 
+  def get_job!(job_id) do
+    Repo.get!(Job, job_id)
+  end
+
   def create_job!(submission, attrs \\ %{}) do
-    %Thesis.Job{}
-    |> Thesis.Job.changeset(attrs)
+    %Job{}
+    |> Job.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:submission, submission)
     |> Repo.insert!()
+  end
+
+  def finish_job!(job) do
+    job
+    |> Ecto.Changeset.change(finished: true)
+    |> Repo.update!()
   end
 
   def remove_token!(token) do

@@ -8,8 +8,8 @@ defmodule Thesis.Application do
   alias Honeydew.EctoPollQueue
   alias Honeydew.FailureMode.ExponentialRetry
   alias Thesis.Repo
-  alias Thesis.Job
-  alias Thesis.JobWorker
+  alias Thesis.Submissions.Job
+  alias Thesis.Submissions.JobWorker
 
   def start(_type, _args) do
     # List all child processes to be supervised
