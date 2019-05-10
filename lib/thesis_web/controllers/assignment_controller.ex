@@ -6,7 +6,12 @@ defmodule ThesisWeb.AssignmentController do
 
   def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
     assignment = Assignments.get!(assignment_id)
-    configuration = Assignments.get_latest_configuration!(assignment_id)
+
+    configuration =
+      case Assignments.get_latest_configuration!(assignment_id) do
+        nil -> Assignments.get_default_configuration()
+        configuration -> configuration
+      end
 
     render(conn, "index.html",
       assignment: assignment,
@@ -25,8 +30,8 @@ defmodule ThesisWeb.AssignmentController do
         "configuration" => configuration
       }) do
     case Thesis.DSL.Parser.parse_dsl(configuration) do
-      {:error, error} -> conn |> put_status(:bad_request) |> text(error)
-      _ -> text(conn, "OK")
+      {:error, error} -> conn |> put_status(:bad_request) |> json(%{error: error})
+      _ -> json(conn, "OK")
     end
   end
 end

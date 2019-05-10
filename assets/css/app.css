@@ -84,6 +84,14 @@ pre code div.error::before {
   background: #ffeef0;
 }
 
+#code_validation_output .icon.check {
+  color: #6abb28;
+}
+
+#code_validation_output .icon.exclamation {
+  color: #bb2828;
+}
+
 .submissions {
   padding: 1rem;
 }

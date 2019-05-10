@@ -31,6 +31,24 @@ defmodule Thesis.Assignments do
     |> Repo.one()
   end
 
+  def get_default_configuration() do
+    %Configuration{
+      code: """
+      @environment "elixir",
+        version: "1.7"
+
+      step "Basic test" do
+        format "test.ex"
+        help
+      end
+
+      step "Advanced test" do
+        command "echo 'yolo dyd'"
+      end
+      """
+    }
+  end
+
   def get_or_insert!(attrs \\ %{}) do
     Repo.get_or_insert!(Assignment, attrs)
   end

@@ -43,11 +43,15 @@ defmodule ThesisWeb.Router do
 
     get "/assignment/configure/:assignment_id", AssignmentController, :index
     post "/assignment/configure/:assignment_id", AssignmentController, :submit
-    post "/assignment/validate_configuration", AssignmentController, :validate_configuration
   end
 
   scope "/", ThesisWeb do
     pipe_through [:json_client]
     get "/submission/download/:token_id", SubmissionController, :download
+  end
+
+  scope "/", ThesisWeb do
+    pipe_through [:json_client, :auth]
+    post "/assignment/validate_configuration", AssignmentController, :validate_configuration
   end
 end
