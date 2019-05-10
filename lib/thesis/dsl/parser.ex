@@ -32,11 +32,11 @@ defmodule Thesis.DSL.Parser do
           parse_top_level(quouted_form)
         rescue
           error ->
-            {:error, Exception.message(error)}
+            {:error, %{description: Exception.message(error)}}
         end
 
-      {:error, {line, error, token}} ->
-        {:error, "Line #{line}: #{error}#{token}"}
+      {:error, {line, description, token}} ->
+        {:error, %{line: line, description: description, token: token}}
     end
   end
 
