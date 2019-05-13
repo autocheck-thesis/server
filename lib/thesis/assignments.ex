@@ -28,7 +28,7 @@ defmodule Thesis.Assignments do
     Configuration
     |> Query.where_assignment(assignment_id)
     |> SharedQuery.limit()
-    |> Repo.one()
+    |> Repo.one!()
   end
 
   def get_default_configuration() do
