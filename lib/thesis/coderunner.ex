@@ -8,6 +8,9 @@ defmodule Thesis.Coderunner do
   defmodule(FollowDone, do: defstruct([:exit_code]))
   defmodule(Error, do: defstruct([:text]))
 
+  defstruct [:docker_conn, :job, :phase, :container_id, :event_callback]
+
+  alias Thesis.Coderunner, as: State
   alias Thesis.Submissions.Job
 
   require Logger
@@ -34,17 +37,21 @@ defmodule Thesis.Coderunner do
       ]
     }
 
-    with {:ok, docker_conn} <- Docker.start_link(docker_server_opts) do
-      {:ok, %{docker_conn: docker_conn, job: nil, phase: nil, container_id: nil}}
-    else
-      err -> err
-    end
+    {:ok, docker_conn} = Docker.start_link(docker_server_opts)
+
+    {:ok,
+     %State{
+       docker_conn: docker_conn,
+       job: nil,
+       phase: nil,
+       event_callback: Keyword.get(opts, :event_callback)
+     }}
   end
 
   def handle_call(
         {:process, job},
         _from,
-        %{
+        %State{
           docker_conn: docker_conn,
           job: nil,
           phase: nil,
@@ -54,17 +61,17 @@ defmodule Thesis.Coderunner do
     Logger.debug("Starting process of job #{job.id}")
 
     pull_image(docker_conn, job)
-    {:reply, :ok, %{state | docker_conn: docker_conn, job: job, phase: :pulling_image}}
+    {:reply, :ok, %State{state | docker_conn: docker_conn, job: job, phase: :pulling_image}}
   end
 
-  def handle_call({:process, job}, _from, %{job: job, phase: phase} = state) do
+  def handle_call({:process, job}, _from, %State{job: job, phase: phase} = state) do
     Logger.debug("Attempt was made to run concurrent jobs.
       Already running job #{job.id} in phase #{phase}")
 
     {:reply, {:error, "Can't run concurrent jobs"}, state}
   end
 
-  def handle_info({:error, {:servfail, code, message}}, state) do
+  def handle_info({:error, {:servfail, code, message}}, %State{} = state) do
     Logger.error("Error (#{code}) #{inspect(message)}")
 
     {:noreply, state}
@@ -72,18 +79,18 @@ defmodule Thesis.Coderunner do
 
   def handle_info(
         %Docker.AsyncReply{reply: {:chunk, chunks}},
-        %{job: job, phase: phase} = state
+        %State{job: job, phase: phase, event_callback: event_callback} = state
       ) do
     case phase do
       :pulling_image ->
         text = collect_pulling_chunks(chunks)
 
-        append_to_stream(job, %PullOutput{text: text})
+        event_callback.(job, %PullOutput{text: text})
 
       :running ->
         text = collect_running_chunks(chunks)
 
-        append_to_stream(job, %FollowOutput{text: text})
+        event_callback.(job, %FollowOutput{text: text})
     end
 
     {:noreply, state}
@@ -91,22 +98,28 @@ defmodule Thesis.Coderunner do
 
   def handle_info(
         %Docker.AsyncReply{reply: :done},
-        %{docker_conn: docker_conn, phase: :pulling_image, job: job} = state
+        %State{
+          docker_conn: docker_conn,
+          phase: :pulling_image,
+          job: job,
+          event_callback: event_callback
+        } = state
       ) do
     {:ok, container_id} = create_and_follow_container(docker_conn, job)
 
-    append_to_stream(job, %PullDone{})
+    event_callback.(job, %PullDone{})
 
-    {:noreply, %{state | phase: :running, container_id: container_id}}
+    {:noreply, %State{state | phase: :running, container_id: container_id}}
   end
 
   def handle_info(
         %Docker.AsyncReply{reply: :done},
-        %{
+        %State{
           docker_conn: docker_conn,
           container_id: container_id,
           phase: :running,
-          job: job
+          job: job,
+          event_callback: event_callback
         } = state
       ) do
     # Awesome, the job execution is done. Now get the status code
@@ -114,9 +127,11 @@ defmodule Thesis.Coderunner do
 
     {:ok, %{"StatusCode" => code}} = res
 
-    append_to_stream(job, %FollowDone{exit_code: code})
+    Docker.Container.delete(docker_conn, container_id)
 
-    {:noreply, state}
+    event_callback.(job, %FollowDone{exit_code: code})
+
+    {:stop, :normal, state}
   end
 
   def process(pid, %Job{} = job) do
@@ -145,7 +160,7 @@ defmodule Thesis.Coderunner do
     case Docker.Container.create(docker_conn, job.id, %{
            Cmd: ["sh", "-c", job.cmd],
            Image: job.image,
-           HostConfig: %{AutoRemove: true}
+           HostConfig: %{}
          }) do
       {:ok, %{"Id" => id}} -> {:ok, id}
       err -> err
@@ -206,7 +221,8 @@ defmodule Thesis.Coderunner do
         case System.get_env("DOCKER_CERT_PATH") do
           nil -> Application.get_env(:docker, :keyfile, "~/.docker/key.pem")
           path -> path <> "/key.pem"
-        end
+        end,
+      event_callback: &Thesis.Coderunner.append_to_stream/2
     ]
   end
 
@@ -214,11 +230,11 @@ defmodule Thesis.Coderunner do
     append_to_stream(job, %Init{})
   end
 
-  defp append_to_stream(job, event) when not is_list(event) do
+  def append_to_stream(job, event) when not is_list(event) do
     append_to_stream(job, [event])
   end
 
-  defp append_to_stream(job, events) do
+  def append_to_stream(job, events) do
     events =
       Enum.map(events, fn event ->
         %EventStore.EventData{
