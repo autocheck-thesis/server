@@ -29,11 +29,17 @@ defmodule Mix.Tasks.Coderunner do
 
     {:ok, coderunner} = Coderunner.start(event_callback: &log_event/2)
 
-    %{image: image} = configuration
+    # %{image: image} = configuration
+
+    download_url = ""
 
     job = %Job{
-      image: image,
-      cmd: "echo Hello world"
+      image: "jcmmagnusson/coderunner-supervisor:0.1",
+      cmd: """
+      cd coderunner-supervisor
+      mix local.hex --force
+      mix test_suite '#{download_url}'
+      """
     }
 
     Coderunner.process(coderunner, job)

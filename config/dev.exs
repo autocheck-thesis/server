@@ -94,6 +94,6 @@ config :thesis, Thesis.Repo,
 
 config :thesis,
   submission_download_hostname: "http://hostmachine.docker:4000",
-  coderunner_supervisor_path: "../coderunner-supervisor/"
+  coderunner_supervisor_path: Path.expand("../coderunner-supervisor/")
 
 import_config "./**/local.exs"

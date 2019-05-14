@@ -157,13 +157,20 @@ defmodule Thesis.Coderunner do
   end
 
   defp create_container(docker_conn, job) do
+    supervisor_path =
+      Application.get_env(
+        :thesis,
+        :coderunner_supervisor_path,
+        Path.expand("../coderunner-supervisor/")
+      )
+
     case Docker.Container.create(docker_conn, job.id, %{
            Cmd: ["sh", "-c", job.cmd],
            Image: job.image,
            HostConfig: %{
              Binds: [
                "/var/run/docker.sock:/var/run/docker.sock",
-               "#{Application.get_env(:thesis, :coderunner_supervisor_path) |> Path.expand()}:/coderunner-supervisor/"
+               "#{supervisor_path}:/coderunner-supervisor/"
              ]
            }
          }) do
