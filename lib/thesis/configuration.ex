@@ -11,6 +11,7 @@ defmodule Thesis.Configuration do
 
     Parser.parse!(configuration_code)
     |> Enum.filter(fn {k, _v} -> k in relevant_fields end)
+    |> Enum.into(%{})
   end
 
   def validate(configuration_code) do
