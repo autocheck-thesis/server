@@ -163,7 +163,7 @@ defmodule Thesis.Coderunner do
            HostConfig: %{
              Binds: [
                "/var/run/docker.sock:/var/run/docker.sock",
-               "D:/Elixir/datx05/testing/:/tmp/testing/"
+               "#{Application.get_env(:thesis, :coderunner_supervisor_path) |> Path.expand()}:/coderunner-supervisor/"
              ]
            }
          }) do

@@ -8,7 +8,6 @@ defmodule Thesis.Configuration.Parser do
   def parse(configuration_code) do
     case Code.string_to_quoted(configuration_code, existing_atoms_only: true) do
       {:ok, quouted_form} ->
-<<<<<<< HEAD:lib/thesis/dsl/parser.ex
         try do
           parse_top_level(quouted_form)
         rescue
@@ -18,12 +17,6 @@ defmodule Thesis.Configuration.Parser do
 
       {:error, {line, description, token}} ->
         {:error, %{line: line, description: description, token: token}}
-=======
-        {:ok, parse_top_level(quouted_form)}
-
-      {:error, {line, error, token}} ->
-        {:error, "Line #{line}: #{error}#{token}"}
->>>>>>> Renamed DSL to Configuration:lib/thesis/configuration/parser.ex
     end
   end
 
