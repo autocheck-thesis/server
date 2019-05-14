@@ -13,8 +13,7 @@ const code_validation_output = document.getElementById("code_validation_output")
 
 create_code_editor(code_editor, form, form && form.elements["dsl"], code_validation_output, 1000);
 
-const log = document.querySelector("#log code");
-scroll_log(log);
+scroll_log(document.getElementById("log"));
 
 const is_in_iframe = window !== window.parent;
 
