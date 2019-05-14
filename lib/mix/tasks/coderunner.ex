@@ -5,7 +5,7 @@ defmodule Mix.Tasks.Coderunner do
   alias Thesis.Coderunner
   alias Thesis.Coderunner.{Init, PullOutput, FollowOutput, PullDone, FollowDone, Error}
 
-  alias Thesis.DSL.Parser
+  alias Thesis.Configuration
 
   @shortdoc "Test job locally"
   def run(args) do
@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Coderunner do
     configuration =
       configuration_filename
       |> File.read!()
-      |> Parser.parse_dsl()
+      |> Configuration.get_testing_fields()
 
     IO.inspect(configuration)
 

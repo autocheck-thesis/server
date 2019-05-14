@@ -9,7 +9,7 @@ defmodule Thesis.Configuration.Parser do
     case Code.string_to_quoted(configuration_code, existing_atoms_only: true) do
       {:ok, quouted_form} ->
         try do
-          parse_top_level(quouted_form)
+          {:ok, parse_top_level(quouted_form)}
         rescue
           error ->
             {:error, %{description: Exception.message(error)}}
