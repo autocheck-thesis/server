@@ -95,7 +95,7 @@ defmodule ThesisWeb.SubmissionController do
       Submissions.create_job!(submission, %{
         image: "jcmmagnusson/coderunner-supervisor:0.1",
         cmd: """
-        cd tmp/testing
+        cd coderunner-supervisor
         mix local.hex --force
         mix test_suite '#{download_url}'
         """
