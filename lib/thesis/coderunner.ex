@@ -145,7 +145,13 @@ defmodule Thesis.Coderunner do
     case Docker.Container.create(docker_conn, job.id, %{
            Cmd: ["sh", "-c", job.cmd],
            Image: job.image,
-           HostConfig: %{AutoRemove: true}
+           HostConfig: %{
+             AutoRemove: true,
+             Binds: [
+               "/var/run/docker.sock:/var/run/docker.sock",
+               "D:/Elixir/datx05/testing/:/tmp/testing/"
+             ]
+           }
          }) do
       {:ok, %{"Id" => id}} -> {:ok, id}
       err -> err
