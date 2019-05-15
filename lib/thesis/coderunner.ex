@@ -156,7 +156,7 @@ defmodule Thesis.Coderunner do
   end
 
   def process_local_image(pid, %Job{} = job) do
-    GenServer.call(pid, {:process, job, :local_image})
+    GenServer.call(pid, {:process, job, :local_image}, :infinity)
   end
 
   defp pull_image(docker_conn, job) do

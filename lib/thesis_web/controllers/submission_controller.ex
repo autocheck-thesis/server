@@ -94,11 +94,7 @@ defmodule ThesisWeb.SubmissionController do
     job =
       Submissions.create_job!(submission, %{
         image: "test:latest",
-        cmd: """
-        cd /coderunner-supervisor
-        mix local.hex --force
-        mix test_suite '#{download_url}'
-        """
+        cmd: "mix test_suite #{download_url}"
       })
 
     Thesis.Coderunner.start_event_stream(job)
