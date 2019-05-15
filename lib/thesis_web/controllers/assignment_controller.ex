@@ -8,9 +8,10 @@ defmodule ThesisWeb.AssignmentController do
     assignment = Assignments.get!(assignment_id)
 
     configuration =
-      case Assignments.get_latest_configuration!(assignment_id) do
-        nil -> Assignments.get_default_configuration()
-        configuration -> configuration
+      try do
+        Assignments.get_latest_configuration!(assignment_id)
+      rescue
+        _ -> Assignments.get_default_configuration()
       end
 
     render(conn, "index.html",
