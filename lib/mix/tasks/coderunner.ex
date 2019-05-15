@@ -23,7 +23,8 @@ defmodule Mix.Tasks.Coderunner do
     configuration =
       configuration_filename
       |> File.read!()
-      |> Configuration.get_testing_fields()
+      |> Configuration.parse_code()
+      |> Map.from_struct()
 
     IO.inspect(configuration)
 

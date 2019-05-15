@@ -110,7 +110,8 @@ defmodule ThesisWeb.SubmissionController do
     configuration = Assignments.get_latest_configuration!(submission.assignment_id)
 
     data =
-      Thesis.Configuration.get_testing_fields(configuration.code)
+      Thesis.Configuration.parse_code(configuration.code)
+      |> Map.from_struct()
       |> Map.put(:files, files)
       |> IO.inspect()
 
