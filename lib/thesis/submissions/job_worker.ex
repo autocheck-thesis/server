@@ -9,7 +9,7 @@ defmodule Thesis.Submissions.JobWorker do
     Logger.debug("Starting coderunner for job #{id}")
 
     {:ok, coderunner} = Thesis.Coderunner.start()
-    Thesis.Coderunner.process(coderunner, job)
+    Thesis.Coderunner.process_local_image(coderunner, job)
 
     Submissions.finish_job!(job)
   end

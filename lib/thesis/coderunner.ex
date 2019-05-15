@@ -64,6 +64,23 @@ defmodule Thesis.Coderunner do
     {:reply, :ok, %State{state | docker_conn: docker_conn, job: job, phase: :pulling_image}}
   end
 
+  def handle_call(
+        {:process, job, :local_image},
+        _from,
+        %State{
+          docker_conn: docker_conn,
+          job: nil,
+          phase: nil,
+          container_id: nil
+        } = state
+      ) do
+    Logger.debug("Starting process of job #{job.id} with local image")
+
+    {:ok, container_id} = create_and_follow_container(docker_conn, job)
+
+    {:reply, :ok, %State{state | phase: :running, job: job, container_id: container_id}}
+  end
+
   def handle_call({:process, job}, _from, %State{job: job, phase: phase} = state) do
     Logger.debug("Attempt was made to run concurrent jobs.
       Already running job #{job.id} in phase #{phase}")
@@ -136,6 +153,10 @@ defmodule Thesis.Coderunner do
 
   def process(pid, %Job{} = job) do
     GenServer.call(pid, {:process, job})
+  end
+
+  def process_local_image(pid, %Job{} = job) do
+    GenServer.call(pid, {:process, job, :local_image})
   end
 
   defp pull_image(docker_conn, job) do
