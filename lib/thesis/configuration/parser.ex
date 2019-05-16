@@ -44,7 +44,7 @@ defmodule Thesis.Configuration.Parser do
     do: Enum.reduce(statements, %Parser{}, &parse_statement(&1, &2))
 
   defp parse_statement(
-         {:@, _meta, [{:environment, line, [environment, environment_params]}]},
+         {:@, _meta, [{:environment, [line: line], [environment, environment_params]}]},
          %Parser{} = p
        ) do
     case get_environment_module(environment) do
@@ -84,14 +84,14 @@ defmodule Thesis.Configuration.Parser do
         %{p | steps: [%{name: step_name, commands: commands} | p.steps]}
 
       %{error: errors} ->
-        %{p | errors: p.errors ++ commands.error}
+        %{p | errors: p.errors ++ errors}
     end
   end
 
   defp parse_step_command({:command, _meta, [command | []]}, _p), do: {:ok, command}
 
   defp parse_step_command({function, [line: line], params}, %Parser{} = p) do
-    if {function, length(params || [])} in apply(p.environment, :__info__, [:functions]) do
+    if p.environment && {function, length(params || [])} in apply(p.environment, :__info__, [:functions]) do
       {:ok, apply(p.environment, function, params || [])}
     else
       {:error, %Error{line: line, description: "undefined function", token: function}}
