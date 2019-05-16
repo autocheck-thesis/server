@@ -23,7 +23,7 @@ defmodule Thesis.Coderunner do
 
     DockerAPI.Containers.run(job.id, container, client)
 
-    DockerAPI.Containers.logs(job.id, client)
+    DockerAPI.Containers.attach(job.id, client)
     |> Enum.each(fn
       :end ->
         event_callback.(job, {:run, :end})

@@ -31,7 +31,7 @@ defmodule Mix.Tasks.Coderunner do
       id: :crypto.strong_rand_bytes(32) |> Base.url_encode64() |> binary_part(0, 32),
       image: "test:latest",
       cmd: """
-      mix test_suite http://hostmachine.docker:4000/submission/download/32497aab-5580-464d-b15a-1d45ceebbf2a
+      mix test_suite 'http://hostmachine.docker:4000/submission/download/d7e39c34-a57f-49d0-8143-ae6436e90e43'
       """
     }
 
@@ -49,14 +49,23 @@ defmodule Mix.Tasks.Coderunner do
       {:run, :end} ->
         IO.puts("Process execution successful")
 
-      {:pull, text} ->
-        IO.puts(text)
+      {:pull, {stream, text}} ->
+        IO.puts(stream, text)
 
-      {:run, text} ->
+      {:run, {:stdio, text}} ->
         IO.write(text)
+
+      {:run, {:stderr, text}} ->
+        IO.write("\e[34m" <> text <> "\e[39m")
 
       {:error, text} ->
         IO.puts(:stderr, text)
+
+      {:stream, stream} ->
+        IO.puts("Now in stream #{stream}")
+
+      _ ->
+        IO.puts(event)
     end
   end
 end
