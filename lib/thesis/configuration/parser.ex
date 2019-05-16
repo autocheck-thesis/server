@@ -19,6 +19,16 @@ defmodule Thesis.Configuration.Parser do
     {:command, 1}
   ]
 
+  @keywords [
+    :environment,
+    :required_files,
+    :step
+  ]
+
+  @environments %{
+    "elixir" => Thesis.Configuration.Elixir
+  }
+
   def parse_dsl_raw(dsl) do
     Code.string_to_quoted!(dsl)
   end
@@ -31,7 +41,7 @@ defmodule Thesis.Configuration.Parser do
         {:ok, parse_top_level(quouted_form)}
 
       {:error, {line, {description_prefix, description_suffix}, token}} ->
-        {:error, %Error{line: line, description: description, token: token, description_suffix: description_suffix}}
+        {:error, %Error{line: line, description: description_prefix, token: token, description_suffix: description_suffix}}
 
       {:error, {line, description, token}} ->
         {:error, %Error{line: line, description: description |> String.trim(), token: token}}
@@ -57,14 +67,15 @@ defmodule Thesis.Configuration.Parser do
          {:@, _meta, [{:environment, [line: line], [environment, environment_params]}]},
          %Parser{} = p
        ) do
-    case get_environment_module(environment) do
-      {:ok, environment_module} ->
+    case Map.get(@environments, environment, :undefined) do
+      :undefined ->
+        suggestion = suggest_similar_environment(environment)
+        error = %Error{line: line, description: "environment is not defined: ", token: environment, description_suffix: suggestion}
+        %{p | errors: [error | p.errors]}
+
+      environment_module ->
         image = apply(environment_module, :image, environment_params)
         %{p | environment: environment_module, image: image}
-
-      :error ->
-        error = %Error{line: line, description: "environment does not exist: ", token: environment}
-        %{p | errors: [error | p.errors]}
     end
   end
 
@@ -77,8 +88,10 @@ defmodule Thesis.Configuration.Parser do
   defp parse_statement({:step, _meta, [step_name, [do: step_param]]}, state),
     do: parse_statement(step_name, [step_param], state)
 
-  defp parse_statement({keyword, [line: line], _params}, %Parser{} = p),
-    do: %{p | errors: p.errors ++ [%Error{line: line, description: "incorrect keyword: ", token: keyword}]}
+  defp parse_statement({keyword, [line: line], _params}, %Parser{} = p) do
+    suggestion = suggest_similar_keyword(keyword)
+    %{p | errors: p.errors ++ [%Error{line: line, description: "incorrect keyword: ", token: keyword, description_suffix: suggestion}]}
+  end
 
   defp parse_statement(step_name, step_params, %Parser{} = p) do
     commands =
@@ -112,34 +125,36 @@ defmodule Thesis.Configuration.Parser do
     if {function, length(params || [])} in imported_functions do
       {:ok, apply(p.environment, function, params || [])}
     else
-      suggestion = 
-        case suggest_similar_function(function, imported_functions) do
-          :no_similar -> ""
-          suggestion -> "Did you mean #{suggestion}?"
-        end
+      suggestion = suggest_similar_function(function, imported_functions)
       {:error, %Error{line: line, description: "undefined function: ", token: function, description_suffix: suggestion}}
     end
   end
 
-  def get_environment_module(environment) do
-    case environment do
-      "elixir" ->
-        {:ok, Thesis.Configuration.Elixir}
+  defp suggest_similar_environment(environment) do
+    Map.keys(@environments)
+    |> find_suggestion(environment)
+  end
 
-      _ ->
-        :error
-    end
+  defp suggest_similar_keyword(keyword) do
+    @keywords
+    |> Enum.map(fn k -> to_string(k) end)
+    |> find_suggestion(to_string(keyword))
   end
 
   defp suggest_similar_function(function, functions) do
     (@built_in_functions ++ functions)
     |> Enum.map(fn {fun, _arity} -> to_string(fun) end)
-    |> Enum.map(fn fun -> {fun, String.jaro_distance(fun, to_string(function))} end)
-    |> Enum.filter(fn {_fun, distance} -> distance > 0.8 end)
-    |> Enum.max_by(fn {_fun, distance} -> distance end, fn -> :no_similar end)
+    |> find_suggestion(to_string(function))
+  end
+
+  defp find_suggestion(strs, str) do
+    strs
+    |> Enum.map(fn s -> {s, String.jaro_distance(s, str)} end)
+    |> Enum.filter(fn {_s, distance} -> distance > 0.8 end)
+    |> Enum.max_by(fn {_s, distance} -> distance end, fn -> :no_similar end)
     |> case do
-      :no_similar -> :no_similar
-      {function, _distance} -> function
+      :no_similar -> ""
+      {s, _distance} -> "Did you mean #{s}?"
     end
   end
 end
