@@ -16,10 +16,11 @@ defmodule Thesis.Configuration do
       {:ok, %Parser{errors: errors}} ->
         case errors do
           [] -> :ok
-          [error | _] -> {:errors, error} #TODO: Return all errors when supported
+          errors -> {:errors, errors}
         end
 
-      {:error, error} -> {:errors, error} #TODO: Return all errors when supported
+      {:error, error} ->
+        {:errors, [error]}
     end
   end
 end

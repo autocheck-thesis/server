@@ -43,6 +43,23 @@ export function create_code_editor(target, form, input, code_validation_output, 
       const configuration_invalid_icon_class = "exclamation";
       const configuration_default_text = code_validation_output.querySelector(".text").innerText;
 
+      function createErrorMarker({ line, description, token }) {
+        const message = description + token;
+        return {
+          startLineNumber: line,
+          endLineNumber: line,
+          startColumn: token
+            ? editor
+                .getModel()
+                .getLineContent(line)
+                .indexOf(token) + 1
+            : undefined,
+          endColumn: 1000,
+          message: message,
+          severity: monaco.MarkerSeverity.Error
+        };
+      }
+
       const validate_configuration = debounce(() => {
         const form_data = new FormData();
         form_data.append("configuration", editor.getValue());
@@ -53,27 +70,13 @@ export function create_code_editor(target, form, input, code_validation_output, 
         })
           .then(res => res.json())
           .then(json => {
-            if (json.error) {
-              const { line, description, token } = json.error;
-              const message = token ? description + token : description;
+            if (json.errors) {
+              const markers = json.errors.map(error => createErrorMarker(error));
+              monaco.editor.setModelMarkers(editor.getModel(), "errors", markers);
 
-              monaco.editor.setModelMarkers(editor.getModel(), "errors", [
-                {
-                  startLineNumber: line,
-                  endLineNumber: line,
-                  startColumn: token
-                    ? editor
-                        .getModel()
-                        .getLineContent(line)
-                        .indexOf(token) + 1
-                    : undefined,
-                  endColumn: 1000,
-                  message: message,
-                  severity: monaco.MarkerSeverity.Error
-                }
-              ]);
-
-              const output_text = line ? `Error on line ${line}: ${message}` : message;
+              const output_text = json.errors
+                .map(({ line, description, token }) => `Line ${line}: ${description} ${token}`)
+                .join(", ");
               code_validation_output.querySelector(".text").innerText = output_text;
               code_validation_output.querySelector(".icon").classList.add(configuration_invalid_icon_class);
               code_validation_output.querySelector(".icon").classList.remove(configuration_valid_icon_class);

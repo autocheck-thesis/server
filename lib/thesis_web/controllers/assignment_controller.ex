@@ -31,14 +31,13 @@ defmodule ThesisWeb.AssignmentController do
         "configuration" => configuration
       }) do
     case Thesis.Configuration.validate(configuration) do
-      :ok -> 
+      :ok ->
         json(conn, "OK")
 
-      {:errors, error} -> #TODO: Implement support for multiple errors
-        error = Map.from_struct(error)
-        conn 
-        |> put_status(:bad_request) 
-        |> json(%{error: error})
+      {:errors, errors} ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{errors: errors})
     end
   end
 end

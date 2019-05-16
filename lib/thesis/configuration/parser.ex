@@ -1,5 +1,6 @@
 defmodule Thesis.Configuration.Parser do
   defmodule Error do
+    @derive Jason.Encoder
     @enforce_keys [:line, :description, :token]
     defstruct [:line, :description, :token]
   end
@@ -20,7 +21,7 @@ defmodule Thesis.Configuration.Parser do
   def parse(configuration_code) do
     case Code.string_to_quoted(configuration_code, existing_atoms_only: true) do
       {:ok, quouted_form} ->
-          {:ok, parse_top_level(quouted_form)}
+        {:ok, parse_top_level(quouted_form)}
 
       {:error, {line, description, token}} ->
         {:error, %Error{line: line, description: description, token: token}}
@@ -46,7 +47,6 @@ defmodule Thesis.Configuration.Parser do
          {:@, _meta, [{:environment, line, [environment, environment_params]}]},
          %Parser{} = p
        ) do
-     
     case get_environment_module(environment) do
       {:ok, environment_module} ->
         image = apply(environment_module, :image, environment_params)
@@ -68,15 +68,21 @@ defmodule Thesis.Configuration.Parser do
     do: parse_statement(step_name, [step_param], state)
 
   defp parse_statement(step_name, step_params, %Parser{} = p) do
-    commands = 
+    commands =
       Enum.map(step_params, fn x -> parse_step_command(x, p) end)
       |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
     case commands do
       %{error: errors, ok: commands} ->
-        %{p | steps: [%{name: step_name, commands: commands} | p.steps], errors: p.errors ++ errors}
+        %{
+          p
+          | steps: [%{name: step_name, commands: commands} | p.steps],
+            errors: p.errors ++ errors
+        }
+
       %{ok: commands} ->
         %{p | steps: [%{name: step_name, commands: commands} | p.steps]}
+
       %{error: errors} ->
         %{p | errors: p.errors ++ commands.error}
     end
