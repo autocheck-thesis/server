@@ -35,7 +35,6 @@ defmodule ThesisWeb.AssignmentController do
         json(conn, "OK")
 
       {:errors, errors} ->
-        IO.inspect(errors)
         conn
         |> put_status(:bad_request)
         |> json(%{errors: errors})

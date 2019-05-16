@@ -43,7 +43,7 @@ export function create_code_editor(target, form, input, code_validation_output, 
       const configuration_invalid_icon_class = "exclamation";
       const configuration_default_text = code_validation_output.querySelector(".text").innerText;
 
-      function createErrorMarker({ line, description, token }) {
+      function createErrorMarker({ line, description, token, description_suffix }) {
         const message = description + token;
         return {
           startLineNumber: line,
@@ -75,7 +75,7 @@ export function create_code_editor(target, form, input, code_validation_output, 
               monaco.editor.setModelMarkers(editor.getModel(), "errors", markers);
 
               const output_text = json.errors
-                .map(({ line, description, token }) => `Line ${line}: ${description}${token}`)
+                .map(({ line, description, token, description_suffix }) => `Line ${line}: ${description}${token}. ${description_suffix}`)
                 .join("\n");
               code_validation_output.querySelector(".text").innerText = output_text;
               code_validation_output.querySelector(".icon").classList.add(configuration_invalid_icon_class);

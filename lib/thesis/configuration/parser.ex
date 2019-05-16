@@ -2,7 +2,7 @@ defmodule Thesis.Configuration.Parser do
   defmodule Error do
     @derive Jason.Encoder
     @enforce_keys [:line, :description, :token]
-    defstruct [:line, :description, :token]
+    defstruct [:line, :description, :token, description_suffix: ""]
   end
 
   alias Thesis.Configuration.Parser
@@ -13,6 +13,11 @@ defmodule Thesis.Configuration.Parser do
             mime_types: [],
             steps: [],
             errors: []
+
+  # {name, arity}
+  @built_in_functions [
+    {:command, 1}
+  ]
 
   def parse_dsl_raw(dsl) do
     Code.string_to_quoted!(dsl)
@@ -26,8 +31,7 @@ defmodule Thesis.Configuration.Parser do
         {:ok, parse_top_level(quouted_form)}
 
       {:error, {line, {description_prefix, description_suffix}, token}} ->
-        description = description_prefix <> description_suffix
-        {:error, %Error{line: line, description: description, token: token}}
+        {:error, %Error{line: line, description: description, token: token, description_suffix: description_suffix}}
 
       {:error, {line, description, token}} ->
         {:error, %Error{line: line, description: description |> String.trim(), token: token}}
@@ -73,6 +77,9 @@ defmodule Thesis.Configuration.Parser do
   defp parse_statement({:step, _meta, [step_name, [do: step_param]]}, state),
     do: parse_statement(step_name, [step_param], state)
 
+  defp parse_statement({keyword, [line: line], _params}, %Parser{} = p),
+    do: %{p | errors: p.errors ++ [%Error{line: line, description: "incorrect keyword: ", token: keyword}]}
+
   defp parse_statement(step_name, step_params, %Parser{} = p) do
     commands =
       Enum.map(step_params, fn x -> parse_step_command(x, p) end)
@@ -94,16 +101,23 @@ defmodule Thesis.Configuration.Parser do
     end
   end
 
-  defp parse_statement({keyword, [line: line], _params}, %Parser{} = p),
-    do: %{p | errors: p.errors ++ [%Error{line: line, description: "incorrect keyword: ", token: keyword}]}
-
   defp parse_step_command({:command, _meta, [command | []]}, _p), do: {:ok, command}
 
+  defp parse_step_command({function, [line: line], _params}, %Parser{environment: nil}) do
+    {:error, %Error{line: line, description: "undefined function: ", token: function}}
+  end
+
   defp parse_step_command({function, [line: line], params}, %Parser{} = p) do
-    if p.environment && {function, length(params || [])} in apply(p.environment, :__info__, [:functions]) do
+    imported_functions = apply(p.environment, :__info__, [:functions])
+    if {function, length(params || [])} in imported_functions do
       {:ok, apply(p.environment, function, params || [])}
     else
-      {:error, %Error{line: line, description: "undefined function: ", token: function}}
+      suggestion = 
+        case suggest_similar_function(function, imported_functions) do
+          :no_similar -> ""
+          suggestion -> "Did you mean #{suggestion}?"
+        end
+      {:error, %Error{line: line, description: "undefined function: ", token: function, description_suffix: suggestion}}
     end
   end
 
@@ -114,6 +128,18 @@ defmodule Thesis.Configuration.Parser do
 
       _ ->
         :error
+    end
+  end
+
+  defp suggest_similar_function(function, functions) do
+    (@built_in_functions ++ functions)
+    |> Enum.map(fn {fun, _arity} -> to_string(fun) end)
+    |> Enum.map(fn fun -> {fun, String.jaro_distance(fun, to_string(function))} end)
+    |> Enum.filter(fn {_fun, distance} -> distance > 0.8 end)
+    |> Enum.max_by(fn {_fun, distance} -> distance end, fn -> :no_similar end)
+    |> case do
+      :no_similar -> :no_similar
+      {function, _distance} -> function
     end
   end
 end
