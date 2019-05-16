@@ -75,7 +75,7 @@ export function create_code_editor(target, form, input, code_validation_output, 
               monaco.editor.setModelMarkers(editor.getModel(), "errors", markers);
 
               const output_text = json.errors
-                .map(({ line, description, token }) => `Line ${line}: ${description}: ${token}`)
+                .map(({ line, description, token }) => `Line ${line}: ${description}${token}`)
                 .join("\n");
               code_validation_output.querySelector(".text").innerText = output_text;
               code_validation_output.querySelector(".icon").classList.add(configuration_invalid_icon_class);

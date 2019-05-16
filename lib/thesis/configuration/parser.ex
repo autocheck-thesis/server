@@ -19,12 +19,18 @@ defmodule Thesis.Configuration.Parser do
   end
 
   def parse(configuration_code) do
-    case Code.string_to_quoted(configuration_code, existing_atoms_only: true) do
+    # Opts "existing_atoms_only" would make this function call safe, but also removes
+    # the possiblity of descriptive error messages.
+    case Code.string_to_quoted(configuration_code) do
       {:ok, quouted_form} ->
         {:ok, parse_top_level(quouted_form)}
 
-      {:error, {line, description, token}} ->
+      {:error, {line, {description_prefix, description_suffix}, token}} ->
+        description = description_prefix <> description_suffix
         {:error, %Error{line: line, description: description, token: token}}
+
+      {:error, {line, description, token}} ->
+        {:error, %Error{line: line, description: description |> String.trim(), token: token}}
     end
   end
 
@@ -53,7 +59,7 @@ defmodule Thesis.Configuration.Parser do
         %{p | environment: environment_module, image: image}
 
       :error ->
-        error = %Error{line: line, description: "environment does not exist", token: environment}
+        error = %Error{line: line, description: "environment does not exist: ", token: environment}
         %{p | errors: [error | p.errors]}
     end
   end
@@ -88,13 +94,16 @@ defmodule Thesis.Configuration.Parser do
     end
   end
 
+  defp parse_statement({keyword, [line: line], _params}, %Parser{} = p),
+    do: %{p | errors: p.errors ++ [%Error{line: line, description: "incorrect keyword: ", token: keyword}]}
+
   defp parse_step_command({:command, _meta, [command | []]}, _p), do: {:ok, command}
 
   defp parse_step_command({function, [line: line], params}, %Parser{} = p) do
     if p.environment && {function, length(params || [])} in apply(p.environment, :__info__, [:functions]) do
       {:ok, apply(p.environment, function, params || [])}
     else
-      {:error, %Error{line: line, description: "undefined function", token: function}}
+      {:error, %Error{line: line, description: "undefined function: ", token: function}}
     end
   end
 
