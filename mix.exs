@@ -60,7 +60,7 @@ defmodule Thesis.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:gen_stage, "~> 0.14.1"},
       {:eventstore, "~> 0.16.1"},
-      {:docker, path: "../elixir-docker"},
+      {:ex_dockerapi, path: "../DockerAPI.ex"},
       {:temp, "~> 0.4"},
       {:honeydew, "~> 1.4.0"},
       {:plug_cowboy, "~> 2.0"}

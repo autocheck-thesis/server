@@ -1,6 +1,5 @@
 defmodule ThesisWeb.SubmissionLiveView do
   use Phoenix.LiveView
-  alias Thesis.Coderunner.{Init, PullOutput, FollowOutput, PullDone, FollowDone, Error}
 
   def render(assigns) do
     ThesisWeb.SubmissionView.render("log.html", assigns)
@@ -40,25 +39,25 @@ defmodule ThesisWeb.SubmissionLiveView do
   end
 
   defp map_events(events) do
-    Enum.map(events, fn %EventStore.RecordedEvent{data: data, metadata: %{job_id: job_id}} ->
+    Enum.map(events, fn %EventStore.RecordedEvent{data: data} ->
       case data do
-        %Init{} ->
-          {:init, "Coderunner started job #{job_id}"}
+        :init ->
+          {:init, "Coderunner started job"}
 
-        %PullOutput{text: text} ->
-          {:text, text}
-
-        %FollowOutput{text: text} ->
-          {:text, text}
-
-        %PullDone{} ->
+        {:pull, :end} ->
           {:done, "Image fetching done. Will now execute the job..."}
 
-        %FollowDone{exit_code: code} ->
-          {:done, "Process execution successful with exit code: #{code}"}
+        {:run, :end} ->
+          {:done, "Process execution successful"}
 
-        %Error{text: text} ->
-          {:error, text}
+        {:pull, text} ->
+          {:text, text}
+
+        {:run, text} ->
+          {:text, text}
+
+        {:error, text} ->
+          {:error, inspect(text)}
       end
     end)
   end

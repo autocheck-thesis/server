@@ -1,5 +1,6 @@
 defmodule Thesis.Submissions.JobWorker do
   alias Thesis.Submissions
+  alias Thesis.Coderunner
 
   require Logger
 
@@ -8,8 +9,9 @@ defmodule Thesis.Submissions.JobWorker do
 
     Logger.debug("Starting coderunner for job #{id}")
 
-    {:ok, coderunner} = Thesis.Coderunner.start()
-    Thesis.Coderunner.process_local_image(coderunner, job)
+    # {:ok, coderunner} = Thesis.Coderunner.start()
+    # Thesis.Coderunner.process_job_local_image(coderunner, job)
+    Coderunner.run!(job)
 
     Submissions.finish_job!(job)
   end
