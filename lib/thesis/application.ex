@@ -6,7 +6,8 @@ defmodule Thesis.Application do
   use Application
 
   alias Honeydew.EctoPollQueue
-  alias Honeydew.FailureMode.ExponentialRetry
+  # alias Honeydew.FailureMode.ExponentialRetry
+  alias Honeydew.FailureMode.Abandon
   alias Thesis.Repo
   alias Thesis.Submissions.Job
   alias Thesis.Submissions.JobWorker
@@ -23,7 +24,8 @@ defmodule Thesis.Application do
     :ok =
       Honeydew.start_queue(:run_jobs,
         queue: {EctoPollQueue, [schema: Job, repo: Repo, poll_interval: 1]},
-        failure_mode: {ExponentialRetry, base: 3, times: 3}
+        failure_mode: Abandon
+        # failure_mode: {ExponentialRetry, base: 3, times: 3}
       )
 
     :ok = Honeydew.start_workers(:run_jobs, JobWorker, num: 1)
