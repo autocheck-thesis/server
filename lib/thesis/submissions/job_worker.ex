@@ -4,6 +4,7 @@ defmodule Thesis.Submissions.JobWorker do
 
   require Logger
 
+  @spec run(String.t()) :: any()
   def run(id) do
     job = Submissions.get_job!(id)
 
