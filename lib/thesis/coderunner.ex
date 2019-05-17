@@ -23,24 +23,13 @@ defmodule Thesis.Coderunner do
 
     DockerAPI.Containers.run(job.id, container, client)
 
-    DockerAPI.Containers.attach(job.id, client)
+    DockerAPI.Containers.logs(job.id, client)
     |> Enum.each(fn
       :end ->
         event_callback.(job, {:run, :end})
 
-      {stream, chunk} ->
-        lines =
-          case String.split(chunk, ~r/\R/, trim: true) |> Enum.reverse() do
-            ["" | lines] -> lines
-            lines -> lines
-          end
-          |> Enum.reverse()
-
-        # |> IO.inspect(label: "Lines")
-
-        # event_callback.(job, {:run, {stream, chunk}})
-
-        for line <- lines, do: event_callback.(job, {:run, {stream, line}})
+      chunk ->
+        event_callback.(job, {:run, chunk})
     end)
 
     DockerAPI.Containers.remove(job.id, true, client)

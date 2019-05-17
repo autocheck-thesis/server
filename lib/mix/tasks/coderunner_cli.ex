@@ -53,10 +53,10 @@ defmodule Mix.Tasks.Coderunner do
         IO.puts(stream, text)
 
       {:run, {:stdio, text}} ->
-        IO.puts(text)
+        IO.write(text)
 
       {:run, {:stderr, text}} ->
-        IO.puts("\e[34m" <> text <> "\e[39m")
+        IO.write("\e[34m" <> text <> "\e[39m")
 
       {:error, text} ->
         IO.puts(:stderr, text)

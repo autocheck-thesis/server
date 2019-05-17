@@ -54,11 +54,10 @@ defmodule ThesisWeb.SubmissionLiveView do
           {:text, text}
 
         {:run, {:stdio, text}} ->
-          IO.inspect(text)
-          {:text, text}
+          {:text, text |> String.replace(~r/\n$/, "")}
 
         {:run, {:stderr, text}} ->
-          {:text, text}
+          {:supervisor, text |> String.replace(~r/\n$/, "")}
 
         {:error, text} ->
           {:error, inspect(text)}

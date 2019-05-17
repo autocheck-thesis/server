@@ -25,7 +25,7 @@ pre {
 }
 
 pre code div {
-  padding: 0 0.5rem;
+  padding: 0 0.5rem 0 1rem;
   position: relative;
 }
 
@@ -38,22 +38,35 @@ pre code div::before {
 
 pre code div.init::before {
   color: #0069d9;
-  content: "•";
+  content: "I";
 }
 
 pre code div.text::before {
-  color: #ccc;
+  color: #666;
   content: ">";
+}
+
+pre code div.supervisor::before {
+  color: #0069d9;
+  content: "#";
+}
+
+pre code div.supervisor {
+  color: #0069d9;
 }
 
 pre code div.done::before {
   color: #00d900;
-  content: "✓";
+  content: "D";
+}
+
+pre code div.done:not(:last-child) {
+  margin-bottom: 1rem;
 }
 
 pre code div.error::before {
   color: #bb2828;
-  content: "✗";
+  content: "X";
 }
 
 .file .header > .icon {
@@ -113,7 +126,10 @@ pre code div.error::before {
 }
 
 pre#log {
-  padding-left: 0.5rem;
+  padding: 1rem;
+  background: #111;
+  color: #f2f2f2;
+  border-radius: 0.28571429rem;
 }
 
 .file pre.segment {
