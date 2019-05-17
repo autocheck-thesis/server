@@ -20,9 +20,14 @@ defmodule Thesis.Configuration.Parser do
   ]
 
   @keywords [
+    :@,
+    :step
+  ]
+
+  @fields [
     :environment,
     :required_files,
-    :step
+    :mime_types
   ]
 
   @environments %{
@@ -82,6 +87,11 @@ defmodule Thesis.Configuration.Parser do
   defp parse_statement({:@, _meta, [{:required_files, _meta2, file_names}]}, %Parser{} = p),
     do: %{p | required_files: file_names}
 
+  defp parse_statement({:@, _meta, [{unsupported_field, [line: line], _params}]}, %Parser{} = p) do
+    suggestion = suggest_similar_field(unsupported_field)
+    %{p | errors: p.errors ++ [%Error{line: line, description: "incorrect field: ", token: unsupported_field, description_suffix: suggestion}]}
+  end
+
   defp parse_statement({:step, _meta, [step_name, [do: {:__block__, [], step_params}]]}, state),
     do: parse_statement(step_name, step_params, state)
 
@@ -139,6 +149,12 @@ defmodule Thesis.Configuration.Parser do
     @keywords
     |> Enum.map(fn k -> to_string(k) end)
     |> find_suggestion(to_string(keyword))
+  end
+
+  defp suggest_similar_field(field) do
+    @fields
+    |> Enum.map(fn f -> to_string(f) end)
+    |> find_suggestion(to_string(field))
   end
 
   defp suggest_similar_function(function, functions) do
