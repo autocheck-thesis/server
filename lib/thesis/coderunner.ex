@@ -33,6 +33,8 @@ defmodule Thesis.Coderunner do
     end)
 
     DockerAPI.Containers.remove(job.id, true, client)
+
+    :ok
   end
 
   defp parse_pull_chunk(chunk) do
