@@ -16,9 +16,7 @@
         <label>Configuration</label>
         <div id="code-editor"></div>
       </div>
-      <div class="field" id="code_validation_output">
-        <i class="icon check"></i> <span class="text">Valid configuration</span>
-      </div>
+      <div class="field" id="code_validation_output"></div>
       <%= hidden_input(f, :dsl, value: @configuration && @configuration.code || "") %>
       <div class="field">
         <%= submit "Save", class: "ui button" %>
@@ -26,3 +24,15 @@
     <% end %>
   </div>
 </div>
+
+<template id="code_validation_template">
+  <div class="ui visible icon message">
+    <i class="icon"></i>
+    <div class="content">
+      <div class="header"><span class="state"></span> configuration</div>
+      <ul class="list">
+        <li>Everything looks good</li>
+      </ul>
+    </div>
+  </div>
+</template>

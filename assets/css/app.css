@@ -37,7 +37,7 @@ pre code div::before {
 }
 
 pre code div.init::before {
-  color: #0069d9;
+  color: #54c8ff;
   content: "I";
 }
 
@@ -47,16 +47,16 @@ pre code div.text::before {
 }
 
 pre code div.supervisor::before {
-  color: #0069d9;
+  color: #54c8ff;
   content: "#";
 }
 
 pre code div.supervisor {
-  color: #0069d9;
+  color: #54c8ff;
 }
 
 pre code div.done::before {
-  color: #00d900;
+  color: #d9e778;
   content: "D";
 }
 
@@ -65,7 +65,7 @@ pre code div.done:not(:last-child) {
 }
 
 pre code div.error::before {
-  color: #bb2828;
+  color: #ff695e;
   content: "X";
 }
 
