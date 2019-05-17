@@ -28,8 +28,19 @@ defmodule Thesis.Coderunner do
       :end ->
         event_callback.(job, {:run, :end})
 
-      chunk ->
-        event_callback.(job, {:run, chunk})
+      {stream, chunk} ->
+        lines =
+          case String.split(chunk, ~r/\R/, trim: true) |> Enum.reverse() do
+            ["" | lines] -> lines
+            lines -> lines
+          end
+          |> Enum.reverse()
+
+        # |> IO.inspect(label: "Lines")
+
+        # event_callback.(job, {:run, {stream, chunk}})
+
+        for line <- lines, do: event_callback.(job, {:run, {stream, line}})
     end)
 
     DockerAPI.Containers.remove(job.id, true, client)

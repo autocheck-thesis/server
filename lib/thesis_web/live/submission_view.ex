@@ -50,10 +50,14 @@ defmodule ThesisWeb.SubmissionLiveView do
         {:run, :end} ->
           {:done, "Process execution successful"}
 
-        {:pull, text} ->
+        {:pull, {_stream, text}} ->
           {:text, text}
 
-        {:run, text} ->
+        {:run, {:stdio, text}} ->
+          IO.inspect(text)
+          {:text, text}
+
+        {:run, {:stderr, text}} ->
           {:text, text}
 
         {:error, text} ->
