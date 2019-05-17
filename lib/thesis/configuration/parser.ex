@@ -89,6 +89,9 @@ defmodule Thesis.Configuration.Parser do
   defp parse_statement({:@, _meta, [{:required_files, _meta2, file_names}]}, %Parser{} = p),
     do: %{p | required_files: file_names}
 
+  defp parse_statement({:@, _meta, [{:mime_types, _meta2, mime_types}]}, %Parser{} = p),
+    do: %{p | mime_types: mime_types}
+
   defp parse_statement({:@, _meta, [{unsupported_field, [line: line], _params}]}, %Parser{} = p) do
     suggestion = suggest_similar_field(unsupported_field)
     %{p | errors: p.errors ++ [%Error{line: line, description: "incorrect field: ", token: unsupported_field, description_suffix: suggestion}]}
