@@ -65,6 +65,8 @@ defmodule Thesis.Configuration.Parser do
 
   defp parse_top_level({:__block__, [], statements}), do: parse_top_level(statements)
 
+  defp parse_top_level(statement) when not is_list(statement), do: parse_top_level([statement])
+
   defp parse_top_level(statements),
     do: Enum.reduce(statements, %Parser{}, &parse_statement(&1, &2))
 
