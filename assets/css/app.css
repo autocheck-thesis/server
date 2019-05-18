@@ -27,6 +27,7 @@ pre {
 pre code div {
   padding: 0 0.5rem 0 1rem;
   position: relative;
+  white-space: normal;
 }
 
 pre code div::before {
