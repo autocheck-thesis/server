@@ -11,8 +11,8 @@ defmodule Thesis.Configuration do
     struct(Thesis.Configuration, Map.from_struct(parsed))
   end
 
-  def validate(configuration_code) do
-    case Parser.parse(configuration_code) do
+  def validate(configuration_code, timeout \\ 1000) do
+    case Task.await(Task.async(Parser, :parse, [configuration_code]), timeout) do
       {:ok, %Parser{errors: errors}} ->
         case errors do
           [] -> :ok
