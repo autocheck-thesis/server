@@ -34,7 +34,7 @@ defmodule Thesis.Assignments do
   def get_default_configuration() do
     %Configuration{
       code: """
-      @environment "elixir",
+      @env "elixir",
         version: "1.7"
 
       step "Basic test" do
@@ -42,8 +42,8 @@ defmodule Thesis.Assignments do
         help
       end
 
-      step "Advanced test" do
-        command "echo 'yolo dyd'"
+      step "Hello world" do
+        command "echo 'Hello world'"
       end
       """
     }

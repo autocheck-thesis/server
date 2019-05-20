@@ -25,7 +25,7 @@ defmodule Thesis.Configuration.Parser do
   ]
 
   @fields [
-    :environment,
+    :env,
     :required_files,
     :mime_types
   ]
@@ -71,7 +71,7 @@ defmodule Thesis.Configuration.Parser do
     do: Enum.reduce(statements, %Parser{}, &parse_statement(&1, &2))
 
   defp parse_statement(
-         {:@, _meta, [{:environment, [line: line], [environment, environment_params]}]},
+         {:@, _meta, [{:env, [line: line], [environment, environment_params]}]},
          %Parser{} = p
        ) do
     case Map.get(@environments, environment, :undefined) do
