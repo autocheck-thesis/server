@@ -83,6 +83,7 @@ defmodule ThesisWeb.SubmissionController do
       ParserConfiguration.parse_code(configuration.code)
 
     if file.content_type not in mime_types do
+      Logger.debug("Invalid mime-type #{file.content_type}")
       raise "STAHP"
     end
 
@@ -105,7 +106,7 @@ defmodule ThesisWeb.SubmissionController do
     job =
       Submissions.create_job!(submission, %{
         image: "test:latest",
-        cmd: "mix test_suite #{download_url}"
+        cmd: "mix test_suite #{download_url} #{submission.id}"
       })
 
     Thesis.Coderunner.start_event_stream(job)

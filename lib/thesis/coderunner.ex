@@ -16,7 +16,8 @@ defmodule Thesis.Coderunner do
       Image: job.image,
       HostConfig: %{
         Binds: [
-          "/var/run/docker.sock:/var/run/docker.sock"
+          "/var/run/docker.sock:/var/run/docker.sock",
+          "/tmp/coderunner:/tmp/coderunner" 
         ]
       }
     }
