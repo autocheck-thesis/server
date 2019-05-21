@@ -14,15 +14,14 @@ defmodule Thesis.Submissions.Submission do
     belongs_to(:author, User)
     has_many(:jobs, Job)
     has_many(:files, File)
+    field(:comment, :string)
 
     timestamps()
   end
 
-  @required_fields []
-
   def changeset(%__MODULE__{} = struct, params \\ %{}) do
     struct
-    |> cast(params, @required_fields)
+    |> cast(params, [:comment])
     |> cast_assoc(:jobs)
     |> cast_assoc(:files)
   end

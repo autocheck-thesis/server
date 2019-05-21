@@ -74,7 +74,8 @@ defmodule ThesisWeb.SubmissionController do
 
   def submit(%Plug.Conn{assigns: %{user: user}} = conn, %{
         "file" => file,
-        "assignment_id" => assignment_id
+        "assignment_id" => assignment_id,
+        "comment" => comment
       }) do
     assignment = Assignments.get!(assignment_id)
     configuration = Assignments.get_latest_configuration!(assignment.id)
@@ -95,7 +96,8 @@ defmodule ThesisWeb.SubmissionController do
         [%{name: file.filename, contents: Elixir.File.read!(file.path)}]
       end
 
-    submission = Submissions.create!(user, assignment, %{jobs: [], files: files})
+    submission =
+      Submissions.create!(user, assignment, %{jobs: [], files: files, comment: comment})
 
     token = Submissions.create_download_token!(submission)
 
