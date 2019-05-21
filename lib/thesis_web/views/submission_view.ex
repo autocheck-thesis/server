@@ -1,6 +1,19 @@
 defmodule ThesisWeb.SubmissionView do
   use ThesisWeb, :view
 
+  def main_sidebar_items(%Plug.Conn{assigns: %{role: :teacher}} = conn, assignment),
+    do: [
+      %{title: "Submit", href: Routes.submission_path(conn, :index, assignment.id)},
+      %{
+        title: "Previous submissions",
+        href: Routes.submission_path(conn, :previous, assignment.id)
+      },
+      %{
+        title: "Configure assignment",
+        href: Routes.assignment_path(conn, :index, assignment.id)
+      }
+    ]
+
   def main_sidebar_items(conn, assignment),
     do: [
       %{title: "Submit", href: Routes.submission_path(conn, :index, assignment.id)},
