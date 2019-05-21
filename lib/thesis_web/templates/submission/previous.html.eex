@@ -1,33 +1,10 @@
 <div class="ui grid">
   <%= render("sidebar.html", items: main_sidebar_items(@conn, @assignment), active_item: "Previous submissions") %>
   <div class="twelve wide column">
-    <div class="ui segment divided items submissions">
+    <div class="ui segment submissions">
+      <h4><i class="folder outline icon"></i> Previous submissions</h4>
       <%= for submission <- @submissions do %>
-        <div class="item">
-          <i class="large archive middle aligned icon"></i>
-          <div class="content">
-            <div class="header"><a href="/submission/<%= submission.id %>"><%= submission.id %></a></div>
-            <div class="meta">
-              Added at <%= submission.inserted_at %>
-            </div>
-            <table class="ui small celled compact table">
-              <thead>
-                <tr>
-                  <th width="90%">File name</th>
-                  <th>Size</th>
-                </tr>
-              </thead>
-              <tbody>
-                <%= for %{name: name, size: size} <- submission.files do %>
-                  <tr>
-                    <td><%= name %></td>
-                    <td><%= format_bytes(size) %></td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <%= render("submission_table.html", conn: @conn, submission: submission) %>
       <% end %>
     </div>
   </div>

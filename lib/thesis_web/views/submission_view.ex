@@ -12,8 +12,8 @@ defmodule ThesisWeb.SubmissionView do
 
   def submission_sidebar_items(conn, submission),
     do: [
-      %{title: "Build log", href: Routes.submission_path(conn, :show, submission.id)},
-      %{title: "Files", href: Routes.submission_path(conn, :files, submission.id)},
+      %{title: "Submission", href: Routes.submission_path(conn, :show, submission.id)},
+      %{title: "Source", href: Routes.submission_path(conn, :files, submission.id)},
       %{
         title: "Back to assignment",
         href: Routes.submission_path(conn, :submit, submission.assignment_id)

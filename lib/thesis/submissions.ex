@@ -32,7 +32,8 @@ defmodule Thesis.Submissions do
     def with_files(queryable) do
       file_query =
         from(f in File,
-          select: %File{name: f.name, size: fragment("octet_length(contents)")}
+          select: %File{name: f.name, size: fragment("octet_length(contents)")},
+          order_by: [asc: f.name]
         )
 
       queryable
@@ -46,7 +47,8 @@ defmodule Thesis.Submissions do
             name: f.name,
             contents: f.contents,
             size: fragment("octet_length(contents)")
-          }
+          },
+          order_by: [asc: f.name]
         )
 
       queryable
@@ -92,6 +94,7 @@ defmodule Thesis.Submissions do
 
   def get_with_jobs!(id) do
     Submission
+    |> Query.with_files()
     |> Query.with_jobs()
     |> Repo.get!(id)
   end

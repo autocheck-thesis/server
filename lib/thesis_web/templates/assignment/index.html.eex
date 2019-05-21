@@ -1,4 +1,3 @@
-<h2>Configure assignment: <%= @assignment.name %></h2>
 <div class="ui grid">
   <div class="four wide column">
     <div class="ui vertical pointing fluid menu">
@@ -11,17 +10,20 @@
     </div>
   </div>
   <div class="ui twelve wide column form">
-    <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [id: "configuration-form"], fn f -> %>
-      <div class="field">
-        <label>Configuration</label>
-        <div id="code-editor"></div>
-      </div>
-      <div class="field" id="code_validation_output"></div>
-      <%= hidden_input(f, :dsl, value: @configuration && @configuration.code || "") %>
-      <div class="field">
-        <%= submit "Save", class: "ui button" %>
-      </div>
-    <% end %>
+    <div class="ui segment">
+      <h4><i class="clone outline icon"></i> <%= @assignment.name %></h4>
+      <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [id: "configuration-form"], fn f -> %>
+        <div class="field">
+          <label>Configuration</label>
+          <div id="code-editor"></div>
+        </div>
+        <div class="field" id="code_validation_output"></div>
+        <%= hidden_input(f, :dsl, value: @configuration && @configuration.code || "") %>
+        <div class="field">
+          <%= submit "Save", class: "ui button" %>
+        </div>
+      <% end %>
+    </div>
   </div>
 </div>
 

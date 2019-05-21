@@ -1,0 +1,36 @@
+<table class="ui small definition compact table">
+  <tbody>
+    <tr>
+      <td class="three wide column">ID</td>
+      <td><a class="ui label" href="<%= Routes.submission_path(@conn, :show, @submission.id) %>">
+        <%= @submission.id %>
+      </a></td>
+    </tr>
+    <tr>
+      <td>Submitted by</td>
+      <td><a class="ui label"><%= @submission.author_id %></a></td>
+    </tr>
+    <tr>
+      <td>Added at</td>
+      <td><%= @submission.inserted_at %></td>
+    </tr>
+    <tr>
+      <td class="top aligned">Files</td>
+      <td>
+        <div class="ui divided list">
+          <%= for %{name: name, size: size} <- @submission.files do %>
+            <div class="item">
+              <div class="right floated content">
+                <%= format_bytes(size) %>
+              </div>
+              <i class="file outline icon"></i>
+              <div class="content">
+                <%= name %>
+              </div>
+            </div>
+            <% end %>
+          </div>
+      </td>
+    </tr>
+  </tbody>
+</table>

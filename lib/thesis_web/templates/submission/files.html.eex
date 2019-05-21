@@ -1,16 +1,28 @@
 <div class="ui grid">
-  <%= render("sidebar.html", items: submission_sidebar_items(@conn, @submission), active_item: "Files") %>
+  <%= render("sidebar.html", items: submission_sidebar_items(@conn, @submission), active_item: "Source") %>
   <div class="twelve wide column">
-    <%= for %{type: type, name: name, diff: diff} <- @diff do %>
-      <div class="file">
-        <h4 class="ui segment top attached block header <%= type %>">
-          <i class="<%= file_header_icon(type) %> icon"></i>
-          <div class="middle aligned content"><%= name %></div>
-        </h4>
-        <%= if length(diff) > 0 do %>
-          <pre class="ui bottom attached segment"><code><%= for {operation, line} <- diff do %><div class="<%= operation %>"><%= line %></div><% end %></code></pre>
+    <div class="ui segment">
+      <h4><i class="file outline icon"></i> Source</h4>
+      <%= for %{type: type, name: name, diff: diff} <- @diff do %>
+        <table class="ui small definition compact table file">
+          <tbody>
+            <tr>
+              <td class="three wide column">Filename</td>
+              <td><i class="<%= file_header_icon(type) %> icon"></i> <%= name %></td>
+            </tr>
+            <tr>
+              <td class="top aligned">Changes</td>
+              <td>
+                <%= if length(diff) > 0 do %>
+                  <pre class="file"><code><%= for {operation, line} <- diff do %><div class="<%= operation %>"><%= line %></div><% end %></code></pre>
+                <% else %>
+                  <i>Binary file</i>
+                <% end %>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         <% end %>
-      </div>
-    <% end %>
+    </div>
   </div>
 </div>

@@ -22,6 +22,7 @@ pre {
   max-height: 480px;
   font-size: var(--pre-file-size);
   line-height: var(--pre-line-height);
+  word-break: break-all;
 }
 
 pre code div {
@@ -133,7 +134,8 @@ pre#log {
   border-radius: 0.28571429rem;
 }
 
-.file pre.segment {
+pre.file {
   font-size: var(--pre-file-size);
   line-height: var(--pre-line-height);
+  margin: 0;
 }
