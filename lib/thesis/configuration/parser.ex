@@ -117,12 +117,12 @@ defmodule Thesis.Configuration.Parser do
       %{error: errors, ok: commands} ->
         %{
           p
-          | steps: [%{name: step_name, commands: commands} | p.steps],
+          | steps: p.steps ++ [%{name: step_name, commands: commands}],
             errors: p.errors ++ errors
         }
 
       %{ok: commands} ->
-        %{p | steps: [%{name: step_name, commands: commands} | p.steps]}
+        %{p | steps: p.steps ++ [%{name: step_name, commands: commands}]}
 
       %{error: errors} ->
         %{p | errors: p.errors ++ errors}
