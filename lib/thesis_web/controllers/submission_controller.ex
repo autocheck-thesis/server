@@ -1,7 +1,9 @@
 defmodule ThesisWeb.SubmissionController do
   use ThesisWeb, :controller
 
+  alias Thesis.Configuration, as: ParserConfiguration
   alias Thesis.Assignments
+  alias Thesis.Assignments.Configuration
   alias Thesis.Submissions
   alias Thesis.Submissions.File
 
@@ -75,13 +77,22 @@ defmodule ThesisWeb.SubmissionController do
         "assignment_id" => assignment_id
       }) do
     assignment = Assignments.get!(assignment_id)
-    _configuration = Assignments.get_latest_configuration!(assignment.id)
+    configuration = Assignments.get_latest_configuration!(assignment.id)
 
-    # TODO: Check if valid file type etc...
+    %ParserConfiguration{mime_types: mime_types} =
+      ParserConfiguration.parse_code(configuration.code)
 
-    extracted_files = Thesis.Extractor.extract!(file.path)
+    if file.content_type not in mime_types do
+      raise "STAHP"
+    end
 
-    files = for {name, contents} <- extracted_files, do: %{name: name, contents: contents}
+    files =
+      if file.content_type in ["application/zip", "application/x-gzip"] do
+        extracted_files = Thesis.Extractor.extract!(file.path)
+        for {name, contents} <- extracted_files, do: %{name: name, contents: contents}
+      else
+        [%{name: file.filename, contents: Elixir.File.read!(file.path)}]
+      end
 
     submission = Submissions.create!(user, assignment, %{jobs: [], files: files})
 
@@ -100,6 +111,12 @@ defmodule ThesisWeb.SubmissionController do
     Thesis.Coderunner.start_event_stream(job)
 
     redirect(conn, to: Routes.submission_path(conn, :show, submission.id))
+  end
+
+  def submit(conn, %{"assignment_id" => assignment_id}) do
+    conn
+    |> put_flash(:error, "No file was specified")
+    |> redirect(to: Routes.submission_path(conn, :submit, assignment_id))
   end
 
   def download(conn, %{"token_id" => token_id}) do

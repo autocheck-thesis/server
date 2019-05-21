@@ -11,7 +11,7 @@
   <body>
     <main role="main" id="main-container">
       <%= for {type, message} <- get_flash(@conn) do %>
-        <p class="alert alert-<%= type %>" role="alert"><%= message %></p>
+        <p class="ui visible <%= type %> message" role="alert"><%= message %></p>
       <% end %>
       <%= render @view_module, @view_template, assigns %>
     </main>
