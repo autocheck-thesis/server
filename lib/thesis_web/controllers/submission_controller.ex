@@ -10,9 +10,12 @@ defmodule ThesisWeb.SubmissionController do
 
   def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
     assignment = Assignments.get!(assignment_id)
+    configuration = Assignments.get_latest_configuration!(assignment.id)
+    %Configuration{mime_types: mime_types} = Configuration.parse_code(configuration.code)
 
     render(conn, "index.html",
       assignment: assignment,
+      mime_types: mime_types,
       role: role
     )
   end

@@ -139,3 +139,7 @@ pre.file {
   line-height: var(--pre-line-height);
   margin: 0;
 }
+
+form .field label span {
+  color: #767676;
+}
