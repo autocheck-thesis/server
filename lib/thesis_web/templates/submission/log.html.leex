@@ -5,7 +5,7 @@
       <h4><i class="folder outline icon"></i> Submission details</h4>
       <%= render("submission_table.html", conn: @socket, submission: @submission) %>
       <h4><i class="comment outline icon"></i> Comment</h4>
-      <div class="ui segment"><%= @submission.comment %></div>
+      <div class="ui segment"><%= @submission.comment || ~E(<i>Empty<i>) %></div>
       <h4><i class="terminal icon"></i> Build log</h4>
       <pre id="log"><code><%= for {type, text} <- @log_lines do %><div class="<%= type %>"><%= text %><br /></div><% end %></code></pre>
     </div>
