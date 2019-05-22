@@ -82,7 +82,8 @@ defmodule ThesisWeb.SubmissionController do
     assignment = Assignments.get!(assignment_id)
     configuration = Assignments.get_latest_configuration!(assignment.id)
 
-    %Configuration{mime_types: mime_types} = Configuration.parse_code(configuration.code)
+    %Configuration{mime_types: mime_types, required_files: required_files} = 
+      Configuration.parse_code(configuration.code)
 
     if length(mime_types) > 0 && file.content_type not in mime_types do
       allowed_list = Enum.join(mime_types, ", ")
@@ -99,6 +100,18 @@ defmodule ThesisWeb.SubmissionController do
         else
           [%{name: file.filename, contents: Elixir.File.read!(file.path)}]
         end
+
+      file_names = Enum.map(files, fn %{name: name} -> name end)
+      missing_files = Enum.filter(required_files, fn rf -> rf not in file_names end)
+
+      if missing_files != [] do
+        missing_files_list = Enum.join(missing_files, ", ")
+        Logger.debug("Missing required file(s): #{missing_files_list}")
+
+        conn
+        |> put_flash(:error, "Missing required file(s): #{missing_files_list}")
+        |> redirect(to: current_path(conn))
+      end
 
       submission =
         Submissions.create!(user, assignment, %{jobs: [], files: files, comment: comment})
