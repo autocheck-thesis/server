@@ -2,16 +2,20 @@
   <tbody>
     <tr>
       <td class="three wide column">ID</td>
-      <td><%= ThesisWeb.SharedView.submission_link(@conn, @submission) %></td>
+      <td><%= SharedView.submission_link(@conn, @submission) %></td>
     </tr>
-    <tr>
+    <%= unless assigns[:hide] && :assignment in assigns[:hide] do %><tr>
+      <td>Assignment</td>
+      <td><%= SharedView.assignment_link(@conn, @submission.assignment_id) %></td>
+    </tr><% end %>
+    <%= unless assigns[:hide] && :author in assigns[:hide] do %><tr>
       <td>Submitted by</td>
-      <td><%= ThesisWeb.SharedView.user_link(@conn, @submission.author_id) %></td>
-    </tr>
-    <tr>
-      <td>Added at</td>
+      <td><%= SharedView.user_link(@conn, @submission.author_id) %></td>
+    </tr><% end %>
+    <%= unless assigns[:hide] && :inserted_at in assigns[:hide] do %><tr>
+      <td>Added</td>
       <td><%= @submission.inserted_at %></td>
-    </tr>
+    </tr><% end %>
     <tr>
       <td class="top aligned">Files</td>
       <td>
@@ -21,7 +25,7 @@
               <div class="right floated content">
                 <%= format_bytes(size) %>
               </div>
-              <i class="file outline icon"></i>
+              <i class="<%= icon(:file) %>"></i>
               <div class="content">
                 <%= name %>
               </div>

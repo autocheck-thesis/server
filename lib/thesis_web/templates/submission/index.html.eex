@@ -1,8 +1,8 @@
 <div class="ui grid">
-  <%= render("sidebar.html", items: main_sidebar_items(@conn, @assignment), active_item: "Submit") %>
+  <%= render(SharedView, "sidebar.html", items: main_sidebar_items(@conn, @assignment), active_item: "Upload") %>
   <div class="ui twelve wide column form">
     <div class="ui segment">
-      <h4><i class="upload icon"></i> Upload submission</h4>
+      <h4><i class="<%= icon(:upload_submission) %>"></i> Upload submission</h4>
       <%= form_for @conn, Routes.submission_path(@conn, :submit, @assignment.id), [multipart: true], fn f -> %>
         <div class="required field">
           <%= if length(@allowed_file_extensions) > 0 do %>

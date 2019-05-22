@@ -45,6 +45,10 @@ defmodule ThesisWeb do
       import ThesisWeb.ErrorHelpers
       import ThesisWeb.Gettext
       alias ThesisWeb.Router.Helpers, as: Routes
+
+      alias ThesisWeb.SharedView
+      import ThesisWeb.Views.Helpers
+      alias ThesisWeb.Views.Helpers.{Link, LinkSeparator}
     end
   end
 

@@ -1,17 +1,8 @@
 <div class="ui grid">
-  <div class="four wide column">
-    <div class="ui vertical pointing fluid menu">
-      <a class="active item" href="<%= Routes.assignment_path(@conn, :index, @assignment.id) %>">
-        Configure
-      </a>
-      <a class="item" href="<%= Routes.submission_path(@conn, :index, @assignment.id) %>">
-        Go to submission page
-      </a>
-    </div>
-  </div>
+  <%= render(SharedView, "sidebar.html", items: assignment_sidebar_items(@conn, @assignment), active_item: "Setup") %>
   <div class="ui twelve wide column form">
     <div class="ui segment">
-      <h4><i class="clone outline icon"></i> <%= @assignment.name %></h4>
+      <h4><i class="<%= icon(:configure) %>"></i> Assignment setup</h4>
       <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [id: "configuration-form"], fn f -> %>
         <div class="field">
           <label>Configuration</label>

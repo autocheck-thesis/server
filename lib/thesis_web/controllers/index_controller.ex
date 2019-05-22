@@ -36,7 +36,7 @@ defmodule ThesisWeb.IndexController do
         redirect(conn, to: Routes.submission_path(conn, :index, assignment.id))
 
       :teacher ->
-        redirect(conn, to: Routes.assignment_path(conn, :index, assignment.id))
+        redirect(conn, to: Routes.assignment_path(conn, :show, assignment.id))
     end
   end
 end

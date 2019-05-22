@@ -1,0 +1,20 @@
+<div class="ui grid">
+  <%= render(ThesisWeb.SharedView, "sidebar.html", items: user_sidebar_items(@conn, @user), active_item: "Details") %>
+  <div class="twelve wide column">
+    <div class="ui segment submissions">
+      <h4><i class="<%= icon(:user) %>"></i> User details</h4>
+      <table class="ui small definition compact table">
+        <tbody>
+          <tr>
+            <td class="three wide column">ID</td>
+            <td><%= SharedView.user_link(@conn, @user) %></td>
+          </tr>
+          <tr>
+            <td>LTI ID</td>
+            <td><%= @user.lti_user_id %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

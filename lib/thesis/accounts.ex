@@ -10,6 +10,11 @@ defmodule Thesis.Accounts do
     Repo.get_or_insert!(User, attrs)
   end
 
+  def get!(queryable \\ User, id) do
+    queryable
+    |> Repo.get!(id)
+  end
+
   def determine_role(roles) do
     cond do
       roles =~ "Learner" ->

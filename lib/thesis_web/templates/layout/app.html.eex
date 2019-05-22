@@ -4,7 +4,14 @@
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Master thesis</title>
+    <%= cond do %>
+    <% :erlang.function_exported(@view_module, :title, 2) -> %>
+      <title>Codecheck - <%= @view_module.title(@view_template, assigns) %></title>
+    <% assigns[:live_view_module] -> %>
+      <title>Codecheck - <%= assigns[:live_view_module].view_module().title(:live, assigns) %></title>
+    <% true -> %>
+      <title>Codecheck</title>
+    <% end %>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"/>
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
   </head>
@@ -13,7 +20,7 @@
       <%= for {type, message} <- get_flash(@conn) do %>
         <p class="ui visible <%= type %> message" role="alert"><%= message %></p>
       <% end %>
-      <%= render @view_module, @view_template, assigns %>
+      <%= render(@view_module, @view_template, assigns) %>
     </main>
     <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </body>

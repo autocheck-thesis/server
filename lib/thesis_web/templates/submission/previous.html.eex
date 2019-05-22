@@ -1,10 +1,10 @@
 <div class="ui grid">
-  <%= render("sidebar.html", items: main_sidebar_items(@conn, @assignment), active_item: "Previous submissions") %>
+  <%= render(SharedView, "sidebar.html", items: main_sidebar_items(@conn, @assignment), active_item: "Previous submissions") %>
   <div class="twelve wide column">
     <div class="ui segment submissions">
-      <h4><i class="folder outline icon"></i> Previous submissions</h4>
+      <h4><i class="<%= icon(:submissions) %>"></i> Previous submissions</h4>
       <%= for submission <- @submissions do %>
-        <%= render("submission_table.html", conn: @conn, submission: submission) %>
+        <%= render("submission_table.html", conn: @conn, submission: submission, hide: unless assigns[:role] == :teacher do [:assignment, :author] else [:assignment] end) %>
       <% end %>
     </div>
   </div>

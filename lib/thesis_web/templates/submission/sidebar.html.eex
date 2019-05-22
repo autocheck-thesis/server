@@ -1,7 +1,0 @@
-<div class="four wide column">
-  <div class="ui vertical pointing fluid menu">
-    <%= for %{title: title, href: href} <- @items do %>
-      <a class="<%= if @active_item == title do "active" end %> item" href="<%= href %>"><%= title %></a>
-    <% end %>
-  </div>
-</div>

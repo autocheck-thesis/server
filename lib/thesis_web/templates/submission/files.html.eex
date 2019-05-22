@@ -1,14 +1,14 @@
 <div class="ui grid">
-  <%= render("sidebar.html", items: submission_sidebar_items(@conn, @submission), active_item: "Source") %>
+  <%= render(SharedView, "sidebar.html", items: submission_sidebar_items(@conn, @submission), active_item: "Source") %>
   <div class="twelve wide column">
     <div class="ui segment">
-      <h4><i class="file outline icon"></i> Source</h4>
+      <h4><i class="<%= icon(:files) %>"></i> Source</h4>
       <%= for %{type: type, name: name, diff: diff} <- @diff do %>
         <table class="ui small definition compact table file">
           <tbody>
             <tr>
               <td class="three wide column">Filename</td>
-              <td><i class="<%= file_header_icon(type) %> icon"></i> <%= name %></td>
+              <td><i class="<%= file_header_icon(type) %>"></i> <%= name %></td>
             </tr>
             <tr>
               <td class="top aligned">Changes</td>

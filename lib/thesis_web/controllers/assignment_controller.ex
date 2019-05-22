@@ -4,7 +4,7 @@ defmodule ThesisWeb.AssignmentController do
 
   alias Thesis.Assignments
 
-  def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
+  def show(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
     assignment = Assignments.get!(assignment_id)
 
     configuration =
@@ -14,7 +14,7 @@ defmodule ThesisWeb.AssignmentController do
         _ -> Assignments.get_default_configuration()
       end
 
-    render(conn, "index.html",
+    render(conn, "show.html",
       assignment: assignment,
       configuration: configuration,
       role: role
@@ -24,7 +24,7 @@ defmodule ThesisWeb.AssignmentController do
   def submit(conn, %{"assignment_id" => assignment_id, "dsl" => dsl}) do
     Assignments.create_configuration!(%{code: dsl, assignment_id: assignment_id})
 
-    redirect(conn, to: Routes.assignment_path(conn, :index, assignment_id))
+    redirect(conn, to: Routes.assignment_path(conn, :show, assignment_id))
   end
 
   def validate_configuration(%Plug.Conn{assigns: %{role: :teacher}} = conn, %{

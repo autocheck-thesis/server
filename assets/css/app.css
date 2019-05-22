@@ -143,3 +143,8 @@ pre.file {
 form .field label span {
   color: #767676;
 }
+
+.ui.vertical.menu .item > i.icon {
+  float: left;
+  margin: 0 0.5em 0 0;
+}

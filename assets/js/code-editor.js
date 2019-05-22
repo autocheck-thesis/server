@@ -56,6 +56,26 @@ export function create_code_editor(target, form, input, code_validation_output, 
         };
       }
 
+      function showLoadingMessage() {
+        const template = document.getElementById("code_validation_template");
+
+        const message = document.importNode(template.content, true);
+        const container = message.querySelector(".message");
+        // container.classList.add("error");
+        const icon = container.querySelector(".icon");
+        icon.classList.add("notched", "circle", "loading");
+        const state = container.querySelector(".state");
+        state.textContent = "Validating";
+        const list = container.querySelector(".list");
+
+        list.innerHTML = "<li>Please wait...</li>";
+
+        const output = document.getElementById("code_validation_output");
+
+        output.innerHTML = "";
+        output.appendChild(message);
+      }
+
       function showErrorMessage(errors) {
         const template = document.getElementById("code_validation_template");
 
@@ -104,6 +124,7 @@ export function create_code_editor(target, form, input, code_validation_output, 
       const validate_configuration = debounce(() => {
         const form_data = new FormData();
         form_data.append("configuration", editor.getValue());
+        showLoadingMessage();
         fetch("/assignment/validate_configuration", {
           method: "POST",
           body: form_data,
@@ -122,6 +143,7 @@ export function create_code_editor(target, form, input, code_validation_output, 
           });
       }, debounce_timeout);
 
+      showLoadingMessage();
       validate_configuration();
       editor.onDidChangeModelContent(e => validate_configuration());
 

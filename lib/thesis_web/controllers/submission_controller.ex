@@ -35,7 +35,7 @@ defmodule ThesisWeb.SubmissionController do
     )
   end
 
-  def show(conn, %{"id" => submission_id}) do
+  def show(%Plug.Conn{assigns: %{role: role}} = conn, %{"id" => submission_id}) do
     submission = Submissions.get_with_jobs!(submission_id)
 
     with [job] <- submission.jobs do
@@ -45,14 +45,16 @@ defmodule ThesisWeb.SubmissionController do
         session: %{
           submission: submission,
           job: job,
-          events: events
+          events: events,
+          role: role
         }
       )
     else
       _ ->
         live_render(conn, ThesisWeb.SubmissionLiveView,
           session: %{
-            submission: submission
+            submission: submission,
+            role: role
           }
         )
     end

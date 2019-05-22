@@ -1,12 +1,14 @@
 defmodule ThesisWeb.SubmissionLiveView do
   use Phoenix.LiveView
 
+  def view_module(), do: ThesisWeb.SubmissionView
+
   def render(assigns) do
-    ThesisWeb.SubmissionView.render("log.html", assigns)
+    ThesisWeb.SubmissionView.render("show.html", assigns)
   end
 
   def mount(
-        %{submission: submission, job: job, events: events} = _session,
+        %{submission: submission, job: job, events: events, role: role} = _session,
         socket
       ) do
     if connected?(socket) do
@@ -16,7 +18,8 @@ defmodule ThesisWeb.SubmissionLiveView do
     {:ok,
      assign(socket,
        submission: submission,
-       log_lines: map_events(events)
+       log_lines: map_events(events),
+       role: role
      )}
   end
 
