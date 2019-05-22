@@ -84,7 +84,7 @@ defmodule ThesisWeb.SubmissionController do
 
     %Configuration{mime_types: mime_types} = Configuration.parse_code(configuration.code)
 
-    if file.content_type not in mime_types do
+    if length(mime_types) > 0 && file.content_type not in mime_types do
       allowed_list = Enum.join(mime_types, ", ")
       Logger.debug("Invalid mime-type: #{file.content_type}, allowed: #{allowed_list}")
 
