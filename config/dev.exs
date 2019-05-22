@@ -81,7 +81,7 @@ config :eventstore, EventStore.Storage,
   username: "postgres",
   password: "postgres",
   database: "thesis_dev_events",
-  hostname: "server_db_1.docker",
+  hostname: "localhost",
   pool_size: 10,
   pool_overflow: 5
 
@@ -90,10 +90,19 @@ config :thesis, Thesis.Repo,
   database: "thesis_dev",
   username: "postgres",
   password: "postgres",
-  hostname: "server_db_1.docker"
+  hostname: "localhost"
 
 config :thesis,
-  submission_download_hostname: "http://hostmachine.docker:4000",
+  # In a development environment, the submission download hostname
+  # should be pointing to the HOST machine.
+  #
+  # Example configurations for different systems are commented out:
+  #
+  # Dinghy:
+  # submission_download_hostname: "http://hostmachine.docker:4000",
+  #
+  # Docker for MAC:
+  # submission_download_hostname: "http://docker.for.mac.localhost:4000",
   coderunner_supervisor_path: "../coderunner-supervisor/"
 
 import_config "./**/local.exs"
