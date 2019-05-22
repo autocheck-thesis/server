@@ -1,9 +1,8 @@
 defmodule ThesisWeb.SubmissionController do
   use ThesisWeb, :controller
 
-  alias Thesis.Configuration, as: ParserConfiguration
+  alias Thesis.Configuration
   alias Thesis.Assignments
-  alias Thesis.Assignments.Configuration
   alias Thesis.Submissions
   alias Thesis.Submissions.File
 
@@ -80,46 +79,49 @@ defmodule ThesisWeb.SubmissionController do
     assignment = Assignments.get!(assignment_id)
     configuration = Assignments.get_latest_configuration!(assignment.id)
 
-    %ParserConfiguration{mime_types: mime_types} =
-      ParserConfiguration.parse_code(configuration.code)
+    %Configuration{mime_types: mime_types} = Configuration.parse_code(configuration.code)
 
     if file.content_type not in mime_types do
-      Logger.debug("Invalid mime-type #{file.content_type}")
-      raise "STAHP"
+      allowed_list = Enum.join(mime_types, ", ")
+      Logger.debug("Invalid mime-type: #{file.content_type}, allowed: #{allowed_list}")
+
+      conn
+      |> put_flash(:error, "Invalid mime-type! Allowed mime-types are: #{allowed_list}")
+      |> redirect(to: current_path(conn))
+    else
+      files =
+        if file.content_type in ["application/zip", "application/x-gzip"] do
+          extracted_files = Thesis.Extractor.extract!(file.path)
+          for {name, contents} <- extracted_files, do: %{name: name, contents: contents}
+        else
+          [%{name: file.filename, contents: Elixir.File.read!(file.path)}]
+        end
+
+      submission =
+        Submissions.create!(user, assignment, %{jobs: [], files: files, comment: comment})
+
+      token = Submissions.create_download_token!(submission)
+
+      download_url =
+        Application.get_env(:thesis, :submission_download_hostname) <>
+          Routes.submission_path(conn, :download, token.id)
+
+      job =
+        Submissions.create_job!(submission, %{
+          image: "test:latest",
+          cmd: "mix test_suite #{download_url} #{submission.id}"
+        })
+
+      Thesis.Coderunner.start_event_stream(job)
+
+      redirect(conn, to: Routes.submission_path(conn, :show, submission.id))
     end
-
-    files =
-      if file.content_type in ["application/zip", "application/x-gzip"] do
-        extracted_files = Thesis.Extractor.extract!(file.path)
-        for {name, contents} <- extracted_files, do: %{name: name, contents: contents}
-      else
-        [%{name: file.filename, contents: Elixir.File.read!(file.path)}]
-      end
-
-    submission =
-      Submissions.create!(user, assignment, %{jobs: [], files: files, comment: comment})
-
-    token = Submissions.create_download_token!(submission)
-
-    download_url =
-      Application.get_env(:thesis, :submission_download_hostname) <>
-        Routes.submission_path(conn, :download, token.id)
-
-    job =
-      Submissions.create_job!(submission, %{
-        image: "test:latest",
-        cmd: "mix test_suite #{download_url} #{submission.id}"
-      })
-
-    Thesis.Coderunner.start_event_stream(job)
-
-    redirect(conn, to: Routes.submission_path(conn, :show, submission.id))
   end
 
-  def submit(conn, %{"assignment_id" => assignment_id}) do
+  def submit(conn, %{"assignment_id" => _assignment_id}) do
     conn
     |> put_flash(:error, "No file was specified")
-    |> redirect(to: Routes.submission_path(conn, :submit, assignment_id))
+    |> redirect(to: current_path(conn))
   end
 
   def download(conn, %{"token_id" => token_id}) do
