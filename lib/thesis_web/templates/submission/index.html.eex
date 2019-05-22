@@ -5,12 +5,12 @@
       <h4><i class="upload icon"></i> Upload submission</h4>
       <%= form_for @conn, Routes.submission_path(@conn, :submit, @assignment.id), [multipart: true], fn f -> %>
         <div class="required field">
-          <%= if length(@mime_types) > 0 do %>
-            <label>File <span>(<%= Enum.join(@mime_types, ", ") %>)</span></label>
+          <%= if length(@allowed_file_extensions) > 0 do %>
+            <label>File <span>(<%= Enum.join(@allowed_file_extensions, ", ") %>)</span></label>
           <% else %>
             <label>File</label>
           <% end %>
-          <%= file_input f, :file, accept: Enum.join(@mime_types, ", ") %>
+          <%= file_input f, :file, accept: Enum.join(@allowed_file_extensions, ",") %>
         </div>
         <div class="field">
           <label>Comment</label>

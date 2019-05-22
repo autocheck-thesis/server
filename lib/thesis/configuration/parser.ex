@@ -10,7 +10,7 @@ defmodule Thesis.Configuration.Parser do
   defstruct image: nil,
             environment: nil,
             required_files: [],
-            mime_types: [],
+            allowed_file_extensions: [],
             steps: [],
             errors: []
 
@@ -27,7 +27,7 @@ defmodule Thesis.Configuration.Parser do
   @fields [
     :env,
     :required_files,
-    :mime_types
+    :allowed_file_extensions
   ]
 
   @environments %{
@@ -89,8 +89,8 @@ defmodule Thesis.Configuration.Parser do
   defp parse_statement({:@, _meta, [{:required_files, _meta2, file_names}]}, %Parser{} = p),
     do: %{p | required_files: file_names}
 
-  defp parse_statement({:@, _meta, [{:mime_types, _meta2, mime_types}]}, %Parser{} = p),
-    do: %{p | mime_types: mime_types}
+  defp parse_statement({:@, _meta, [{:allowed_file_extensions, _meta2, allowed_file_extensions}]}, %Parser{} = p),
+    do: %{p | allowed_file_extensions: allowed_file_extensions}
 
   defp parse_statement({:@, _meta, [{unsupported_field, [line: line], _params}]}, %Parser{} = p) do
     suggestion = suggest_similar_field(unsupported_field)

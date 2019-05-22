@@ -11,11 +11,11 @@ defmodule ThesisWeb.SubmissionController do
   def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
     assignment = Assignments.get!(assignment_id)
     configuration = Assignments.get_latest_configuration!(assignment.id)
-    %Configuration{mime_types: mime_types} = Configuration.parse_code(configuration.code)
+    %Configuration{allowed_file_extensions: allowed_file_extensions} = Configuration.parse_code(configuration.code)
 
     render(conn, "index.html",
       assignment: assignment,
-      mime_types: mime_types,
+      allowed_file_extensions: allowed_file_extensions,
       role: role
     )
   end
@@ -82,15 +82,16 @@ defmodule ThesisWeb.SubmissionController do
     assignment = Assignments.get!(assignment_id)
     configuration = Assignments.get_latest_configuration!(assignment.id)
 
-    %Configuration{mime_types: mime_types, required_files: required_files} = 
+    %Configuration{allowed_file_extensions: allowed_file_extensions, required_files: required_files} = 
       Configuration.parse_code(configuration.code)
 
-    if length(mime_types) > 0 && file.content_type not in mime_types do
-      allowed_list = Enum.join(mime_types, ", ")
-      Logger.debug("Invalid mime-type: #{file.content_type}, allowed: #{allowed_list}")
+    file_extension = Path.extname(file.filename)
+    if not file_extension in allowed_file_extensions do
+      allowed_list = Enum.join(allowed_file_extensions, ", ")
+      Logger.debug("Invalid file extension: #{file_extension}, allowed: #{allowed_list}")
 
       conn
-      |> put_flash(:error, "Invalid mime-type! Allowed mime-types are: #{allowed_list}")
+      |> put_flash(:error, "Invalid file extension: #{file_extension}, allowed: #{allowed_list}")
       |> redirect(to: current_path(conn))
     else
       files =
@@ -101,10 +102,10 @@ defmodule ThesisWeb.SubmissionController do
           [%{name: file.filename, contents: Elixir.File.read!(file.path)}]
         end
 
-      file_names = Enum.map(files, fn %{name: name} -> name end)
-      missing_files = Enum.filter(required_files, fn rf -> rf not in file_names end)
+      filenames = Enum.map(files, fn %{name: name} -> name end)
+      missing_files = MapSet.difference(MapSet.new(required_files), MapSet.new(filenames)) 
 
-      if missing_files != [] do
+      if not Enum.empty?(missing_files) do
         missing_files_list = Enum.join(missing_files, ", ")
         Logger.debug("Missing required file(s): #{missing_files_list}")
 

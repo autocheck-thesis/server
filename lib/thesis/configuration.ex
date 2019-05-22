@@ -3,7 +3,7 @@ defmodule Thesis.Configuration do
 
   defstruct image: nil,
             required_files: [],
-            mime_types: [],
+            allowed_file_extensions: [],
             steps: []
 
   def parse_code(code) do
