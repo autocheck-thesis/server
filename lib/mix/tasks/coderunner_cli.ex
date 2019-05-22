@@ -25,7 +25,7 @@ defmodule Mix.Tasks.Coderunner do
 
     # IO.inspect(configuration)
 
-    %{image: image} = configuration
+    %{image: _image} = configuration
 
     job = %Job{
       id: :crypto.strong_rand_bytes(32) |> Base.url_encode64() |> binary_part(0, 32),

@@ -11,7 +11,9 @@ defmodule ThesisWeb.SubmissionController do
   def index(%Plug.Conn{assigns: %{role: role}} = conn, %{"assignment_id" => assignment_id}) do
     assignment = Assignments.get!(assignment_id)
     configuration = Assignments.get_latest_configuration!(assignment.id)
-    %Configuration{allowed_file_extensions: allowed_file_extensions} = Configuration.parse_code(configuration.code)
+
+    %Configuration{allowed_file_extensions: allowed_file_extensions} =
+      Configuration.parse_code(configuration.code)
 
     render(conn, "index.html",
       assignment: assignment,
@@ -82,11 +84,14 @@ defmodule ThesisWeb.SubmissionController do
     assignment = Assignments.get!(assignment_id)
     configuration = Assignments.get_latest_configuration!(assignment.id)
 
-    %Configuration{allowed_file_extensions: allowed_file_extensions, required_files: required_files} = 
-      Configuration.parse_code(configuration.code)
+    %Configuration{
+      allowed_file_extensions: allowed_file_extensions,
+      required_files: required_files
+    } = Configuration.parse_code(configuration.code)
 
     file_extension = Path.extname(file.filename)
-    if not file_extension in allowed_file_extensions do
+
+    if file_extension not in allowed_file_extensions do
       allowed_list = Enum.join(allowed_file_extensions, ", ")
       Logger.debug("Invalid file extension: #{file_extension}, allowed: #{allowed_list}")
 
@@ -103,7 +108,7 @@ defmodule ThesisWeb.SubmissionController do
         end
 
       filenames = Enum.map(files, fn %{name: name} -> name end)
-      missing_files = MapSet.difference(MapSet.new(required_files), MapSet.new(filenames)) 
+      missing_files = MapSet.difference(MapSet.new(required_files), MapSet.new(filenames))
 
       if not Enum.empty?(missing_files) do
         missing_files_list = Enum.join(missing_files, ", ")
