@@ -46,7 +46,13 @@ defmodule Thesis.Configuration.Parser do
         {:ok, parse_top_level(quouted_form)}
 
       {:error, {line, {description_prefix, description_suffix}, token}} ->
-        {:error, %Error{line: line, description: description_prefix, token: token, description_suffix: description_suffix}}
+        {:error,
+         %Error{
+           line: line,
+           description: description_prefix,
+           token: token,
+           description_suffix: description_suffix
+         }}
 
       {:error, {line, description, token}} ->
         {:error, %Error{line: line, description: description |> String.trim(), token: token}}
@@ -77,8 +83,7 @@ defmodule Thesis.Configuration.Parser do
     case Map.get(@environments, environment, :undefined) do
       :undefined ->
         suggestion = suggest_similar_environment(environment)
-        error = %Error{line: line, description: "environment is not defined: ", token: environment, description_suffix: suggestion}
-        %{p | errors: [error | p.errors]}
+        add_error(p, line, "environment is not defined: ", environment, suggestion)
 
       environment_module ->
         image = apply(environment_module, :image, environment_params)
@@ -89,12 +94,34 @@ defmodule Thesis.Configuration.Parser do
   defp parse_statement({:@, _meta, [{:required_files, _meta2, file_names}]}, %Parser{} = p),
     do: %{p | required_files: file_names}
 
-  defp parse_statement({:@, _meta, [{:allowed_file_extensions, _meta2, allowed_file_extensions}]}, %Parser{} = p),
-    do: %{p | allowed_file_extensions: allowed_file_extensions}
+  defp parse_statement(
+         {:@, _meta, [{:allowed_file_extensions, [line: line], allowed_file_extensions}]},
+         %Parser{} = p
+       ) do
+    case Enum.reject(allowed_file_extensions, fn ext ->
+           is_binary(ext) and String.match?(ext, ~r/^\.(\w|\d)+$/)
+         end) do
+      [] ->
+        %{p | allowed_file_extensions: allowed_file_extensions}
+
+      badargs ->
+        Enum.reduce(
+          badargs,
+          p,
+          &add_error(
+            &2,
+            line,
+            "Invalid file extension: ",
+            &1,
+            "A file extension must start with a dot and not contain any special characters."
+          )
+        )
+    end
+  end
 
   defp parse_statement({:@, _meta, [{unsupported_field, [line: line], _params}]}, %Parser{} = p) do
     suggestion = suggest_similar_field(unsupported_field)
-    %{p | errors: p.errors ++ [%Error{line: line, description: "incorrect field: ", token: unsupported_field, description_suffix: suggestion}]}
+    add_error(p, line, "incorrect field: ", unsupported_field, suggestion)
   end
 
   defp parse_statement({:step, _meta, [step_name, [do: {:__block__, [], step_params}]]}, state),
@@ -105,7 +132,7 @@ defmodule Thesis.Configuration.Parser do
 
   defp parse_statement({keyword, [line: line], _params}, %Parser{} = p) do
     suggestion = suggest_similar_keyword(keyword)
-    %{p | errors: p.errors ++ [%Error{line: line, description: "incorrect keyword: ", token: keyword, description_suffix: suggestion}]}
+    add_error(p, line, "incorrect keyword: ", keyword, suggestion)
   end
 
   defp parse_statement(step_name, step_params, %Parser{} = p) do
@@ -137,11 +164,30 @@ defmodule Thesis.Configuration.Parser do
 
   defp parse_step_command({function, [line: line], params}, %Parser{} = p) do
     imported_functions = apply(p.environment, :__info__, [:functions])
-    if {function, length(params || [])} in imported_functions do
-      {:ok, apply(p.environment, function, params || [])}
-    else
-      suggestion = suggest_similar_function(function, imported_functions)
-      {:error, %Error{line: line, description: "undefined function: ", token: function, description_suffix: suggestion}}
+
+    cond do
+      {function, length(params || [])} in imported_functions ->
+        {:ok, apply(p.environment, function, params || [])}
+
+      Keyword.has_key?(imported_functions, function) ->
+        {:error,
+         %Error{
+           line: line,
+           description: "incorrect amount of parameters for function: ",
+           token: Atom.to_string(function) <> "/#{Keyword.fetch!(imported_functions, function)}",
+           description_suffix: ""
+         }}
+
+      true ->
+        suggestion = suggest_similar_function(function, imported_functions)
+
+        {:error,
+         %Error{
+           line: line,
+           description: "undefined function: ",
+           token: function,
+           description_suffix: suggestion
+         }}
     end
   end
 
@@ -178,4 +224,35 @@ defmodule Thesis.Configuration.Parser do
       {s, _distance} -> "Did you mean #{s}?"
     end
   end
+
+  defp add_error(parser, line, description, token, description_suffix)
+       when is_list(token) or is_tuple(token),
+       do: %{
+         parser
+         | errors:
+             parser.errors ++
+               [
+                 %Error{
+                   line: line,
+                   description: description,
+                   token: "[unsafe, can't render]",
+                   description_suffix: description_suffix
+                 }
+               ]
+       }
+
+  defp add_error(parser, line, description, token, description_suffix),
+    do: %{
+      parser
+      | errors:
+          parser.errors ++
+            [
+              %Error{
+                line: line,
+                description: description,
+                token: token,
+                description_suffix: description_suffix
+              }
+            ]
+    }
 end
