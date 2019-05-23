@@ -87,8 +87,20 @@ defmodule Thesis.Configuration.Parser do
         add_error(p, line, "environment is not defined: ", environment, suggestion)
 
       environment_module ->
-        image = apply(environment_module, :image, environment_params)
-        %{p | environment: environment_module, image: image}
+        image_param_counts =
+          apply(environment_module, :__info__, [:functions])
+          |> Keyword.get_values(:image)
+
+        param_count = length(environment_params)
+
+        if param_count in image_param_counts do
+          case apply(environment_module, :image, environment_params) do
+            {:ok, image} -> %{p | environment: environment_module, image: image}
+            {:error, description, token} -> add_error(p, line, description, token, "")
+          end
+        else
+          add_error(p, line, "incorrect number of parameters for env: ", environment, "")
+        end
     end
   end
 
@@ -119,6 +131,10 @@ defmodule Thesis.Configuration.Parser do
         )
     end
   end
+
+  defp parse_statement({:@, _meta, [{_, [line: line], params}]}, %Parser{} = p)
+       when length(params) > 2,
+       do: add_error(p, line, "syntax error", "", "")
 
   defp parse_statement({:@, _meta, [{unsupported_field, [line: line], _params}]}, %Parser{} = p) do
     suggestion = suggest_similar_field(unsupported_field)
@@ -160,7 +176,7 @@ defmodule Thesis.Configuration.Parser do
   defp parse_step_command({:command, _meta, [command | []]}, _p), do: {:ok, command}
 
   defp parse_step_command({function, [line: line], _params}, %Parser{environment: nil}) do
-    {:error, %Error{line: line, description: "undefined function: ", token: function}}
+    {:error, create_error(line, "undefined function: ", function, "")}
   end
 
   defp parse_step_command({function, [line: line], params}, %Parser{} = p) do
@@ -168,27 +184,24 @@ defmodule Thesis.Configuration.Parser do
 
     cond do
       {function, length(params || [])} in imported_functions ->
-        {:ok, apply(p.environment, function, params || [])}
+        case apply(p.environment, function, params || []) do
+          {:ok, _} = result -> result
+          {:error, description, token} -> {:error, create_error(line, description, token, "")}
+        end
 
       Keyword.has_key?(imported_functions, function) ->
         {:error,
-         %Error{
-           line: line,
-           description: "incorrect amount of parameters for function: ",
-           token: Atom.to_string(function) <> "/#{Keyword.fetch!(imported_functions, function)}",
-           description_suffix: ""
-         }}
+         create_error(
+           line,
+           "incorrect amount of paramters for function: ",
+           Atom.to_string(function) <> "/#{Keyword.fetch!(imported_functions, function)}",
+           ""
+         )}
 
       true ->
         suggestion = suggest_similar_function(function, imported_functions)
 
-        {:error,
-         %Error{
-           line: line,
-           description: "undefined function: ",
-           token: function,
-           description_suffix: suggestion
-         }}
+        {:error, create_error(line, "undefined function: ", function, suggestion)}
     end
   end
 
@@ -226,34 +239,24 @@ defmodule Thesis.Configuration.Parser do
     end
   end
 
+  defp add_error(parser, %Error{} = error), do: %{parser | errors: parser.errors ++ [error]}
+
   defp add_error(parser, line, description, token, description_suffix)
        when is_list(token) or is_tuple(token),
-       do: %{
-         parser
-         | errors:
-             parser.errors ++
-               [
-                 %Error{
-                   line: line,
-                   description: description,
-                   token: "[unsafe, can't render]",
-                   description_suffix: description_suffix
-                 }
-               ]
-       }
+       do:
+         add_error(
+           parser,
+           create_error(line, description, "[unsafe, can't render]", description_suffix)
+         )
 
   defp add_error(parser, line, description, token, description_suffix),
-    do: %{
-      parser
-      | errors:
-          parser.errors ++
-            [
-              %Error{
-                line: line,
-                description: description,
-                token: token,
-                description_suffix: description_suffix
-              }
-            ]
+    do: add_error(parser, create_error(line, description, token, description_suffix))
+
+  defp create_error(line, description, token, description_suffix),
+    do: %Error{
+      line: line,
+      description: description,
+      token: token,
+      description_suffix: description_suffix
     }
 end
