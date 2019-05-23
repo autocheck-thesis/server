@@ -93,7 +93,7 @@ defmodule ThesisWeb.SubmissionController do
 
     file_extension = Path.extname(file.filename)
 
-    if file_extension not in allowed_file_extensions do
+    if not Enum.empty?(allowed_file_extensions) and file_extension not in allowed_file_extensions do
       allowed_list = Enum.join(allowed_file_extensions, ", ")
       Logger.debug("Invalid file extension: #{file_extension}, allowed: #{allowed_list}")
 
