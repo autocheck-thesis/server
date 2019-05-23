@@ -1,5 +1,5 @@
 <div class="ui grid">
-  <%= render(SharedView, "sidebar.html", items: submission_sidebar_items(@socket, @submission), active_item: "Submission") %>
+  <%= render(SharedView, "sidebar.html", items: submission_sidebar_items(@socket, @submission), request_path: Routes.submission_path(@socket, :show, @submission.id)) %>
   <div class="twelve wide column">
     <div class="ui segment">
       <h4><i class="<%= icon(:submission) %>"></i> Submission details</h4>

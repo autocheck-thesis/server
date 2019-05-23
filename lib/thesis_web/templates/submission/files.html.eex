@@ -1,5 +1,5 @@
 <div class="ui grid">
-  <%= render(SharedView, "sidebar.html", items: submission_sidebar_items(@conn, @submission), active_item: "Source") %>
+  <%= render(SharedView, "sidebar.html", items: submission_sidebar_items(@conn, @submission), request_path: @conn.request_path) %>
   <div class="twelve wide column">
     <div class="ui segment">
       <h4><i class="<%= icon(:files) %>"></i> Source</h4>

@@ -1,5 +1,5 @@
 <div class="four wide column">
   <div class="ui vertical pointing fluid menu">
-    <%= Enum.map(@items, &render_sidebar_item(&1, @active_item)) %>
+    <%= render_many(@items, SharedView, "sidebar_item.html", Map.put(assigns, :as, :item)) %>
   </div>
 </div>

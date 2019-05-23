@@ -1,5 +1,5 @@
 <div class="ui grid">
-  <%= render(SharedView, "sidebar.html", items: main_sidebar_items(@conn, @assignment), active_item: "Previous submissions") %>
+  <%= render(SharedView, "sidebar.html", items: main_sidebar_items(@conn, @assignment), request_path: @conn.request_path) %>
   <div class="twelve wide column">
     <div class="ui segment submissions">
       <h4><i class="<%= icon(:submissions) %>"></i> Previous submissions</h4>

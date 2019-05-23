@@ -1,5 +1,5 @@
 <div class="ui grid">
-  <%= render(SharedView, "sidebar.html", items: main_sidebar_items(@conn, @assignment), active_item: "Upload") %>
+  <%= render(SharedView, "sidebar.html", items: main_sidebar_items(@conn, @assignment), request_path: @conn.request_path) %>
   <div class="ui twelve wide column form">
     <div class="ui segment">
       <h4><i class="<%= icon(:upload_submission) %>"></i> Upload submission</h4>

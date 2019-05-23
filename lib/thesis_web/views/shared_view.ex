@@ -38,11 +38,17 @@ defmodule ThesisWeb.SharedView do
     ~E(<a href="<%= href %>" class="ui red label"><i class="<%= icon %>"></i><%= assignment_id %></a>)
   end
 
-  def render_sidebar_item(%Link{title: title, href: href, icon: icon} = _item, active_item) do
-    ~E(<a class="<%= if active_item == title do "active" end %> item" href="<%= href %>"><i class="<%= icon %>"></i><%= title %></a>)
+  def render("sidebar_item.html", %{item: %Link{title: title, href: href, icon: icon}, request_path: request_path} = _assigns) do
+    class = if request_path == href do
+      "active item"
+    else
+      "item"
+    end
+
+    ~E(<a class="<%= class %>" href="<%= href %>"><i class="<%= icon %>"></i><%= title %></a>)
   end
 
-  def render_sidebar_item(%LinkSeparator{title: title, icon: icon} = _item, _active_item) do
+  def render("sidebar_item.html", %{item: %LinkSeparator{title: title, icon: icon}} = _assigns) do
     ~E(</div><div class="item"><i class="<%= icon %>"></i><b><%= title %></b></div><div class="ui vertical pointing fluid menu">)
   end
 end

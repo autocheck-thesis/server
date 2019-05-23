@@ -1,5 +1,5 @@
 <div class="ui grid">
-  <%= render(SharedView, "sidebar.html", items: assignment_sidebar_items(@conn, @assignment), active_item: "Setup") %>
+  <%= render(SharedView, "sidebar.html", items: assignment_sidebar_items(@conn, @assignment), request_path: @conn.request_path) %>
   <div class="ui twelve wide column form">
     <div class="ui segment">
       <h4><i class="<%= icon(:configure) %>"></i> Assignment setup</h4>
