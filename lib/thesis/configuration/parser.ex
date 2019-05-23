@@ -31,6 +31,7 @@ defmodule Thesis.Configuration.Parser do
   ]
 
   @environments %{
+    "custom" => Thesis.Configuration.Custom,
     "elixir" => Thesis.Configuration.Elixir
   }
 
