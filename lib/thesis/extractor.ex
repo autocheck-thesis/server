@@ -14,11 +14,25 @@ defmodule Thesis.Extractor do
   def format_error(:timeout), do: "Decompression timed out"
   def format_error(:size_is_zero), do: "Decompressed size is 0 bytes"
   def format_error(:out_of_memory), do: "Ran out of memory when decompressing"
+  def format_error(:unknown_archive_type), do: "Unknown archive type"
   def format_error(reason), do: inspect(reason)
 
-  def peek_size(path) do
-    archive_type = determine_archive_type(path)
-    peek_size(path, archive_type)
+  def try_peek_size(path, types \\ [:zip, :tar]) do
+    case determine_archive_type(path) do
+      :unknown ->
+        Enum.reduce_while(types, {:error, :unknown_archive_type}, fn type, acc ->
+          case peek_size(path, type) do
+            {:error, _} ->
+              {:cont, acc}
+
+            {:ok, size} ->
+              {:halt, {:ok, type, size}}
+          end
+        end)
+
+      type ->
+        {:ok, type, peek_size(path, type)}
+    end
   end
 
   def peek_size(path, :zip) do
@@ -64,22 +78,20 @@ defmodule Thesis.Extractor do
     # 550 MB
     limit = Keyword.get(opts, :limit, 576_716_800)
 
-    archive_type = determine_archive_type(path)
-
-    case peek_size(path, archive_type) do
-      {:ok, size} when size > limit ->
+    case try_peek_size(path) do
+      {:ok, _type, size} when size > limit ->
         {:error, {:size_too_big, size, limit}}
 
-      {:ok, size} when size == 0 ->
+      {:ok, _type, size} when size == 0 ->
         {:error, :size_is_zero}
 
-      {:ok, _} ->
+      {:ok, type, _size} ->
         pid = self()
 
         spawn_monitor(fn ->
           Process.flag(:max_heap_size, %{size: 2_600_000, kill: true, error_logger: false})
 
-          send(pid, extract_archive(path, archive_type))
+          send(pid, extract_archive(path, type))
         end)
 
         receive do
@@ -131,7 +143,7 @@ defmodule Thesis.Extractor do
       ".zip" -> :zip
       ".tar" -> :tar
       ".gz" -> :tar
-      _ -> :zip
+      _ -> :unknown
     end
   end
 end
