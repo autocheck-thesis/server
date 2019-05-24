@@ -91,14 +91,16 @@ defmodule ThesisWeb.SubmissionController do
       required_files: required_files
     } = Configuration.parse_code(configuration.code)
 
-    file_extension = Path.extname(file.filename)
-
-    if not Enum.empty?(allowed_file_extensions) and file_extension not in allowed_file_extensions do
+    if not Enum.empty?(allowed_file_extensions) and
+         not Enum.any?(allowed_file_extensions, &String.ends_with?(file.filename, &1)) do
       allowed_list = Enum.join(allowed_file_extensions, ", ")
-      Logger.debug("Invalid file extension: #{file_extension}, allowed: #{allowed_list}")
+      Logger.debug("Invalid file extension for file '#{file.filename}', allowed: #{allowed_list}")
 
       conn
-      |> put_flash(:error, "Invalid file extension: #{file_extension}, allowed: #{allowed_list}")
+      |> put_flash(
+        :error,
+        "Invalid file extension for file '#{file.filename}', allowed: #{allowed_list}"
+      )
       |> redirect(to: current_path(conn))
     else
       files =
