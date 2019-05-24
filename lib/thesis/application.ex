@@ -21,14 +21,16 @@ defmodule Thesis.Application do
     opts = [strategy: :one_for_one, name: Thesis.Supervisor]
     {:ok, supervisor} = Supervisor.start_link(children, opts)
 
-    :ok =
-      Honeydew.start_queue(:run_jobs,
-        queue: {EctoPollQueue, [schema: Job, repo: Repo, poll_interval: 1]},
-        failure_mode: Abandon
-        # failure_mode: {ExponentialRetry, base: 3, times: 3}
-      )
+    if Mix.env() != :test do
+      :ok =
+        Honeydew.start_queue(:run_jobs,
+          queue: {EctoPollQueue, [schema: Job, repo: Repo, poll_interval: 1]},
+          failure_mode: Abandon
+          # failure_mode: {ExponentialRetry, base: 3, times: 3}
+        )
 
-    :ok = Honeydew.start_workers(:run_jobs, JobWorker, num: 1)
+      :ok = Honeydew.start_workers(:run_jobs, JobWorker, num: 1)
+    end
 
     {:ok, supervisor}
   end
