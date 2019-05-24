@@ -113,7 +113,7 @@ defmodule Thesis.Configuration.Parser do
          %Parser{} = p
        ) do
     case Enum.reject(allowed_file_extensions, fn ext ->
-           is_binary(ext) and String.match?(ext, ~r/^\.(\w|\d)+$/)
+           is_binary(ext) and String.match?(ext, ~r/^(\.\w+)+$/)
          end) do
       [] ->
         %{p | allowed_file_extensions: allowed_file_extensions}
