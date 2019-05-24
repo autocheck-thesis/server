@@ -1,5 +1,5 @@
 defmodule Thesis.Configuration.Custom do
   def image({:image, image}) do
-    image
+    {:ok, image}
   end
 end
