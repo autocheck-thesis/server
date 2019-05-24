@@ -17,10 +17,12 @@ defmodule Thesis.Extractor do
   def format_error(:unknown_archive_type), do: "Unknown archive type"
   def format_error(reason), do: inspect(reason)
 
-  def try_peek_size(path, types \\ [:zip, :tar]) do
+  @types ~w(zip tar)a
+
+  def try_peek_size(path) do
     case determine_archive_type(path) do
-      :unknown ->
-        Enum.reduce_while(types, {:error, :unknown_archive_type}, fn type, acc ->
+      nil ->
+        Enum.reduce_while(@types, {:error, :unknown_archive_type}, fn type, acc ->
           case peek_size(path, type) do
             {:error, _} ->
               {:cont, acc}
@@ -31,7 +33,10 @@ defmodule Thesis.Extractor do
         end)
 
       type ->
-        {:ok, type, peek_size(path, type)}
+        case peek_size(path, type) do
+          {:ok, size} -> {:ok, type, size}
+          {:error, _} = error -> error
+        end
     end
   end
 
@@ -76,11 +81,13 @@ defmodule Thesis.Extractor do
 
   def extract(path, opts \\ []) do
     # 550 MB
-    limit = Keyword.get(opts, :limit, 576_716_800)
+    max_size = Keyword.get(opts, :max_size, 576_716_800)
+    max_heap_size = Keyword.get(opts, :max_heap_size, 2_600_0)
+    timeout = Keyword.get(opts, :timeout, 60000)
 
     case try_peek_size(path) do
-      {:ok, _type, size} when size > limit ->
-        {:error, {:size_too_big, size, limit}}
+      {:ok, _type, size} when size > max_size ->
+        {:error, {:size_too_big, size, max_size}}
 
       {:ok, _type, size} when size == 0 ->
         {:error, :size_is_zero}
@@ -89,7 +96,7 @@ defmodule Thesis.Extractor do
         pid = self()
 
         spawn_monitor(fn ->
-          Process.flag(:max_heap_size, %{size: 2_600_000, kill: true, error_logger: false})
+          Process.flag(:max_heap_size, %{size: max_heap_size, kill: true, error_logger: false})
 
           send(pid, extract_archive(path, type))
         end)
@@ -99,7 +106,7 @@ defmodule Thesis.Extractor do
             receive do
               result -> result
             after
-              60000 -> {:error, :timeout}
+              timeout -> {:error, :timeout}
             end
 
           {:DOWN, _, _, _, :killed} ->
@@ -108,7 +115,7 @@ defmodule Thesis.Extractor do
           {:DOWN, _, _, _, reason} ->
             {:error, inspect(reason)}
         after
-          60000 -> {:error, :timeout}
+          timeout -> {:error, :timeout}
         end
 
       {:error, _} = error ->
@@ -143,7 +150,7 @@ defmodule Thesis.Extractor do
       ".zip" -> :zip
       ".tar" -> :tar
       ".gz" -> :tar
-      _ -> :unknown
+      _ -> nil
     end
   end
 end
