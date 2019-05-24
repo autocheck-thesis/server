@@ -102,7 +102,7 @@ defmodule ThesisWeb.SubmissionController do
       |> redirect(to: current_path(conn))
     else
       files =
-        if file.content_type in ["application/zip", "application/x-gzip"] do
+        if Enum.any?([".tar", ".tar.gz", ".zip"], &String.ends_with?(file.filename, &1)) do
           extracted_files = Thesis.Extractor.extract!(file.path)
           for {name, contents} <- extracted_files, do: %{name: name, contents: contents}
         else
