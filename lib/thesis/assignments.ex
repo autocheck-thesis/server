@@ -37,13 +37,15 @@ defmodule Thesis.Assignments do
       @env "elixir",
         version: "1.7"
 
+      @required_files "test.ex"
+
       step "Basic test" do
-        format "test.ex"
+        format "/tmp/files/test.ex"
         help
       end
 
       step "Hello world" do
-        command "echo 'Hello world'"
+        run "echo 'Hello world'"
       end
       """
     }

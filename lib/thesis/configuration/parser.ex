@@ -15,8 +15,10 @@ defmodule Thesis.Configuration.Parser do
             errors: []
 
   # {name, arity}
-  @built_in_functions [
-    {:command, 1},
+
+  @built_in_functions [:run, :print]
+  @built_in_functions_with_arity [
+    {:run, 1},
     {:print, 1}
   ]
 
@@ -174,7 +176,7 @@ defmodule Thesis.Configuration.Parser do
     end
   end
 
-  defp parse_step_command({key, _meta, params}, _p) when key in [:command, :print],
+  defp parse_step_command({key, _meta, params}, _p) when key in @built_in_functions,
     do: {:ok, [key, params]}
 
   defp parse_step_command({function, [line: line], _params}, %Parser{environment: nil}) do
@@ -225,7 +227,7 @@ defmodule Thesis.Configuration.Parser do
   end
 
   defp suggest_similar_function(function, functions) do
-    (@built_in_functions ++ functions)
+    (@built_in_functions_with_arity ++ functions)
     |> Enum.map(fn {fun, _arity} -> to_string(fun) end)
     |> find_suggestion(to_string(function))
   end
