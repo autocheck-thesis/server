@@ -16,7 +16,8 @@ defmodule Thesis.Configuration.Parser do
 
   # {name, arity}
   @built_in_functions [
-    {:command, 1}
+    {:command, 1},
+    {:print, 1}
   ]
 
   @keywords [
@@ -173,7 +174,8 @@ defmodule Thesis.Configuration.Parser do
     end
   end
 
-  defp parse_step_command({:command, _meta, [command | []]}, _p), do: {:ok, command}
+  defp parse_step_command({key, _meta, params}, _p) when key in [:command, :print],
+    do: {:ok, {key, params}}
 
   defp parse_step_command({function, [line: line], _params}, %Parser{environment: nil}) do
     {:error, create_error(line, "undefined function: ", function, "")}
