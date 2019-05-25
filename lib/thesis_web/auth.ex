@@ -15,6 +15,7 @@ defmodule ThesisWeb.Auth do
       |> put_status(:unauthorized)
       |> put_view(ThesisWeb.ErrorView)
       |> render(:"403")
+      |> halt()
     end
   end
 end
