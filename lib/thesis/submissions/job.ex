@@ -10,9 +10,8 @@ defmodule Thesis.Submissions.Job do
   @foreign_key_type :binary_id
 
   schema "jobs" do
-    field(:image, :string)
-    field(:cmd, :string)
     field(:finished, :boolean, default: false)
+    field(:download_token, :binary_id)
     belongs_to(:submission, Submission)
 
     timestamps()
@@ -20,7 +19,7 @@ defmodule Thesis.Submissions.Job do
     honeydew_fields(:run_jobs)
   end
 
-  @required_fields [:image, :cmd]
+  @required_fields []
 
   def changeset(%__MODULE__{} = struct, params \\ %{}) do
     struct

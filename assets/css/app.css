@@ -148,3 +148,16 @@ form .field label span {
   float: left;
   margin: 0 0.5em 0 0;
 }
+
+.with-actions {
+  display: flex;
+  align-items: center;
+}
+
+.ui.label.job-id {
+  margin-left: 0.5em;
+}
+
+.with-actions .actions {
+  margin-left: auto;
+}
