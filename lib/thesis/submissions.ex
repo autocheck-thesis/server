@@ -1,7 +1,7 @@
 defmodule Thesis.Submissions do
   alias Thesis.Repo
   alias Thesis.SharedQuery
-  alias Thesis.Submissions.{Submission, File, DownloadToken, Job}
+  alias Thesis.Submissions.{Submission, File, Job}
 
   defmodule Query do
     import Ecto.Query
