@@ -23,7 +23,8 @@ defmodule ThesisWeb.SubmissionLiveView do
      assign(socket,
        submission: submission,
        log_lines: map_events(events),
-       role: role
+       role: role,
+       job: job
      )}
   end
 
@@ -47,18 +48,7 @@ defmodule ThesisWeb.SubmissionLiveView do
   end
 
   def handle_event("rebuild", _, %Socket{assigns: %{submission: submission}} = socket) do
-    token = Submissions.create_download_token!(submission)
-
-    download_url =
-      Application.get_env(:thesis, :submission_download_hostname) <>
-        Routes.submission_path(socket, :download, token.id)
-
-    job =
-      Submissions.create_job!(submission, %{
-        image: "test:latest",
-        cmd: "mix test_suite #{download_url} #{submission.id}"
-      })
-
+    job = Submissions.create_job!(submission)
     Thesis.Coderunner.start_event_stream(job)
 
     {:stop, redirect(socket, to: Routes.submission_path(socket, :show, submission.id))}

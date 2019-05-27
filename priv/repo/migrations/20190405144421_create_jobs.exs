@@ -4,11 +4,12 @@ defmodule Thesis.Repo.Migrations.CreateJobs do
   import Honeydew.EctoPollQueue.Migration
 
   def change do
+    execute("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
+
     create table(:jobs, primary_key: false) do
       add(:id, :uuid, primary_key: true)
       add(:submission_id, references(:submissions, type: :uuid))
-      add(:image, :string)
-      add(:cmd, :text)
+      add(:download_token, :uuid, default: fragment("uuid_generate_v4()"))
       add(:finished, :boolean)
 
       timestamps()
@@ -16,6 +17,7 @@ defmodule Thesis.Repo.Migrations.CreateJobs do
       honeydew_fields(:run_jobs)
     end
 
+    create(index(:jobs, [:download_token]))
     honeydew_indexes(:jobs, :run_jobs)
   end
 end

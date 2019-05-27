@@ -16,26 +16,36 @@ defmodule Thesis.Configuration.Elixir do
   end
 
   def format(file) do
-    {:ok, "mix format #{file}"}
+    {:ok, ["run", ["mix format #{file}"]]}
   end
 
   def help() do
-    {:ok, "mix help"}
+    {:ok, ["run", ["mix help"]]}
   end
 
   def create_project(name) do
     {:ok,
-     """
-     mix new #{name}
-     rm #{name}/lib/*.ex #{name}/test/*_test.ex
-     """}
+     [
+       "run",
+       [
+         """
+         mix new #{name}
+         rm #{name}/lib/*.ex #{name}/test/*_test.ex
+         """
+       ]
+     ]}
   end
 
   def test(project) do
     {:ok,
-     """
-     cd #{project}
-     mix test
-     """}
+     [
+       "run",
+       [
+         """
+         cd #{project}
+         mix test
+         """
+       ]
+     ]}
   end
 end

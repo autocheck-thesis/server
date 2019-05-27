@@ -126,18 +126,7 @@ defmodule ThesisWeb.SubmissionController do
       submission =
         Submissions.create!(user, assignment, %{jobs: [], files: files, comment: comment})
 
-      token = Submissions.create_download_token!(submission)
-
-      download_url =
-        Application.get_env(:thesis, :submission_download_hostname) <>
-          Routes.submission_path(conn, :download, token.id)
-
-      job =
-        Submissions.create_job!(submission, %{
-          image: "test:latest"
-          # cmd: "mix test_suite #{download_url} #{job.id} #{submission.id}"
-        })
-
+      job = Submissions.create_job!(submission)
       Thesis.Coderunner.start_event_stream(job)
 
       redirect(conn, to: Routes.submission_path(conn, :show, submission.id))
@@ -150,8 +139,9 @@ defmodule ThesisWeb.SubmissionController do
     |> redirect(to: current_path(conn))
   end
 
-  def download(conn, %{"token_id" => token_id}) do
-    submission = Submissions.get_by_token!(token_id)
+  def download(conn, %{"token" => token}) do
+    job = Submissions.get_job_by_download_token!(token)
+    submission = Submissions.get_with_files_with_content!(job.submission_id)
 
     files = for f <- submission.files, do: %File{f | contents: Base.encode64(f.contents)}
 
@@ -161,10 +151,10 @@ defmodule ThesisWeb.SubmissionController do
       Thesis.Configuration.parse_code(configuration.code)
       |> Map.from_struct()
       |> Map.put(:files, files)
-      |> IO.inspect()
+      |> Map.put(:job_id, job.id)
 
     # TODO: Uncomment to enable download token removal (One-time-use tokens)
-    # Submissions.remove_token!(token)
+    # Submissions.remove_job_download_token!(job)
 
     render(conn, "download.json", data: data)
   end

@@ -128,9 +128,9 @@ defmodule Thesis.Submissions do
     |> Repo.one()
   end
 
-  def get_by_token!(token_id) do
-    token = Repo.get!(DownloadToken, token_id)
-    get_with_files_with_content!(token.submission_id)
+  def get_job_by_download_token!(token) do
+    Job
+    |> Repo.get_by!(download_token: token)
   end
 
   def create!(author, assignment, attrs \\ %{}) do
@@ -138,13 +138,6 @@ defmodule Thesis.Submissions do
     |> Submission.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:author, author)
     |> Ecto.Changeset.put_assoc(:assignment, assignment)
-    |> Repo.insert!()
-  end
-
-  def create_download_token!(submission, attrs \\ %{}) do
-    %DownloadToken{}
-    |> DownloadToken.changeset(attrs)
-    |> Ecto.Changeset.put_assoc(:submission, submission)
     |> Repo.insert!()
   end
 
@@ -157,6 +150,12 @@ defmodule Thesis.Submissions do
     |> Job.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:submission, submission)
     |> Repo.insert!()
+  end
+
+  def remove_job_download_token!(job) do
+    job
+    |> Ecto.Changeset.change(download_token: nil)
+    |> Repo.update!()
   end
 
   def finish_job!(job) do

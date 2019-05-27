@@ -8,6 +8,7 @@
       <div class="ui segment"><%= @submission.comment || ~E(<i>Empty<i>) %></div>
       <h4 class="with-actions">
           <div class="text"><i class="<%= icon(:terminal) %>"></i> Build log</div>
+          <%= if @job do %><span class="ui horizontal label job-id"><%= @job.id %></span><% end %>
           <div class="actions">
             <button class="ui tiny button" phx-click="rebuild">Trigger rebuild</button>
           </div>
