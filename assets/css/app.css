@@ -148,3 +148,22 @@ form .field label span {
   float: left;
   margin: 0 0.5em 0 0;
 }
+
+h1.with-actions,
+h2.with-actions,
+h3.with-actions,
+h4.with-actions,
+h5.with-actions,
+h6.with-actions {
+  display: flex;
+  align-items: center;
+}
+
+h1.with-actions .text,
+h2.with-actions .text,
+h3.with-actions .text,
+h4.with-actions .text,
+h5.with-actions .text,
+h6.with-actions .text {
+  margin-right: auto;
+}

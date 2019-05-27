@@ -6,7 +6,12 @@
       <%= render("submission_table.html", conn: @socket, submission: @submission, hide: unless @role == :teacher do [:author] end) %>
       <h4><i class="<%= icon(:comment) %>"></i> Comment</h4>
       <div class="ui segment"><%= @submission.comment || ~E(<i>Empty<i>) %></div>
-      <h4><i class="<%= icon(:terminal) %>"></i> Build log</h4>
+      <h4 class="with-actions">
+          <div class="text"><i class="<%= icon(:terminal) %>"></i> Build log</div>
+          <div class="actions">
+            <button class="ui tiny button" phx-click="rebuild">Trigger rebuild</button>
+          </div>
+      </h4>
       <pre id="log"><code><%= for {type, text} <- @log_lines do %><div class="<%= type %>"><%= text %><br /></div><% end %></code></pre>
     </div>
   </div>

@@ -31,7 +31,7 @@ defmodule Thesis.Submissions do
 
     def with_jobs(queryable) do
       queryable
-      |> preload(:jobs)
+      |> preload(jobs: ^from(j in Job, order_by: [desc: j.inserted_at]))
     end
 
     def with_files(queryable) do

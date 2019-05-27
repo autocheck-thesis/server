@@ -1,6 +1,10 @@
 defmodule ThesisWeb.SubmissionLiveView do
   use Phoenix.LiveView
 
+  alias Phoenix.LiveView.Socket
+  alias Thesis.Submissions
+  alias ThesisWeb.Router.Helpers, as: Routes
+
   def view_module(), do: ThesisWeb.SubmissionView
 
   def render(assigns) do
@@ -23,11 +27,12 @@ defmodule ThesisWeb.SubmissionLiveView do
      )}
   end
 
-  def mount(%{submission: submission} = _session, socket) do
+  def mount(%{submission: submission, role: role} = _session, socket) do
     {:ok,
      assign(socket,
        submission: submission,
-       log_lines: [{:error, "No job specified"}]
+       log_lines: [{:error, "No job specified"}],
+       role: role
      )}
   end
 
@@ -39,6 +44,24 @@ defmodule ThesisWeb.SubmissionLiveView do
     EventStore.ack(socket.assigns.subscription, events)
 
     {:noreply, update(socket, :log_lines, &(&1 ++ map_events(events)))}
+  end
+
+  def handle_event("rebuild", _, %Socket{assigns: %{submission: submission}} = socket) do
+    token = Submissions.create_download_token!(submission)
+
+    download_url =
+      Application.get_env(:thesis, :submission_download_hostname) <>
+        Routes.submission_path(socket, :download, token.id)
+
+    job =
+      Submissions.create_job!(submission, %{
+        image: "test:latest",
+        cmd: "mix test_suite #{download_url} #{submission.id}"
+      })
+
+    Thesis.Coderunner.start_event_stream(job)
+
+    {:stop, redirect(socket, to: Routes.submission_path(socket, :show, submission.id))}
   end
 
   defp map_events(events) do

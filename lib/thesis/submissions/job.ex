@@ -11,7 +11,6 @@ defmodule Thesis.Submissions.Job do
 
   schema "jobs" do
     field(:image, :string)
-    field(:cmd, :string)
     field(:finished, :boolean, default: false)
     belongs_to(:submission, Submission)
 

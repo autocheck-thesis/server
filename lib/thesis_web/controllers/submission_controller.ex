@@ -36,9 +36,9 @@ defmodule ThesisWeb.SubmissionController do
   end
 
   def show(%Plug.Conn{assigns: %{role: role}} = conn, %{"id" => submission_id}) do
-    submission = Submissions.get_with_jobs!(submission_id)
+    submission = Submissions.get_with_jobs!(submission_id) |> IO.inspect()
 
-    with [job] <- submission.jobs do
+    with [job | _jobs] <- submission.jobs do
       {:ok, events} = EventStore.read_stream_forward(job.id)
 
       live_render(conn, ThesisWeb.SubmissionLiveView,
@@ -134,8 +134,8 @@ defmodule ThesisWeb.SubmissionController do
 
       job =
         Submissions.create_job!(submission, %{
-          image: "test:latest",
-          cmd: "mix test_suite #{download_url} #{submission.id}"
+          image: "test:latest"
+          # cmd: "mix test_suite #{download_url} #{job.id} #{submission.id}"
         })
 
       Thesis.Coderunner.start_event_stream(job)
