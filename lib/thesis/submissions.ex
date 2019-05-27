@@ -24,6 +24,11 @@ defmodule Thesis.Submissions do
       |> SharedQuery.order_by_insertion_time()
     end
 
+    def with_assignment(queryable) do
+      queryable
+      |> preload(:assignment)
+    end
+
     def with_jobs(queryable) do
       queryable
       |> preload(:jobs)
@@ -75,6 +80,7 @@ defmodule Thesis.Submissions do
   def list_by_author(queryable \\ Submission, author_id) do
     queryable
     |> Query.where_author(author_id)
+    |> Query.with_assignment()
     |> Query.with_files()
     |> Repo.all()
   end
@@ -89,11 +95,13 @@ defmodule Thesis.Submissions do
 
   def get!(id) do
     Submission
+    |> Query.with_assignment()
     |> Repo.get!(id)
   end
 
   def get_with_jobs!(id) do
     Submission
+    |> Query.with_assignment()
     |> Query.with_files()
     |> Query.with_jobs()
     |> Repo.get!(id)

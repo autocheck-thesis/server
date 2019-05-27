@@ -28,22 +28,27 @@ defmodule ThesisWeb.SharedView do
   end
 
   def assignment_link(conn, %Assignment{} = assignment) do
-    assignment_link(conn, assignment.id)
+    assignment_link(conn, assignment.id, assignment.name)
   end
 
-  def assignment_link(conn, assignment_id) do
+  def assignment_link(conn, assignment_id, title) do
     href = Routes.assignment_path(conn, :show, assignment_id)
     icon = icon(:assignment)
 
-    ~E(<a href="<%= href %>" class="ui red label"><i class="<%= icon %>"></i><%= assignment_id %></a>)
+    ~E(<a href="<%= href %>" class="ui red label"><i class="<%= icon %>"></i><%= title || assignment_id %></a>)
   end
 
-  def render("sidebar_item.html", %{item: %Link{title: title, href: href, icon: icon}, request_path: request_path} = _assigns) do
-    class = if request_path == href do
-      "active item"
-    else
-      "item"
-    end
+  def render(
+        "sidebar_item.html",
+        %{item: %Link{title: title, href: href, icon: icon}, request_path: request_path} =
+          _assigns
+      ) do
+    class =
+      if request_path == href do
+        "active item"
+      else
+        "item"
+      end
 
     ~E(<a class="<%= class %>" href="<%= href %>"><i class="<%= icon %>"></i><%= title %></a>)
   end

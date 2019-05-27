@@ -6,7 +6,7 @@
     </tr>
     <%= unless assigns[:hide] && :assignment in assigns[:hide] do %><tr>
       <td>Assignment</td>
-      <td><%= SharedView.assignment_link(@conn, @submission.assignment_id) %></td>
+      <td><%= SharedView.assignment_link(@conn, @submission.assignment) %></td>
     </tr><% end %>
     <%= unless assigns[:hide] && :author in assigns[:hide] do %><tr>
       <td>Submitted by</td>
