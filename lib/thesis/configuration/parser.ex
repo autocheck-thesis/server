@@ -144,6 +144,10 @@ defmodule Thesis.Configuration.Parser do
     add_error(p, line, "incorrect field: ", unsupported_field, suggestion)
   end
 
+  # Empty step
+  defp parse_statement({:step, _meta, [_step_name, [do: {:__block__, [], []}]]}, state),
+    do: state
+
   defp parse_statement({:step, _meta, [step_name, [do: {:__block__, [], step_params}]]}, state),
     do: parse_statement(step_name, step_params, state)
 
