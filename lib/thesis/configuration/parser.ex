@@ -47,19 +47,25 @@ defmodule Thesis.Configuration.Parser do
     # the possiblity of descriptive error messages.
     case Code.string_to_quoted(configuration_code) do
       {:ok, quouted_form} ->
-        {:ok, parse_top_level(quouted_form)}
+        case parse_top_level(quouted_form) do
+          %Parser{errors: []} = parser ->
+            {:ok, parser}
+
+          %Parser{errors: errors} ->
+            {:error, errors}
+        end
 
       {:error, {line, {description_prefix, description_suffix}, token}} ->
         {:error,
-         %Error{
+         [%Error{
            line: line,
            description: description_prefix,
            token: token,
            description_suffix: description_suffix
-         }}
+         }]}
 
       {:error, {line, description, token}} ->
-        {:error, %Error{line: line, description: description |> String.trim(), token: token}}
+        {:error, [%Error{line: line, description: description |> String.trim(), token: token}]}
     end
   end
 
@@ -73,17 +79,36 @@ defmodule Thesis.Configuration.Parser do
     end
   end
 
+  # Multiple top level statements
   defp parse_top_level({:__block__, [], statements}), do: parse_top_level(statements)
 
+  # One top level statement
   defp parse_top_level(statement) when not is_list(statement), do: parse_top_level([statement])
 
   defp parse_top_level(statements),
     do: Enum.reduce(statements, %Parser{}, &parse_statement(&1, &2))
 
+  # Environment (env) field
   defp parse_statement(
-         {:@, _meta, [{:env, [line: line], [environment, environment_params]}]},
+         {:@, _meta, [{:env, [line: line], params}]},
          %Parser{} = p
-       ) do
+       ) do 
+       case params do
+        [name, params] when is_list(params) -> 
+          parse_environment_field(name, params, line, p)
+
+        [name] -> 
+          parse_environment_field(name, [], line, p)
+
+        [] ->
+          add_error(p, line, "missing environment name", "", "")
+
+        _ ->
+          add_error(p, line, "syntax error", "", "")
+       end
+  end
+
+  defp parse_environment_field(environment, environment_params, line, %Parser{} = p) do
     case Map.get(@environments, environment, :undefined) do
       :undefined ->
         suggestion = suggest_similar_environment(environment)
@@ -107,9 +132,11 @@ defmodule Thesis.Configuration.Parser do
     end
   end
 
+  # Required files field
   defp parse_statement({:@, _meta, [{:required_files, _meta2, file_names}]}, %Parser{} = p),
     do: %{p | required_files: file_names}
 
+  # Allowed file extensions field
   defp parse_statement(
          {:@, _meta, [{:allowed_file_extensions, [line: line], allowed_file_extensions}]},
          %Parser{} = p
@@ -135,10 +162,12 @@ defmodule Thesis.Configuration.Parser do
     end
   end
 
+  # Invalid field syntax
   defp parse_statement({:@, _meta, [{_, [line: line], params}]}, %Parser{} = p)
        when length(params) > 2,
        do: add_error(p, line, "syntax error", "", "")
 
+  # Unsupported field
   defp parse_statement({:@, _meta, [{unsupported_field, [line: line], _params}]}, %Parser{} = p) do
     suggestion = suggest_similar_field(unsupported_field)
     add_error(p, line, "incorrect field: ", unsupported_field, suggestion)
@@ -148,9 +177,11 @@ defmodule Thesis.Configuration.Parser do
   defp parse_statement({:step, _meta, [_step_name, [do: {:__block__, [], []}]]}, state),
     do: state
 
+  # Step with multiple params
   defp parse_statement({:step, _meta, [step_name, [do: {:__block__, [], step_params}]]}, state),
     do: parse_statement(step_name, step_params, state)
 
+  # Step with one param
   defp parse_statement({:step, _meta, [step_name, [do: step_param]]}, state),
     do: parse_statement(step_name, [step_param], state)
 

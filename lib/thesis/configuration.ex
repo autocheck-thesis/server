@@ -13,14 +13,8 @@ defmodule Thesis.Configuration do
 
   def validate(configuration_code, timeout \\ 1000) do
     case Task.await(Task.async(Parser, :parse, [configuration_code]), timeout) do
-      {:ok, %Parser{errors: errors}} ->
-        case errors do
-          [] -> :ok
-          errors -> {:errors, errors}
-        end
-
-      {:error, error} ->
-        {:errors, [error]}
+      {:ok, _} -> :ok
+      {:error, errors} -> {:errors, errors}
     end
   end
 end
