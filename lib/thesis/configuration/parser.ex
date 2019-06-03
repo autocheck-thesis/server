@@ -35,7 +35,8 @@ defmodule Thesis.Configuration.Parser do
 
   @environments %{
     "custom" => Thesis.Configuration.Custom,
-    "elixir" => Thesis.Configuration.Elixir
+    "elixir" => Thesis.Configuration.Elixir,
+    "java" => Thesis.Configuration.Java
   }
 
   def parse_dsl_raw(dsl) do
@@ -57,12 +58,14 @@ defmodule Thesis.Configuration.Parser do
 
       {:error, {line, {description_prefix, description_suffix}, token}} ->
         {:error,
-         [%Error{
-           line: line,
-           description: description_prefix,
-           token: token,
-           description_suffix: description_suffix
-         }]}
+         [
+           %Error{
+             line: line,
+             description: description_prefix,
+             token: token,
+             description_suffix: description_suffix
+           }
+         ]}
 
       {:error, {line, description, token}} ->
         {:error, [%Error{line: line, description: description |> String.trim(), token: token}]}
@@ -92,20 +95,20 @@ defmodule Thesis.Configuration.Parser do
   defp parse_statement(
          {:@, _meta, [{:env, [line: line], params}]},
          %Parser{} = p
-       ) do 
-       case params do
-        [name, params] when is_list(params) -> 
-          parse_environment_field(name, params, line, p)
+       ) do
+    case params do
+      [name, params] when is_list(params) ->
+        parse_environment_field(name, params, line, p)
 
-        [name] -> 
-          parse_environment_field(name, [], line, p)
+      [name] ->
+        parse_environment_field(name, [], line, p)
 
-        [] ->
-          add_error(p, line, "missing environment name", "", "")
+      [] ->
+        add_error(p, line, "missing environment name", "", "")
 
-        _ ->
-          add_error(p, line, "syntax error", "", "")
-       end
+      _ ->
+        add_error(p, line, "syntax error", "", "")
+    end
   end
 
   defp parse_environment_field(environment, environment_params, line, %Parser{} = p) do
