@@ -153,9 +153,15 @@ defmodule ThesisWeb.SubmissionController do
       |> Map.put(:files, files)
       |> Map.put(:job_id, job.id)
 
-    # TODO: Uncomment to enable download token removal (One-time-use tokens)
-    # Submissions.remove_job_download_token!(job)
-
     render(conn, "download.json", data: data)
+  end
+
+  def download_callback(conn, %{"token" => token, "result" => result}) do
+    job = Submissions.get_job_by_download_token!(token)
+    # submission = Submissions.get_with_files_with_content!(job.submission_id)
+
+    IO.inspect result
+
+    render(conn, "download_callback.json", job: job)
   end
 end

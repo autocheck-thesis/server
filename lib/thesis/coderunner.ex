@@ -49,7 +49,15 @@ defmodule Thesis.Coderunner do
           job.download_token
         )
 
-    "mix test_suite \"#{download_url}\""
+    callback_url =
+      Application.get_env(:thesis, :submission_download_hostname) <>
+        ThesisWeb.Router.Helpers.submission_path(
+          ThesisWeb.Endpoint,
+          :download_callback,
+          job.download_token
+        )
+
+    "mix test_suite \"#{download_url}\" \"#{callback_url}\""
   end
 
   defp parse_pull_chunk(chunk) do

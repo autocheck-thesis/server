@@ -51,6 +51,7 @@ defmodule ThesisWeb.Router do
   scope "/", ThesisWeb do
     pipe_through [:json_client]
     get "/submission/download/:token", SubmissionController, :download
+    post "/submission/download/:token/callback", SubmissionController, :download_callback
   end
 
   scope "/", ThesisWeb do
