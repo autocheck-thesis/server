@@ -17,7 +17,7 @@
       <td><%= @submission.inserted_at %></td>
     </tr><% end %>
     <tr>
-    <%= unless assigns[:hide] && :results in assigns[:hide] do %><tr>
+    <%= unless !assigns[:results] || assigns[:hide] && :results in assigns[:hide] do %><tr>
       <td class="top aligned">Results</td>
       <td>
         <%= if length(@results) > 0 do %>
