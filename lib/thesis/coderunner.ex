@@ -1,4 +1,6 @@
 defmodule Thesis.Coderunner do
+  alias Thesis.Submissions
+
   @image "test:latest"
 
   def run!(job, event_callback \\ &append_to_stream/2) do
@@ -37,7 +39,18 @@ defmodule Thesis.Coderunner do
 
     DockerAPI.Containers.remove(job.id, true, client)
 
-    :ok
+    receive do
+      {:result, results} ->
+        IO.inspect({:result, results})
+        event_callback.(job, {:result, results})
+        Submissions.finish_job!(job, results)
+
+      other ->
+        throw({:other, other})
+    after
+      30000 ->
+        throw(:timeout)
+    end
   end
 
   defp generate_cmd(job) do
@@ -57,7 +70,9 @@ defmodule Thesis.Coderunner do
           job.download_token
         )
 
-    "mix test_suite \"#{download_url}\" \"#{callback_url}\""
+    self_string = Base.encode64(:erlang.term_to_binary(self()))
+
+    "mix test_suite \"#{download_url}\" \"#{callback_url}\" \"#{self_string}\""
   end
 
   defp parse_pull_chunk(chunk) do

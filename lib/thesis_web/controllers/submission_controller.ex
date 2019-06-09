@@ -36,7 +36,7 @@ defmodule ThesisWeb.SubmissionController do
   end
 
   def show(%Plug.Conn{assigns: %{role: role}} = conn, %{"id" => submission_id}) do
-    submission = Submissions.get_with_jobs!(submission_id) |> IO.inspect()
+    submission = Submissions.get_with_jobs!(submission_id)
 
     with [job | _jobs] <- submission.jobs do
       {:ok, events} = EventStore.read_stream_forward(job.id)
@@ -156,11 +156,15 @@ defmodule ThesisWeb.SubmissionController do
     render(conn, "download.json", data: data)
   end
 
-  def download_callback(conn, %{"token" => token, "result" => result}) do
+  def download_callback(conn, %{"token" => token, "result" => result, "worker_pid" => worker_pid}) do
     job = Submissions.get_job_by_download_token!(token)
     # submission = Submissions.get_with_files_with_content!(job.submission_id)
 
-    IO.inspect result
+    # This could be replaced by a registry of running workers
+    # Not worse than what honeydew already does
+    {:ok, pid_binary} = Base.decode64(worker_pid)
+    pid = :erlang.binary_to_term(pid_binary, [:safe])
+    send(pid, {:result, result})
 
     render(conn, "download_callback.json", job: job)
   end

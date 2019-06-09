@@ -12,6 +12,7 @@ defmodule Thesis.Submissions.Job do
   schema "jobs" do
     field(:finished, :boolean, default: false)
     field(:download_token, :binary_id)
+    field(:result, {:array, :map})
     belongs_to(:submission, Submission)
 
     timestamps()
