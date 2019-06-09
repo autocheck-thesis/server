@@ -89,6 +89,10 @@ defmodule ThesisWeb.SubmissionView do
     data
   end
 
+  def render("download_callback.json", %{job: job}) do
+    job.id
+  end
+
   def format_bytes(size) do
     "#{ceil(size / 1024)} kB"
   end

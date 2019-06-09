@@ -19,12 +19,15 @@ defmodule ThesisWeb.SubmissionLiveView do
       EventStore.subscribe_to_stream(job.id, UUID.uuid4(), self(), start_from: length(events))
     end
 
+    {_result, logs} = Enum.reduce(events, {nil, []}, &reduce_event/2)
+
     {:ok,
      assign(socket,
        submission: submission,
-       log_lines: map_events(events),
+       log_lines: Enum.reverse(logs),
        role: role,
-       job: job
+       job: job,
+       results: job.result || []
      )}
   end
 
@@ -44,7 +47,17 @@ defmodule ThesisWeb.SubmissionLiveView do
   def handle_info({:events, events}, socket) do
     EventStore.ack(socket.assigns.subscription, events)
 
-    {:noreply, update(socket, :log_lines, &(&1 ++ map_events(events)))}
+    {result, logs} = Enum.reduce(events, {nil, []}, &reduce_event/2)
+
+    socket =
+      case result do
+        nil -> socket
+        _ -> assign(socket, :results, result)
+      end
+
+    socket = update(socket, :log_lines, &(&1 ++ Enum.reverse(logs)))
+
+    {:noreply, socket}
   end
 
   def handle_event("rebuild", _, %Socket{assigns: %{submission: submission}} = socket) do
@@ -54,30 +67,34 @@ defmodule ThesisWeb.SubmissionLiveView do
     {:stop, redirect(socket, to: Routes.submission_path(socket, :show, submission.id))}
   end
 
-  defp map_events(events) do
-    Enum.map(events, fn %EventStore.RecordedEvent{data: data} ->
-      case data do
-        :init ->
-          {:init, "Coderunner started job"}
+  defp reduce_event(%EventStore.RecordedEvent{data: data}, {result, logs}) do
+    case data do
+      :init ->
+        {result, [{:init, "Coderunner started job"} | logs]}
 
-        {:pull, :end} ->
-          {:done, "Image fetching done. Will now execute the job..."}
+      {:pull, :end} ->
+        {result, [{:done, "Image fetching done. Will now execute the job..."} | logs]}
 
-        {:run, :end} ->
-          {:done, "Process execution successful"}
+      {:run, :end} ->
+        {result, [{:done, "Process execution successful"} | logs]}
 
-        {:pull, {_stream, text}} ->
-          {:text, text}
+      {:pull, {_stream, text}} ->
+        {result, [{:text, text} | logs]}
 
-        {:run, {:stdio, text}} ->
-          {:text, text |> String.replace(~r/\n$/, "")}
+      {:run, {:stdio, text}} ->
+        {result, [{:text, text |> String.replace(~r/\n$/, "")} | logs]}
 
-        {:run, {:stderr, text}} ->
-          {:supervisor, text |> String.replace(~r/\n$/, "")}
+      {:run, {:stderr, text}} ->
+        {result, [{:supervisor, text |> String.replace(~r/\n$/, "")} | logs]}
 
-        {:error, text} ->
-          {:error, inspect(text)}
-      end
-    end)
+      {:result, result} when is_binary(result) ->
+        {Jason.decode!(result), logs}
+
+      {:result, result} ->
+        {result, logs}
+
+      {:error, text} ->
+        {result, [{:error, inspect(text)} | logs]}
+    end
   end
 end

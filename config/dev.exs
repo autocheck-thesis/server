@@ -96,13 +96,8 @@ config :thesis,
   # In a development environment, the submission download hostname
   # should be pointing to the HOST machine.
   #
-  # Example configurations for different systems are commented out:
-  #
-  # Dinghy:
-  # submission_download_hostname: "http://hostmachine.docker:4000",
-  #
-  # Docker for MAC:
-  # submission_download_hostname: "http://docker.for.mac.localhost:4000",
+  # In Docker Desktop this would be:
+  # submission_download_hostname: "http://host.docker.internal:4000",
   coderunner_supervisor_path: "../coderunner-supervisor/"
 
 import_config "./**/local.exs"

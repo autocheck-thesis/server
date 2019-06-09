@@ -158,9 +158,10 @@ defmodule Thesis.Submissions do
     |> Repo.update!()
   end
 
-  def finish_job!(job) do
+  def finish_job!(job, result) do
     job
     |> Ecto.Changeset.change(finished: true)
+    |> Ecto.Changeset.change(result: result)
     |> Repo.update!()
   end
 

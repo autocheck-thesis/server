@@ -13,7 +13,5 @@ defmodule Thesis.Submissions.JobWorker do
     # {:ok, coderunner} = Thesis.Coderunner.start()
     # Thesis.Coderunner.process_job_local_image(coderunner, job)
     Coderunner.run!(job)
-
-    Submissions.finish_job!(job)
   end
 end
