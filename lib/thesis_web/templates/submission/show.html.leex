@@ -3,16 +3,7 @@
   <div class="twelve wide column">
     <div class="ui segment">
       <h4><i class="<%= icon(:submission) %>"></i> Submission details</h4>
-      <%= render("submission_table.html", conn: @socket, submission: @submission, hide: unless @role == :teacher do [:author] end) %>
-      <h4><i class="<%= icon(:submission) %>"></i> Job result</h4>
-      <div class="ui segment">
-        <%= for %{"name" => name, "command_results" => command_results} <- @results do %>
-          <%= for %{"key" => key, "params" => params, "result" => result} <- command_results do %>
-            <h5>name: <%= name %>, key: <%= key %>, params: <%= inspect(params) %></h5>
-            <div><%= inspect(result) %></div>
-          <% end %>
-        <% end %>
-      </div>
+      <%= render("submission_table.html", conn: @socket, submission: @submission, results: @results, hide: unless @role == :teacher do [:author] end) %>
       <h4><i class="<%= icon(:comment) %>"></i> Comment</h4>
       <div class="ui segment"><%= @submission.comment || ~E(<i>Empty<i>) %></div>
       <h4 class="with-actions">

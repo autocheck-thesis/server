@@ -23,6 +23,10 @@ defmodule ThesisWeb.Views.Helpers do
   def icon(:file_changed), do: "pencil alternate icon"
   def icon(:file_unchanged), do: "file outline icon"
   def icon(:file_removed), do: "minus square outline icon"
+  def icon(:warning), do: "warning sign icon"
+  def icon(:check), do: "check icon"
+  def icon(:step), do: "clipboard outline icon"
+  def icon(:command), do: "file outline icon"
   def icon(_), do: icon()
   def icon(), do: "icon"
 

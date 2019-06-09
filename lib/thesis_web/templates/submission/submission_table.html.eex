@@ -1,4 +1,4 @@
-<table class="ui small definition compact table">
+<table class="ui small definition compact table submission_table">
   <tbody>
     <tr>
       <td class="three wide column">ID</td>
@@ -17,6 +17,50 @@
       <td><%= @submission.inserted_at %></td>
     </tr><% end %>
     <tr>
+    <%= unless assigns[:hide] && :results in assigns[:hide] do %><tr>
+      <td class="top aligned">Results</td>
+      <td>
+        <%= if length(@results) > 0 do %>
+          <div class="ui relaxed divided list results">
+            <%= for %{"name" => name, "command_results" => command_results} <- @results do %>
+              <div class="item">
+                <%= if command_results_has_error(command_results) do %>
+                  <i class="red <%= icon(:warning) %>"></i>
+                <% else %>
+                  <i class="green <%= icon(:check) %>"></i>
+                <% end %>
+                <div class="content">
+                  <div class="header"><%= name %></div>
+                  <div class="list">
+                    <%= for %{"key" => key, "params" => params, "result" => result} <- command_results do %>
+                      <div class="item">
+                        <%= if match?(%{"error" => error}, result) do %>
+                          <div class="right floated content">
+                            <%= result["error"] %>
+                          </div>
+                          <i class="red <%= icon(:warning) %>"></i>
+                          <div class="content">
+                            <%= key %>
+                          </div>
+                        <% else %>
+                          <i class="green <%= icon(:check) %>"></i>
+                          <div class="content">
+                            <%= key %>
+                          </div>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <i>Empty<i>
+        <% end %>
+      </td>
+    </tr><% end %>
+    <tr>
       <td class="top aligned">Files</td>
       <td>
         <div class="ui divided list">
@@ -30,8 +74,8 @@
                 <%= name %>
               </div>
             </div>
-            <% end %>
-          </div>
+          <% end %>
+        </div>
       </td>
     </tr>
   </tbody>

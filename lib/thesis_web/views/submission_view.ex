@@ -96,4 +96,8 @@ defmodule ThesisWeb.SubmissionView do
   def format_bytes(size) do
     "#{ceil(size / 1024)} kB"
   end
+
+  def command_results_has_error(command_results) do
+    Enum.any?(command_results, &match?(%{"result" => %{"error" => _error}}, &1))
+  end
 end
