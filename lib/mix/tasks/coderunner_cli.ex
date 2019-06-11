@@ -1,8 +1,8 @@
 defmodule Mix.Tasks.Coderunner do
   use Mix.Task
 
-  alias Thesis.Submissions.Job
-  alias Thesis.Configuration
+  alias Autocheck.Submissions.Job
+  alias Autocheck.Configuration
 
   @shortdoc "Test job locally"
   def run(args) do
@@ -32,7 +32,7 @@ defmodule Mix.Tasks.Coderunner do
       download_token: ""
     }
 
-    Thesis.Coderunner.run!(job, &log_event/2)
+    Autocheck.Coderunner.run!(job, &log_event/2)
   end
 
   def log_event(%Job{} = _job, event) do

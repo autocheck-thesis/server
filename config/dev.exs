@@ -6,7 +6,7 @@ use Mix.Config
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we use it
 # with webpack to recompile .js and .css sources.
-config :thesis, ThesisWeb.Endpoint,
+config :autocheck, AutocheckWeb.Endpoint,
   http: [port: 4000],
   https: [
     port: 4001,
@@ -80,19 +80,19 @@ config :eventstore, EventStore.Storage,
   serializer: EventStore.TermSerializer,
   username: "postgres",
   password: "postgres",
-  database: "thesis_dev_events",
+  database: "autocheck_dev_events",
   hostname: "localhost",
   pool_size: 10,
   pool_overflow: 5
 
-config :thesis, Thesis.Repo,
+config :autocheck, Autocheck.Repo,
   # log: false,
-  database: "thesis_dev",
+  database: "autocheck_dev",
   username: "postgres",
   password: "postgres",
   hostname: "localhost"
 
-config :thesis,
+config :autocheck,
   # In a development environment, the submission download hostname
   # should be pointing to the HOST machine.
   #

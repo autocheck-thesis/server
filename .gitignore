@@ -13,7 +13,7 @@ erl_crash.dump
 npm-debug.log
 /assets/node_modules/
 /priv/static/
-thesis-*.tar
+autocheck-*.tar
 
 
 ### https://raw.github.com/github/gitignore/28222daa1ec65ea9538dba4a6692ec64422fe992/Global/macOS.gitignore

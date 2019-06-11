@@ -1,4 +1,4 @@
-defmodule Thesis.Repo.Migrations.CreateFiles do
+defmodule Autocheck.Repo.Migrations.CreateFiles do
   use Ecto.Migration
 
   def change do

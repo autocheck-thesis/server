@@ -1,7 +1,7 @@
-defmodule Thesis.DiffTest do
+defmodule Autocheck.DiffTest do
   use ExUnit.Case
 
-  import Thesis.Diff
+  import Autocheck.Diff
 
   defp rev1_file(), do: File.cwd!() <> "/test/HelloWorld.java"
   defp rev2_file(), do: File.cwd!() <> "/test/HelloWorld2.java"

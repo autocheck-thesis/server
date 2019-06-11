@@ -1,4 +1,4 @@
-defmodule ThesisWeb.ConnCase do
+defmodule AutocheckWeb.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -19,10 +19,10 @@ defmodule ThesisWeb.ConnCase do
     quote do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
-      alias ThesisWeb.Router.Helpers, as: Routes
+      alias AutocheckWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
-      @endpoint ThesisWeb.Endpoint
+      @endpoint AutocheckWeb.Endpoint
     end
   end
 

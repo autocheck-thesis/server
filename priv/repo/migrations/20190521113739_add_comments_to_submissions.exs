@@ -1,4 +1,4 @@
-defmodule Thesis.Repo.Migrations.AddCommentsToSubmissions do
+defmodule Autocheck.Repo.Migrations.AddCommentsToSubmissions do
   use Ecto.Migration
 
   def change do

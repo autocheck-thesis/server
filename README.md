@@ -1,4 +1,4 @@
-# Thesis
+# Autocheck
 
 To start your Phoenix server:
 

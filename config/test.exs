@@ -2,11 +2,11 @@ use Mix.Config
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :thesis, ThesisWeb.Endpoint,
+config :autocheck, AutocheckWeb.Endpoint,
   http: [port: 4002],
   server: false
 
-config :thesis, :children, []
+config :autocheck, :children, []
 
 # Print only warnings and errors during test
 config :logger, level: :warn
@@ -15,16 +15,16 @@ config :logger, level: :warn
 #   serializer: EventStore.TermSerializer,
 #   username: "postgres",
 #   password: "postgres",
-#   database: "thesis_test_events",
+#   database: "autocheck_test_events",
 #   hostname: "server_db_1.docker",
 #   pool_size: 1,
 #   pool_overflow: 0
 
-# config :thesis, Thesis.Repo,
-#   database: "thesis_test",
+# config :autocheck, Autocheck.Repo,
+#   database: "autocheck_test",
 #   username: "postgres",
 #   password: "postgres",
 #   hostname: "server_db_1.docker"
 
-# config :thesis,
+# config :autocheck,
 #   submission_download_hostname: "http://hostmachine.docker:4000"

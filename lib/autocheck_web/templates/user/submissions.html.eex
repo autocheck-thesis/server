@@ -1,0 +1,11 @@
+<div class="ui grid">
+  <%= render(AutocheckWeb.SharedView, "sidebar.html", items: user_sidebar_items(@conn, @user), request_path: @conn.request_path) %>
+  <div class="twelve wide column">
+    <div class="ui segment submissions">
+      <h4><i class="<%= icon(:submissions) %>"></i> Submissions</h4>
+      <%= for submission <- @submissions do %>
+        <%= render(AutocheckWeb.SubmissionView, "submission_table.html", conn: @conn, submission: submission, hide: [:author]) %>
+      <% end %>
+    </div>
+  </div>
+</div>

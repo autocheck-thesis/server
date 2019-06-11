@@ -8,20 +8,20 @@
 use Mix.Config
 
 # Configures the endpoint
-config :thesis, ThesisWeb.Endpoint,
+config :autocheck, AutocheckWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "Uqz3utAOWmiwz3MsYCCB4QKjKg7bReiKg1wj4z5ryAEHCQMHioxz6JtQTlULGPtm",
   render_errors: [
-    view: ThesisWeb.ErrorView,
+    view: AutocheckWeb.ErrorView,
     accepts: ~w(html),
-    layout: {ThesisWeb.ErrorView, "error.html"}
+    layout: {AutocheckWeb.ErrorView, "error.html"}
   ],
-  pubsub: [name: Thesis.PubSub, adapter: Phoenix.PubSub.PG2],
+  pubsub: [name: Autocheck.PubSub, adapter: Phoenix.PubSub.PG2],
   live_view: [
     signing_salt: "YOUR_SECRET"
   ]
 
-config :thesis, :children, [ThesisWeb.Endpoint, Thesis.Repo]
+config :autocheck, :children, [AutocheckWeb.Endpoint, Autocheck.Repo]
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -38,10 +38,10 @@ config :plug_lti,
 config :phoenix,
   template_engines: [leex: Phoenix.LiveView.Engine]
 
-config :thesis, ecto_repos: [Thesis.Repo]
+config :autocheck, ecto_repos: [Autocheck.Repo]
 
-# config :thesis, Thesis.Repo,
-#   database: "thesis_repo",
+# config :autocheck, Autocheck.Repo,
+#   database: "autocheck_repo",
 #   username: "postgres",
 #   password: "postgres",
 #   hostname: "localhost"

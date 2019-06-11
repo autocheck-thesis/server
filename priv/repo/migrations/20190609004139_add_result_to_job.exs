@@ -1,4 +1,4 @@
-defmodule Thesis.Repo.Migrations.AddResultToJob do
+defmodule Autocheck.Repo.Migrations.AddResultToJob do
   use Ecto.Migration
 
   def change do

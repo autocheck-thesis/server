@@ -1,4 +1,4 @@
-defmodule Thesis.Repo.Migrations.CreateJobs do
+defmodule Autocheck.Repo.Migrations.CreateJobs do
   use Ecto.Migration
 
   import Honeydew.EctoPollQueue.Migration

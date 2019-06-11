@@ -1,9 +1,9 @@
-defmodule Thesis.MixProject do
+defmodule Autocheck.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :thesis,
+      app: :autocheck,
       version: "0.1.0",
       elixir: "~> 1.5",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -27,12 +27,12 @@ defmodule Thesis.MixProject do
     # in `config/test.exs`
     if Mix.env() == :test do
       [
-        mod: {Thesis.Application, []},
+        mod: {Autocheck.Application, []},
         applications: [:logger, :runtime_tools]
       ]
     else
       [
-        mod: {Thesis.Application, []},
+        mod: {Autocheck.Application, []},
         extra_applications: [:logger, :runtime_tools]
       ]
     end

@@ -1,8 +1,8 @@
-defmodule Thesis.ConfigurationTest do
+defmodule Autocheck.ConfigurationTest do
   use ExUnit.Case
-  import Thesis.Configuration
-  alias Thesis.Configuration.{Parser}
-  alias Thesis.Configuration.Parser.Error
+  import Autocheck.Configuration
+  alias Autocheck.Configuration.{Parser}
+  alias Autocheck.Configuration.Parser.Error
 
   @default_valid_env """
   @env "elixir",

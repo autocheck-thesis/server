@@ -1,4 +1,4 @@
-defmodule Thesis.Repo.Migrations.CreateAssignments do
+defmodule Autocheck.Repo.Migrations.CreateAssignments do
   use Ecto.Migration
 
   def change do

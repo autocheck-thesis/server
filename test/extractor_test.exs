@@ -1,6 +1,6 @@
-defmodule Thesis.ExtractorTest do
+defmodule Autocheck.ExtractorTest do
   use ExUnit.Case
-  import Thesis.Extractor
+  import Autocheck.Extractor
 
   @existing_zip_archive Path.join(__DIR__, "test.zip")
   @existing_targz_archive Path.join(__DIR__, "test.tar.gz")
