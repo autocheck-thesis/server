@@ -12,12 +12,15 @@ defmodule AutocheckWeb.SubmissionController do
     assignment = Assignments.get!(assignment_id)
     configuration = Assignments.get_latest_configuration!(assignment.id)
 
-    %Configuration{allowed_file_extensions: allowed_file_extensions} =
-      Configuration.parse_code(configuration.code)
+    %Configuration{
+      allowed_file_extensions: allowed_file_extensions,
+      required_files: required_files
+    } = Configuration.parse_code(configuration.code)
 
     render(conn, "index.html",
       assignment: assignment,
       allowed_file_extensions: allowed_file_extensions,
+      required_files: required_files,
       role: role
     )
   end
@@ -78,8 +81,107 @@ defmodule AutocheckWeb.SubmissionController do
     )
   end
 
+  @doc """
+
+  Check whether uploaded files have an allowed file extension.
+
+  Returns {:error, invalid_files} or :ok
+
+  ## Examples
+
+    iex> AutocheckWeb.SubmissionController.files_extensions_valid?(
+    ...>   [".txt", ".ex"],
+    ...>   [%Plug.Upload{filename: "test.txt"}]
+    ...> )
+    :ok
+
+    iex> AutocheckWeb.SubmissionController.files_extensions_valid?(
+    ...>   [".txt", ".ex"],
+    ...>   [
+    ...>     %Plug.Upload{filename: "test.txt"},
+    ...>     %Plug.Upload{filename: "test.png"}
+    ...>   ]
+    ...> )
+    {:error, [%Plug.Upload{filename: "test.png"}]}
+
+    iex> AutocheckWeb.SubmissionController.files_extensions_valid?(
+    ...>   [],
+    ...>   [
+    ...>     %Plug.Upload{filename: "test.txt"},
+    ...>     %Plug.Upload{filename: "test.png"}
+    ...>   ]
+    ...> )
+    :ok
+
+  """
+  @spec files_extensions_valid?(allowed_exts :: list(String.t()), files :: list(Plug.Upload.t())) ::
+          :ok | {:error, list(Plug.Upload.t())}
+  def files_extensions_valid?(allowed_exts, files) do
+    case not Enum.empty?(allowed_exts) &&
+           Enum.filter(files, fn file ->
+             !Enum.any?(allowed_exts, fn ext ->
+               String.ends_with?(file.filename, ext)
+             end)
+           end) do
+      false -> :ok
+      [] -> :ok
+      files -> {:error, files}
+    end
+  end
+
+  @spec validate_file_extensions(allowed_exts :: list(String.t()), files :: list(Plug.Upload.t())) ::
+          :ok | {:error, String.t()}
+  defp validate_file_extensions(allowed_exts, files) do
+    case files_extensions_valid?(allowed_exts, files) do
+      :ok ->
+        :ok
+
+      {:error, files} ->
+        invalid_files_string =
+          files
+          |> Enum.map(fn %Plug.Upload{filename: filename} -> filename end)
+          |> Enum.join(", ")
+
+        allowed_exts_string = Enum.join(allowed_exts, ", ")
+
+        {:error,
+         "Invalid file extension for file(s): #{invalid_files_string}, allowed: #{
+           allowed_exts_string
+         }"}
+    end
+  end
+
+  @spec extract_possible_archives(files :: list(Plug.Upload.t())) ::
+          list(%{name: String.t(), contents: term()})
+  defp extract_possible_archives(files) do
+    Enum.flat_map(files, fn file ->
+      if Enum.any?([".tar", ".tar.gz", ".zip"], &String.ends_with?(file.filename, &1)) do
+        extracted_files = Autocheck.Extractor.extract!(file.path)
+        for {name, contents} <- extracted_files, do: %{name: name, contents: contents}
+      else
+        [%{name: file.filename, contents: Elixir.File.read!(file.path)}]
+      end
+    end)
+  end
+
+  @spec validate_required_files(
+          required_files :: list(String.t()),
+          files :: list(%{name: String.t(), contents: term()})
+        ) :: :ok | {:error, String.t()}
+  defp validate_required_files(required_files, files) do
+    filenames = Enum.map(files, &Map.fetch!(&1, :name))
+    missing_files = MapSet.difference(MapSet.new(required_files), MapSet.new(filenames))
+
+    if Enum.empty?(missing_files) do
+      :ok
+    else
+      missing_files_string = Enum.join(missing_files, ", ")
+      {:error, "Missing required file(s): #{missing_files_string}"}
+    end
+  end
+
   def submit(%Plug.Conn{assigns: %{user: user}} = conn, %{
-        "file" => file,
+        "files" => uploaded_files,
         "assignment_id" => assignment_id,
         "comment" => comment
       }) do
@@ -91,38 +193,9 @@ defmodule AutocheckWeb.SubmissionController do
       required_files: required_files
     } = Configuration.parse_code(configuration.code)
 
-    if not Enum.empty?(allowed_file_extensions) and
-         not Enum.any?(allowed_file_extensions, &String.ends_with?(file.filename, &1)) do
-      allowed_list = Enum.join(allowed_file_extensions, ", ")
-      Logger.debug("Invalid file extension for file '#{file.filename}', allowed: #{allowed_list}")
-
-      conn
-      |> put_flash(
-        :error,
-        "Invalid file extension for file '#{file.filename}', allowed: #{allowed_list}"
-      )
-      |> redirect(to: current_path(conn))
-    else
-      files =
-        if Enum.any?([".tar", ".tar.gz", ".zip"], &String.ends_with?(file.filename, &1)) do
-          extracted_files = Autocheck.Extractor.extract!(file.path)
-          for {name, contents} <- extracted_files, do: %{name: name, contents: contents}
-        else
-          [%{name: file.filename, contents: Elixir.File.read!(file.path)}]
-        end
-
-      filenames = Enum.map(files, fn %{name: name} -> name end)
-      missing_files = MapSet.difference(MapSet.new(required_files), MapSet.new(filenames))
-
-      if not Enum.empty?(missing_files) do
-        missing_files_list = Enum.join(missing_files, ", ")
-        Logger.debug("Missing required file(s): #{missing_files_list}")
-
-        conn
-        |> put_flash(:error, "Missing required file(s): #{missing_files_list}")
-        |> redirect(to: current_path(conn))
-      end
-
+    with :ok <- validate_file_extensions(allowed_file_extensions, uploaded_files),
+         files <- extract_possible_archives(uploaded_files),
+         :ok <- validate_required_files(required_files, files) do
       submission =
         Submissions.create!(user, assignment, %{jobs: [], files: files, comment: comment})
 
@@ -130,6 +203,11 @@ defmodule AutocheckWeb.SubmissionController do
       Autocheck.Coderunner.start_event_stream(job)
 
       redirect(conn, to: Routes.submission_path(conn, :show, submission.id))
+    else
+      {:error, reason} ->
+        conn
+        |> put_flash(:error, reason)
+        |> redirect(to: current_path(conn))
     end
   end
 

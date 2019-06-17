@@ -4,13 +4,26 @@
     <div class="ui segment">
       <h4><i class="<%= icon(:upload_submission) %>"></i> Upload submission</h4>
       <%= form_for @conn, Routes.submission_path(@conn, :submit, @assignment.id), [multipart: true], fn f -> %>
+        <%= if not Enum.empty?(@required_files) do %>
+          <div class="ui visible info icon message">
+            <i class="info icon"></i>
+            <div class="content">
+              <div class="header">This assignment requires you to submit specific files:</div>
+              <ul class="list">
+                <%= for filename <- @required_files do %>
+                  <li><%= filename %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        <% end %>
         <div class="required field">
-          <%= if length(@allowed_file_extensions) > 0 do %>
-            <label>File <span>(<%= Enum.join(@allowed_file_extensions, ", ") %>)</span></label>
+          <%= if not Enum.empty?(@allowed_file_extensions) do %>
+            <label>File(s) <span>(<%= Enum.join(@allowed_file_extensions, ", ") %>)</span></label>
           <% else %>
-            <label>File</label>
+            <label>File(s)</label>
           <% end %>
-          <%= file_input f, :file, accept: @allowed_file_extensions |> Enum.map(&Path.extname(&1)) |> Enum.join(",") %>
+          <%= file_input f, :files, multiple: true, accept: @allowed_file_extensions |> Enum.map(&Path.extname(&1)) |> Enum.join(",") %>
         </div>
         <div class="field">
           <label>Comment</label>
