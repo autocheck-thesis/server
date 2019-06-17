@@ -59,19 +59,4 @@ defmodule Autocheck.ConfigurationTest do
 
     assert {:ok, _} = Parser.parse(code)
   end
-
-  test "configuration with invalid environment" do
-    code = """
-    @env "wutface",
-      version: "1.7"
-
-    step "empty" do
-      run "actually do things"
-    end
-    """
-
-    assert {:error, errors} = Parser.parse(code)
-    assert length(errors) == 1
-    assert String.contains?(Enum.at(errors, 0).description, "environment is not defined")
-  end
 end
