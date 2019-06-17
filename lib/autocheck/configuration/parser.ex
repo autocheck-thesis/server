@@ -143,7 +143,7 @@ defmodule Autocheck.Configuration.Parser do
             &2,
             line,
             "Invalid file extension: ",
-            &1,
+            map_keyword(&1),
             "A file extension must start with a dot and not contain any special characters."
           )
         )
@@ -314,4 +314,10 @@ defmodule Autocheck.Configuration.Parser do
       token: token,
       description_suffix: description_suffix
     }
+
+  defp map_keyword(keywords) when is_list(keywords),
+    do: "[" <> (keywords |> Enum.map(&map_keyword(&1)) |> Enum.join(", ")) <> "]"
+
+  defp map_keyword({keyword, _meta, _}), do: keyword
+  defp map_keyword(other), do: inspect(other)
 end
