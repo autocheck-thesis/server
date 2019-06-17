@@ -111,30 +111,6 @@ defmodule Autocheck.Configuration.Parser do
     end
   end
 
-  defp parse_environment_field(environment, environment_params, line, %Parser{} = p) do
-    case Map.get(@environments, environment, :undefined) do
-      :undefined ->
-        suggestion = suggest_similar_environment(environment)
-        add_error(p, line, "environment is not defined: ", environment, suggestion)
-
-      environment_module ->
-        image_param_counts =
-          apply(environment_module, :__info__, [:functions])
-          |> Keyword.get_values(:image)
-
-        param_count = length(environment_params)
-
-        if param_count in image_param_counts do
-          case apply(environment_module, :image, environment_params) do
-            {:ok, image} -> %{p | environment: environment_module, image: image}
-            {:error, description, token} -> add_error(p, line, description, token, "")
-          end
-        else
-          add_error(p, line, "incorrect number of parameters for env: ", environment, "")
-        end
-    end
-  end
-
   # Required files field
   defp parse_statement({:@, _meta, [{:required_files, _meta2, file_names}]}, %Parser{} = p),
     do: %{p | required_files: file_names}
@@ -181,36 +157,64 @@ defmodule Autocheck.Configuration.Parser do
     do: state
 
   # Step with multiple params
-  defp parse_statement({:step, _meta, [step_name, [do: {:__block__, [], step_params}]]}, state),
-    do: parse_statement(step_name, step_params, state)
+  defp parse_statement({:step, meta, [step_name, [do: {:__block__, [], step_params}]]}, state),
+    do: parse_statement(step_name, meta, step_params, state)
 
   # Step with one param
-  defp parse_statement({:step, _meta, [step_name, [do: step_param]]}, state),
-    do: parse_statement(step_name, [step_param], state)
+  defp parse_statement({:step, meta, [step_name, [do: step_param]]}, state),
+    do: parse_statement(step_name, meta, [step_param], state)
 
   defp parse_statement({keyword, [line: line], _params}, %Parser{} = p) do
     suggestion = suggest_similar_keyword(keyword)
     add_error(p, line, "incorrect keyword: ", keyword, suggestion)
   end
 
-  defp parse_statement(step_name, step_params, %Parser{} = p) do
+  defp parse_statement(step_name, [line: line], step_params, %Parser{} = p) do
     commands =
       Enum.map(step_params, fn x -> parse_step_command(x, p) end)
       |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
-    case commands do
-      %{error: errors, ok: commands} ->
-        %{
-          p
-          | steps: p.steps ++ [%{name: step_name, commands: commands}],
-            errors: p.errors ++ errors
-        }
+    if Enum.any?(p.steps, &(Map.fetch!(&1, :name) == step_name)) do
+      add_error(p, line, "the step name has already been defined: ", step_name, "")
+    else
+      case commands do
+        %{error: errors, ok: commands} ->
+          %{
+            p
+            | steps: p.steps ++ [%{name: step_name, commands: commands}],
+              errors: p.errors ++ errors
+          }
 
-      %{ok: commands} ->
-        %{p | steps: p.steps ++ [%{name: step_name, commands: commands}]}
+        %{ok: commands} ->
+          %{p | steps: p.steps ++ [%{name: step_name, commands: commands}]}
 
-      %{error: errors} ->
-        %{p | errors: p.errors ++ errors}
+        %{error: errors} ->
+          %{p | errors: p.errors ++ errors}
+      end
+    end
+  end
+
+  defp parse_environment_field(environment, environment_params, line, %Parser{} = p) do
+    case Map.get(@environments, environment, :undefined) do
+      :undefined ->
+        suggestion = suggest_similar_environment(environment)
+        add_error(p, line, "environment is not defined: ", environment, suggestion)
+
+      environment_module ->
+        image_param_counts =
+          apply(environment_module, :__info__, [:functions])
+          |> Keyword.get_values(:image)
+
+        param_count = length(environment_params)
+
+        if param_count in image_param_counts do
+          case apply(environment_module, :image, environment_params) do
+            {:ok, image} -> %{p | environment: environment_module, image: image}
+            {:error, description, token} -> add_error(p, line, description, token, "")
+          end
+        else
+          add_error(p, line, "incorrect number of parameters for env: ", environment, "")
+        end
     end
   end
 

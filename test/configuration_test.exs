@@ -20,11 +20,14 @@ defmodule Autocheck.ConfigurationTest do
   end
 
   test "configuration with multiple top level statements" do
-    code = @default_valid_env <> @default_valid_step <> """
-    step "Test 2" do
-      run "something"
-    end
-    """
+    code =
+      @default_valid_env <>
+        @default_valid_step <>
+        """
+        step "Test 2" do
+          run "something"
+        end
+        """
 
     assert {:ok, _} = Parser.parse(code)
   end
@@ -33,7 +36,7 @@ defmodule Autocheck.ConfigurationTest do
     code = @default_valid_env <> @default_valid_step <> @default_valid_step
 
     assert {:error, [%Error{description: description}]} = Parser.parse(code)
-    assert String.contains?(description, "same name")
+    assert String.contains?(description, "already been defined")
   end
 
   test "configuration with undefined env" do
@@ -41,7 +44,8 @@ defmodule Autocheck.ConfigurationTest do
       @env "invalid"
     """
 
-    assert {:error, %Error{description: "environment is not defined: ", token: :invalid}} = Parser.parse(code)
+    assert {:error, %Error{description: "environment is not defined: ", token: :invalid}} =
+             Parser.parse(code)
   end
 
   test "configuration with empty step" do
