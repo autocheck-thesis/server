@@ -10,7 +10,7 @@ defmodule Autocheck.Application do
   alias Honeydew.FailureMode.Abandon
   alias Autocheck.Repo
   alias Autocheck.Submissions.Job
-  alias Autocheck.Submissions.JobWorker
+  alias Autocheck.Coderunner
 
   def start(_type, _args) do
     # List all child processes to be supervised
@@ -29,7 +29,7 @@ defmodule Autocheck.Application do
           # failure_mode: {ExponentialRetry, base: 3, times: 3}
         )
 
-      :ok = Honeydew.start_workers(:run_jobs, JobWorker, num: 1)
+      :ok = Honeydew.start_workers(:run_jobs, Coderunner, num: 1)
     end
 
     {:ok, supervisor}

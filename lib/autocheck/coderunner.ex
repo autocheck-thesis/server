@@ -3,6 +3,11 @@ defmodule Autocheck.Coderunner do
 
   @image "test:latest"
 
+  def run(job_id) do
+    job = Submissions.get_job!(job_id)
+    run!(job)
+  end
+
   def run!(job, event_callback \\ &append_to_stream/2) do
     client = DockerAPI.connect()
 
@@ -41,7 +46,6 @@ defmodule Autocheck.Coderunner do
 
     receive do
       {:result, results} ->
-        IO.inspect({:result, results})
         event_callback.(job, {:result, results})
         Submissions.finish_job!(job, results)
 
