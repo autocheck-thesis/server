@@ -112,10 +112,19 @@ defmodule Autocheck.Configuration.Parser do
   end
 
   # Required files field
+  defp parse_statement({:@, _meta, [{:required_files, [line: line], nil}]}, %Parser{} = p),
+    do: add_error(p, line, "list can not be empty: ", "required_files", "")
+
   defp parse_statement({:@, _meta, [{:required_files, _meta2, file_names}]}, %Parser{} = p),
     do: %{p | required_files: file_names}
 
   # Allowed file extensions field
+  defp parse_statement(
+         {:@, _meta, [{:allowed_file_extensions, [line: line], nil}]},
+         %Parser{} = p
+       ),
+       do: add_error(p, line, "list can not be empty: ", "allowed_file_extensions", "")
+
   defp parse_statement(
          {:@, _meta, [{:allowed_file_extensions, [line: line], allowed_file_extensions}]},
          %Parser{} = p

@@ -59,4 +59,34 @@ defmodule Autocheck.ConfigurationTest do
 
     assert {:ok, _} = Parser.parse(code)
   end
+
+  test "configuration with empty required_files" do
+    code = """
+    @env "elixir",
+      version: "1.7"
+
+    @required_files
+
+    step "random" do
+      run "date"
+    end
+    """
+
+    assert {:error, [%Error{description: description}]} = Parser.parse(code)
+  end
+
+  test "configuration with empty allowed_file_extensions" do
+    code = """
+    @env "elixir",
+      version: "1.7"
+
+    @allowed_file_extensions
+
+    step "random" do
+      run "date"
+    end
+    """
+
+    assert {:error, [%Error{description: description}]} = Parser.parse(code)
+  end
 end
