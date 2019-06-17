@@ -44,8 +44,8 @@ defmodule Autocheck.ConfigurationTest do
       @env "invalid"
     """
 
-    assert {:error, %Error{description: "environment is not defined: ", token: :invalid}} =
-             Parser.parse(code)
+    assert {:error, [%Error{description: description}]} = Parser.parse(code)
+    assert String.contains?(description, "environment is not defined")
   end
 
   test "configuration with empty step" do
