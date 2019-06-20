@@ -26,37 +26,40 @@
               <div class="item">
                 <%= if command_results_has_error(command_results) do %>
                   <i class="red <%= icon(:warning) %>"></i>
+                  <div class="content">
+                    <div class="header"><%= name %></div>
+                    <div class="list">
+                      <%= for %{"key" => key, "params" => params, "result" => result} <- command_results do %>
+                        <div class="item">
+                          <%= if match?(%{"error" => error}, result) do %>
+                            <div class="right floated content">
+                              <%= result["error"] %>
+                            </div>
+                            <i class="red <%= icon(:warning) %>"></i>
+                            <div class="content">
+                              <%= key %>
+                            </div>
+                          <% else %>
+                            <i class="green <%= icon(:check) %>"></i>
+                            <div class="content">
+                              <%= key %>
+                            </div>
+                          <% end %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
                 <% else %>
                   <i class="green <%= icon(:check) %>"></i>
-                <% end %>
-                <div class="content">
-                  <div class="header"><%= name %></div>
-                  <div class="list">
-                    <%= for %{"key" => key, "params" => params, "result" => result} <- command_results do %>
-                      <div class="item">
-                        <%= if match?(%{"error" => error}, result) do %>
-                          <div class="right floated content">
-                            <%= result["error"] %>
-                          </div>
-                          <i class="red <%= icon(:warning) %>"></i>
-                          <div class="content">
-                            <%= key %>
-                          </div>
-                        <% else %>
-                          <i class="green <%= icon(:check) %>"></i>
-                          <div class="content">
-                            <%= key %>
-                          </div>
-                        <% end %>
-                      </div>
-                    <% end %>
+                  <div class="content">
+                    <div class="header"><%= name %></div>
                   </div>
-                </div>
+                <% end %>
               </div>
             <% end %>
           </div>
         <% else %>
-          <i>Empty<i>
+          <i>Waiting for results...<i>
         <% end %>
       </td>
     </tr><% end %>
