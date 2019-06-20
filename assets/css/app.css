@@ -161,3 +161,11 @@ form .field label span {
 .with-actions .actions {
   margin-left: auto;
 }
+
+.uploaded-files .remove {
+  color: inherit;
+}
+
+.uploaded-files .remove .icon {
+  color: #bb2828;
+}

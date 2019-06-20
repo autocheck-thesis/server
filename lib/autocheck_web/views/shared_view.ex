@@ -56,4 +56,8 @@ defmodule AutocheckWeb.SharedView do
   def render("sidebar_item.html", %{item: %LinkSeparator{title: title, icon: icon}} = _assigns) do
     ~E(</div><div class="item"><i class="<%= icon %>"></i><b><%= title %></b></div><div class="ui vertical pointing fluid menu">)
   end
+
+  def format_bytes(size) do
+    "#{ceil(size / 1024)} kB"
+  end
 end

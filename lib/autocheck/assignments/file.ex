@@ -1,19 +1,19 @@
-defmodule Autocheck.Submissions.File do
+defmodule Autocheck.Assignments.File do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Autocheck.Submissions.Submission
+  alias Autocheck.Assignments.Assignment
 
   @derive {Jason.Encoder, only: [:name, :contents]}
 
   @primary_key false
   @foreign_key_type :binary_id
 
-  schema "submission_files" do
+  schema "assignment_files" do
     field(:contents, :binary)
     field(:name, :string)
     field(:size, :integer, virtual: true)
-    belongs_to(:submission, Submission)
+    belongs_to(:assignment, Assignment)
   end
 
   @doc false

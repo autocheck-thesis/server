@@ -4,7 +4,6 @@ defmodule AutocheckWeb.SubmissionController do
   alias Autocheck.Configuration
   alias Autocheck.Assignments
   alias Autocheck.Submissions
-  alias Autocheck.Submissions.File
 
   require Logger
 
@@ -220,15 +219,21 @@ defmodule AutocheckWeb.SubmissionController do
   def download(conn, %{"token" => token}) do
     job = Submissions.get_job_by_download_token!(token)
     submission = Submissions.get_with_files_with_content!(job.submission_id)
+    assignment = Assignments.get_with_files_with_content!(submission.assignment_id)
 
-    files = for f <- submission.files, do: %File{f | contents: Base.encode64(f.contents)}
+    assignment_files =
+      for f <- assignment.files, do: %Assignments.File{f | contents: Base.encode64(f.contents)}
+
+    submission_files =
+      for f <- submission.files, do: %Submissions.File{f | contents: Base.encode64(f.contents)}
 
     configuration = Assignments.get_latest_configuration!(submission.assignment_id)
 
     data =
       Autocheck.Configuration.parse_code(configuration.code)
       |> Map.from_struct()
-      |> Map.put(:files, files)
+      |> Map.put(:assignment_files, assignment_files)
+      |> Map.put(:submission_files, submission_files)
       |> Map.put(:job_id, job.id)
 
     render(conn, "download.json", data: data)

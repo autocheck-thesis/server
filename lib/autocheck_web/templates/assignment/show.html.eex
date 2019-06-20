@@ -3,12 +3,39 @@
   <div class="ui twelve wide column form">
     <div class="ui segment">
       <h4><i class="<%= icon(:configure) %>"></i> Assignment setup</h4>
-      <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [id: "configuration-form"], fn f -> %>
-        <div class="field">
+      <%= form_for @conn, Routes.assignment_path(@conn, :submit, @assignment.id), [multipart: true, id: "configuration-form"], fn f -> %>
+        <div class="required field">
           <label>Configuration</label>
           <div id="code-editor"></div>
         </div>
         <div class="field" id="code_validation_output"></div>
+        <%= if not Enum.empty?(@assignment.files) do %>
+        <div class="field">
+          <label>Uploaded files</label>
+          <div class="ui divided list uploaded-files">
+            <%= for %{name: name, size: size} <- @assignment.files do %>
+              <div class="item">
+                <div class="right floated content">
+                  <a href="<%= Routes.assignment_path(@conn, :remove_file, @assignment.id, name) %>" class="remove"><i class="close icon"></i></a>
+                </div>
+                <i class="<%= icon(:file) %>"></i>
+                <div class="content">
+                  <%= name %>
+                </div>
+              </div>
+            <% end %>
+            <div class="item">
+              <div class="right floated content">
+                <a href="<%= Routes.assignment_path(@conn, :remove_all_files, @assignment.id) %>" class="remove">Remove all <i class="close icon"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <% end %>
+        <div class="field">
+          <label>Upload files</label>
+          <%= file_input f, :files, multiple: true %>
+        </div>
         <%= hidden_input(f, :dsl, value: @configuration && @configuration.code || "") %>
         <div class="field">
           <%= submit "Save", class: "ui button" %>

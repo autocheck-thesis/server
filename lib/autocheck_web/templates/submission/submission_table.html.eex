@@ -67,7 +67,7 @@
           <%= for %{name: name, size: size} <- @submission.files do %>
             <div class="item">
               <div class="right floated content">
-                <%= format_bytes(size) %>
+                <%= SharedView.format_bytes(size) %>
               </div>
               <i class="<%= icon(:file) %>"></i>
               <div class="content">

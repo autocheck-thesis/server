@@ -12,8 +12,8 @@ defmodule Autocheck.Submissions.Submission do
   schema "submissions" do
     belongs_to(:assignment, Assignment)
     belongs_to(:author, User)
-    has_many(:jobs, Job)
-    has_many(:files, File)
+    has_many(:jobs, Job, on_delete: :delete_all)
+    has_many(:files, File, on_delete: :delete_all)
     field(:comment, :string)
 
     timestamps()

@@ -44,6 +44,14 @@ defmodule AutocheckWeb.Router do
     get "/assignment/configure/:assignment_id", AssignmentController, :show
     post "/assignment/configure/:assignment_id", AssignmentController, :submit
 
+    get "/assignment/remove_all_files/:assignment_id",
+        AssignmentController,
+        :remove_all_files
+
+    get "/assignment/remove_file/:assignment_id/:name",
+        AssignmentController,
+        :remove_file
+
     get "/user/:id", UserController, :show
     get "/user/submissions/:id", UserController, :submissions
   end

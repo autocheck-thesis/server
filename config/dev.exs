@@ -97,7 +97,7 @@ config :autocheck,
   # should be pointing to the HOST machine.
   #
   # In Docker Desktop this would be:
-  # submission_download_hostname: "http://host.docker.internal:4000",
+  submission_download_hostname: "http://host.docker.internal:4000",
   coderunner_supervisor_path: "../coderunner-supervisor/"
 
 import_config "./**/local.exs"
