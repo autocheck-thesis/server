@@ -21,5 +21,5 @@ if (is_in_iframe) {
   document.body.classList.add("iframe");
 }
 
-let liveSocket = new LiveSocket("/live");
+let liveSocket = new LiveSocket("/ws/live");
 liveSocket.connect();

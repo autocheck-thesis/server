@@ -7,11 +7,11 @@ defmodule AutocheckWeb.Endpoint do
     {:ok, config}
   end
 
-  socket "/live", Phoenix.LiveView.Socket
+  socket "/ws/live", Phoenix.LiveView.Socket
 
-  socket "/socket", AutocheckWeb.UserSocket,
-    websocket: true,
-    longpoll: false
+  # socket "/ws/socket", AutocheckWeb.UserSocket,
+  #   websocket: true,
+  #   longpoll: false
 
   # Serve uploads
   plug Plug.Static,
