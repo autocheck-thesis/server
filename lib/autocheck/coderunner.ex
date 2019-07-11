@@ -1,5 +1,6 @@
 defmodule Autocheck.Coderunner do
   alias Autocheck.Submissions
+  alias Autocheck.Assignments
 
   @image "test:latest"
 
@@ -48,6 +49,8 @@ defmodule Autocheck.Coderunner do
       {:result, results} ->
         event_callback.(job, {:result, results})
         Submissions.finish_job!(job, results)
+
+        Assignments.queue_result_report!(job)
 
       other ->
         throw({:other, other})

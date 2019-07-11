@@ -11,6 +11,8 @@ defmodule Autocheck.Application do
   alias Autocheck.Repo
   alias Autocheck.Submissions.Job
   alias Autocheck.Coderunner
+  alias Autocheck.Assignments.GradePassbackResult
+  alias Autocheck.GradePassback
 
   def start(_type, _args) do
     # List all child processes to be supervised
@@ -29,7 +31,14 @@ defmodule Autocheck.Application do
           # failure_mode: {ExponentialRetry, base: 3, times: 3}
         )
 
+      Honeydew.start_queue(:grade_passback,
+        queue: {EctoPollQueue, [schema: GradePassbackResult, repo: Repo, poll_interval: 1]},
+        failure_mode: Abandon
+        # failure_mode: {ExponentialRetry, base: 3, times: 3}
+      )
+
       :ok = Honeydew.start_workers(:run_jobs, Coderunner, num: 1)
+      :ok = Honeydew.start_workers(:grade_passback, GradePassback, num: 1)
     end
 
     {:ok, supervisor}

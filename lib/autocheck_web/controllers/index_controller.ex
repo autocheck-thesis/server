@@ -14,10 +14,23 @@ defmodule AutocheckWeb.IndexController do
           "roles" => roles,
           "ext_lti_assignment_id" => assignment_id,
           "resource_link_title" => assignment_name
-        } = _params
+        } = params
       ) do
     user = Accounts.get_or_insert!(%{lti_user_id: lti_user_id})
     assignment = Assignments.get_or_insert!(%{id: assignment_id, name: assignment_name})
+
+    with {:ok, lis_outcome_service_url} <- Map.fetch(params, "lis_outcome_service_url"),
+         {:ok, lis_result_sourcedid} <- Map.fetch(params, "lis_result_sourcedid") do
+      Assignments.set_grade_passback!(
+        assignment,
+        user,
+        lis_outcome_service_url,
+        lis_result_sourcedid
+      )
+
+      Logger.info("Added grade passback")
+    end
+
     role = Accounts.determine_role(roles)
 
     conn
