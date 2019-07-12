@@ -11,10 +11,9 @@ defmodule Autocheck.Configuration.Parser do
             environment: nil,
             required_files: [],
             allowed_file_extensions: [],
+            grade: nil,
             steps: [],
             errors: []
-
-  # {name, arity}
 
   @built_in_functions [:run, :print]
   @built_in_functions_with_arity [
@@ -30,7 +29,8 @@ defmodule Autocheck.Configuration.Parser do
   @fields [
     :env,
     :required_files,
-    :allowed_file_extensions
+    :allowed_file_extensions,
+    :grade
   ]
 
   @environments %{
@@ -150,16 +150,21 @@ defmodule Autocheck.Configuration.Parser do
     end
   end
 
-  # Invalid field syntax
-  defp parse_statement({:@, _meta, [{_, [line: line], params}]}, %Parser{} = p)
-       when length(params) > 2,
-       do: add_error(p, line, "syntax error", "", "")
+  # Grade field
+  defp parse_statement({:@, _meta, [{:grade, _meta2, [grade_percentage]}]}, %Parser{} = p)
+       when is_float(grade_percentage),
+       do: %{p | grade: grade_percentage}
 
   # Unsupported field
-  defp parse_statement({:@, _meta, [{unsupported_field, [line: line], _params}]}, %Parser{} = p) do
-    suggestion = suggest_similar_field(unsupported_field)
-    add_error(p, line, "incorrect field: ", unsupported_field, suggestion)
+  defp parse_statement({:@, _meta, [{field, [line: line], _params}]}, %Parser{} = p)
+       when field not in @fields do
+    suggestion = suggest_similar_field(field)
+    add_error(p, line, "incorrect field: ", field, suggestion)
   end
+
+  # Invalid field syntax
+  defp parse_statement({:@, _meta, [{_, [line: line], _params}]}, %Parser{} = p),
+    do: add_error(p, line, "syntax error", "", "")
 
   # Empty step
   defp parse_statement({:step, _meta, [_step_name, [do: {:__block__, [], []}]]}, state),

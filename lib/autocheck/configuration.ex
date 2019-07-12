@@ -4,6 +4,7 @@ defmodule Autocheck.Configuration do
   defstruct image: nil,
             required_files: [],
             allowed_file_extensions: [],
+            grade: nil,
             steps: []
 
   def parse_code(code) do
