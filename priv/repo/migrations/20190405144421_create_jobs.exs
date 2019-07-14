@@ -3,10 +3,6 @@ defmodule Autocheck.Repo.Migrations.CreateJobs do
 
   import Honeydew.EctoPollQueue.Migration
 
-  def up do
-    execute("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
-  end
-
   def change do
     create table(:jobs, primary_key: false) do
       add(:id, :uuid, primary_key: true)
