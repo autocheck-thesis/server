@@ -2,7 +2,7 @@ defmodule Autocheck.Coderunner do
   alias Autocheck.Submissions
   alias Autocheck.Assignments
 
-  @image "test:latest"
+  @image "autocheck-coderunner:latest"
 
   def run(job_id) do
     job = Submissions.get_job!(job_id)
@@ -22,7 +22,7 @@ defmodule Autocheck.Coderunner do
     end)
 
     container = %{
-      Cmd: ["sh", "-c", generate_cmd(job)],
+      Cmd: generate_cmd(job),
       Image: @image,
       HostConfig: %{
         Binds: [
@@ -79,7 +79,7 @@ defmodule Autocheck.Coderunner do
 
     self_string = Base.encode64(:erlang.term_to_binary(self()))
 
-    "mix test_suite \"#{download_url}\" \"#{callback_url}\" \"#{self_string}\""
+    ["remote", download_url, callback_url, self_string]
   end
 
   defp parse_pull_chunk(chunk) do
