@@ -22,13 +22,14 @@ defmodule AutocheckWeb.SubmissionLiveView do
     {_result, logs} = Enum.reduce(events, {nil, []}, &reduce_event/2)
 
     {:ok,
-     assign(socket,
+     socket
+     |> assign(
        submission: submission,
        log_lines: Enum.reverse(logs),
        role: role,
        job: job,
        results: job.result || []
-     )}
+     ), temporary_assigns: [:log_lines]}
   end
 
   def mount(%{submission: submission, role: role} = _session, socket) do
@@ -37,7 +38,7 @@ defmodule AutocheckWeb.SubmissionLiveView do
        submission: submission,
        log_lines: [{:error, "No job specified"}],
        role: role
-     )}
+     ), temporary_assigns: [:log_lines]}
   end
 
   def handle_info({:subscribed, subscription}, socket) do
@@ -55,7 +56,7 @@ defmodule AutocheckWeb.SubmissionLiveView do
         _ -> assign(socket, :results, result)
       end
 
-    socket = update(socket, :log_lines, &(&1 ++ Enum.reverse(logs)))
+    socket = assign(socket, :log_lines, Enum.reverse(logs))
 
     {:noreply, socket}
   end
