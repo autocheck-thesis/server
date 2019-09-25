@@ -37,8 +37,8 @@ defmodule Autocheck.Application do
         # failure_mode: {ExponentialRetry, base: 3, times: 3}
       )
 
-      :ok = Honeydew.start_workers(:run_jobs, Coderunner, num: 1)
-      :ok = Honeydew.start_workers(:grade_passback, GradePassback, num: 1)
+      :ok = Honeydew.start_workers(:run_jobs, Coderunner, num: 2)
+      :ok = Honeydew.start_workers(:grade_passback, GradePassback, num: 10)
     end
 
     {:ok, supervisor}
