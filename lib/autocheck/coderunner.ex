@@ -45,7 +45,7 @@ defmodule Autocheck.Coderunner do
         event_callback.(job, {:run, chunk})
     end)
 
-    DockerAPI.Containers.remove(job.id, true, client)
+    Task.start(DockerAPI.Containers, :remove, [job.id, true, client])
 
     receive do
       {:result, results} ->
