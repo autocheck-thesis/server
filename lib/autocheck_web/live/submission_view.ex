@@ -79,7 +79,7 @@ defmodule AutocheckWeb.SubmissionLiveView do
       {:run, :end} ->
         {result, [{:done, "Process execution successful"} | logs]}
 
-      {:pull, {_stream, text}} ->
+      {:pull, text} ->
         {result, [{:text, text} | logs]}
 
       {:run, {:stdio, text}} ->
