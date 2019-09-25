@@ -12,14 +12,16 @@ defmodule Autocheck.Coderunner do
   def run!(job, event_callback \\ &append_to_stream/2) do
     client = DockerAPI.connect()
 
-    DockerAPI.Images.create(%{fromImage: @image}, client)
-    |> Enum.each(fn
-      :end ->
-        event_callback.(job, {:pull, :end})
+    unless DockerAPI.Images.exists(client, @image) do
+      DockerAPI.Images.create(%{fromImage: @image}, client)
+      |> Enum.each(fn
+        :end ->
+          event_callback.(job, {:pull, :end})
 
-      chunk ->
-        event_callback.(job, parse_pull_chunk(chunk))
-    end)
+        chunk ->
+          event_callback.(job, parse_pull_chunk(chunk))
+      end)
+    end
 
     container = %{
       Cmd: generate_cmd(job),
