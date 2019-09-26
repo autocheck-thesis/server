@@ -9,56 +9,70 @@ defmodule Autocheck.Coderunner do
     run!(job)
   end
 
-  def run!(job, event_callback \\ &append_to_stream/2) do
-    client = DockerAPI.connect()
+  def run!(job) do
+    try do
+      client = DockerAPI.connect()
 
-    unless DockerAPI.Images.exists(client, @image) do
-      DockerAPI.Images.create(%{fromImage: @image}, client)
+      unless DockerAPI.Images.exists(client, @image) do
+        DockerAPI.Images.create(%{fromImage: @image}, client)
+        |> Enum.each(fn
+          :end ->
+            append_to_stream(job, {:pull, :end})
+
+          {:error, _} = error ->
+            throw(error)
+
+          chunk ->
+            append_to_stream(job, parse_pull_chunk(chunk))
+        end)
+      end
+
+      container = %{
+        Cmd: generate_cmd(job),
+        Image: @image,
+        HostConfig: %{
+          Binds: [
+            "/var/run/docker.sock:/var/run/docker.sock",
+            "/tmp/coderunner:/tmp/coderunner"
+          ]
+        }
+      }
+
+      DockerAPI.Containers.run(job.id, container, client)
+
+      DockerAPI.Containers.logs(job.id, client)
       |> Enum.each(fn
         :end ->
-          event_callback.(job, {:pull, :end})
+          append_to_stream(job, {:run, :end})
+
+        {:error, _} = error ->
+          throw(error)
 
         chunk ->
-          event_callback.(job, parse_pull_chunk(chunk))
+          append_to_stream(job, {:run, chunk})
       end)
-    end
 
-    container = %{
-      Cmd: generate_cmd(job),
-      Image: @image,
-      HostConfig: %{
-        Binds: [
-          "/var/run/docker.sock:/var/run/docker.sock",
-          "/tmp/coderunner:/tmp/coderunner"
-        ]
-      }
-    }
+      Task.start(DockerAPI.Containers, :remove, [job.id, true, client])
 
-    DockerAPI.Containers.run(job.id, container, client)
+      receive do
+        {:result, results} ->
+          append_to_stream(job, {:result, results})
+          Submissions.finish_job!(job, results)
 
-    DockerAPI.Containers.logs(job.id, client)
-    |> Enum.each(fn
-      :end ->
-        event_callback.(job, {:run, :end})
+          Assignments.queue_result_report!(job)
+      end
+    rescue
+      error in HTTPoison.Error ->
+        append_to_stream(job, {:error, "Docker connection error"})
+        raise(error)
 
-      chunk ->
-        event_callback.(job, {:run, chunk})
-    end)
-
-    Task.start(DockerAPI.Containers, :remove, [job.id, true, client])
-
-    receive do
-      {:result, results} ->
-        event_callback.(job, {:result, results})
-        Submissions.finish_job!(job, results)
-
-        Assignments.queue_result_report!(job)
-
-      other ->
-        throw({:other, other})
-    after
-      30000 ->
-        throw(:timeout)
+      error ->
+        append_to_stream(job, {:error, "Unknown error"})
+        raise(error)
+    catch
+      error ->
+        append_to_stream(job, {:error, "Unknown error"})
+        raise(error)
     end
   end
 

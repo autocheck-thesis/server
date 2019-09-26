@@ -94,6 +94,9 @@ defmodule AutocheckWeb.SubmissionLiveView do
       {:result, result} ->
         {result, logs}
 
+      {:error, text} when is_binary(text) ->
+        {result, [{:error, text} | logs]}
+
       {:error, text} ->
         {result, [{:error, inspect(text)} | logs]}
     end
