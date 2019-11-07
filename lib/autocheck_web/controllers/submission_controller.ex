@@ -42,7 +42,11 @@ defmodule AutocheckWeb.SubmissionController do
     submission = Submissions.get_with_jobs!(submission_id)
 
     with [job | _jobs] <- submission.jobs do
-      {:ok, events} = EventStore.read_stream_forward(job.id)
+      events =
+        case EventStore.read_stream_forward(job.id) do
+          {:ok, events} -> events
+          {:error, _} -> []
+        end
 
       live_render(conn, AutocheckWeb.SubmissionLiveView,
         session: %{
