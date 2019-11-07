@@ -6,8 +6,6 @@ config :autocheck, AutocheckWeb.Endpoint,
   http: [port: 4002],
   server: false
 
-config :autocheck, :children, []
-
 # Print only warnings and errors during test
 config :logger, level: :warn
 

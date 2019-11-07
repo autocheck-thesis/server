@@ -1,6 +1,5 @@
 defmodule Autocheck.Coderunner do
   alias Autocheck.Submissions
-  alias Autocheck.Assignments
 
   @image "autocheck-coderunner:latest"
 
@@ -53,14 +52,6 @@ defmodule Autocheck.Coderunner do
       end)
 
       Task.start(DockerAPI.Containers, :remove, [job.id, true, client])
-
-      receive do
-        {:result, results} ->
-          append_to_stream(job, {:result, results})
-          Submissions.finish_job!(job, results)
-
-          Assignments.queue_result_report!(job)
-      end
     rescue
       error in HTTPoison.Error ->
         append_to_stream(job, {:error, "Docker connection error"})
@@ -93,9 +84,7 @@ defmodule Autocheck.Coderunner do
           job.download_token
         )
 
-    self_string = Base.encode64(:erlang.term_to_binary(self()))
-
-    ["remote", download_url, callback_url, self_string]
+    ["remote", download_url, callback_url]
   end
 
   defp parse_pull_chunk(chunk) do

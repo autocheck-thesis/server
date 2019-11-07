@@ -4,6 +4,7 @@ defmodule AutocheckWeb.SubmissionController do
   alias Autocheck.Configuration
   alias Autocheck.Assignments
   alias Autocheck.Submissions
+  alias Autocheck.Coderunner
 
   require Logger
 
@@ -11,7 +12,7 @@ defmodule AutocheckWeb.SubmissionController do
     assignment = Assignments.get!(assignment_id)
     configuration = Assignments.get_latest_configuration!(assignment.id)
 
-    %Configuration{
+    %AutocheckLanguage.Configuration{
       allowed_file_extensions: allowed_file_extensions,
       required_files: required_files
     } = Configuration.parse_code(configuration.code)
@@ -187,7 +188,7 @@ defmodule AutocheckWeb.SubmissionController do
     assignment = Assignments.get!(assignment_id)
     configuration = Assignments.get_latest_configuration!(assignment.id)
 
-    %Configuration{
+    %AutocheckLanguage.Configuration{
       allowed_file_extensions: allowed_file_extensions,
       required_files: required_files
     } = Configuration.parse_code(configuration.code)
@@ -231,6 +232,7 @@ defmodule AutocheckWeb.SubmissionController do
 
     data =
       Autocheck.Configuration.parse_code(configuration.code)
+      |> IO.inspect()
       |> Map.from_struct()
       |> Map.put(:assignment_files, assignment_files)
       |> Map.put(:submission_files, submission_files)
@@ -239,15 +241,12 @@ defmodule AutocheckWeb.SubmissionController do
     render(conn, "download.json", data: data)
   end
 
-  def download_callback(conn, %{"token" => token, "result" => result, "worker_pid" => worker_pid}) do
+  def download_callback(conn, %{"token" => token, "result" => result}) do
     job = Submissions.get_job_by_download_token!(token)
-    # submission = Submissions.get_with_files_with_content!(job.submission_id)
 
-    # This could be replaced by a registry of running workers
-    # Not worse than what honeydew already does
-    {:ok, pid_binary} = Base.decode64(worker_pid)
-    pid = :erlang.binary_to_term(pid_binary, [:safe])
-    send(pid, {:result, result})
+    Coderunner.append_to_stream(job, {:result, result})
+    Submissions.finish_job!(job, result)
+    Assignments.queue_result_report!(job)
 
     render(conn, "download_callback.json", job: job)
   end

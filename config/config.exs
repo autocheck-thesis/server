@@ -21,8 +21,6 @@ config :autocheck, AutocheckWeb.Endpoint,
     signing_salt: "YOUR_SECRET"
   ]
 
-config :autocheck, :children, [AutocheckWeb.Endpoint, Autocheck.Repo]
-
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
