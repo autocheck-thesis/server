@@ -236,7 +236,6 @@ defmodule AutocheckWeb.SubmissionController do
 
     data =
       Autocheck.Configuration.parse_code(configuration.code)
-      |> IO.inspect()
       |> Map.from_struct()
       |> Map.put(:assignment_files, assignment_files)
       |> Map.put(:submission_files, submission_files)
