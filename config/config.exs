@@ -17,9 +17,7 @@ config :autocheck, AutocheckWeb.Endpoint,
     layout: {AutocheckWeb.ErrorView, "error.html"}
   ],
   pubsub: [name: Autocheck.PubSub, adapter: Phoenix.PubSub.PG2],
-  live_view: [
-    signing_salt: "YOUR_SECRET"
-  ]
+  live_view: [signing_salt: "FgVunxTipQhFyxmh"]
 
 # Configures Elixir's Logger
 config :logger, :console,

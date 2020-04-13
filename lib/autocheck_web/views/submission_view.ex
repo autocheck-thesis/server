@@ -72,10 +72,6 @@ defmodule AutocheckWeb.SubmissionView do
     "Previous submissions"
   end
 
-  def title(:live, %{live_view_module: AutocheckWeb.SubmissionLiveView} = _assigns) do
-    "Submission details"
-  end
-
   def title(_template, _assigns) do
     "Submission"
   end

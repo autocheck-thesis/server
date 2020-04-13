@@ -1,13 +1,20 @@
 defmodule AutocheckWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :autocheck
 
+  @session_options [
+    store: :cookie,
+    key: "_autocheck_key",
+    signing_salt: "UG8ofbm6"
+  ]
+
   def init(_key, config) do
     File.mkdir("uploads/")
 
     {:ok, config}
   end
 
-  socket "/ws/live", Phoenix.LiveView.Socket
+  socket "/ws/live", Phoenix.LiveView.Socket,
+    websocket: [connect_info: [session: @session_options]]
 
   # socket "/ws/socket", AutocheckWeb.UserSocket,
   #   websocket: true,
@@ -47,14 +54,7 @@ defmodule AutocheckWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
-
-  # The session will be stored in the cookie and signed,
-  # this means its contents can be read but not tampered with.
-  # Set :encryption_salt if you would also like to encrypt it.
-  plug Plug.Session,
-    store: :cookie,
-    key: "_autocheck_key",
-    signing_salt: "UG8ofbm6"
+  plug Plug.Session, @session_options
 
   plug AutocheckWeb.Router
 end

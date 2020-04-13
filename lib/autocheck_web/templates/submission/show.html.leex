@@ -13,7 +13,7 @@
             <button class="ui tiny button" phx-click="rebuild">Trigger rebuild</button>
           </div>
       </h4>
-      <pre id="log" phx-hook="Log"><code phx-update="append"><%= for {type, text} <- @log_lines do %><div class="<%= type %>"><%= text %><br /></div><% end %></code></pre>
+      <pre id="log" phx-hook="Log"><code id="log-code" phx-update="append"><%= for {event_number, type, text} <- @log_lines do %><div id="event_<%= event_number %>" class="<%= type %>"><%= text %><br /></div><% end %></code></pre>
     </div>
   </div>
 </div>

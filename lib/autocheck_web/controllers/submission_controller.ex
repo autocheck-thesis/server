@@ -48,20 +48,20 @@ defmodule AutocheckWeb.SubmissionController do
           {:error, _} -> []
         end
 
-      live_render(conn, AutocheckWeb.SubmissionLiveView,
+      live_render(conn, AutocheckWeb.SubmissionLive,
         session: %{
-          submission: submission,
-          job: job,
-          events: events,
-          role: role
+          "submission" => submission,
+          "job" => job,
+          "events" => events,
+          "role" => role
         }
       )
     else
       _ ->
-        live_render(conn, AutocheckWeb.SubmissionLiveView,
+        live_render(conn, AutocheckWeb.SubmissionLive,
           session: %{
-            submission: submission,
-            role: role
+            "submission" => submission,
+            "role" => role
           }
         )
     end

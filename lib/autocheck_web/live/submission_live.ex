@@ -1,4 +1,4 @@
-defmodule AutocheckWeb.SubmissionLiveView do
+defmodule AutocheckWeb.SubmissionLive do
   use Phoenix.LiveView
 
   alias Phoenix.LiveView.Socket
@@ -12,7 +12,9 @@ defmodule AutocheckWeb.SubmissionLiveView do
   end
 
   def mount(
-        %{submission: submission, job: job, events: events, role: role} = _session,
+        _params,
+        %{"submission" => submission, "job" => job, "events" => events, "role" => role} =
+          _session,
         socket
       ) do
     if connected?(socket) do
@@ -25,20 +27,21 @@ defmodule AutocheckWeb.SubmissionLiveView do
      socket
      |> assign(
        submission: submission,
-       log_lines: Enum.reverse(logs),
        role: role,
        job: job,
-       results: job.result || []
-     ), temporary_assigns: [:log_lines]}
+       results: job.result || [],
+       page_title: "Autocheck - Submission details"
+     ), temporary_assigns: [log_lines: Enum.reverse(logs)]}
   end
 
-  def mount(%{submission: submission, role: role} = _session, socket) do
+  def mount(_params, %{"submission" => submission, "role" => role} = _session, socket) do
     {:ok,
      assign(socket,
        submission: submission,
+       role: role,
        log_lines: [{:error, "No job specified"}],
-       role: role
-     ), temporary_assigns: [:log_lines]}
+       page_title: "Autocheck - Submission details"
+     )}
   end
 
   def handle_info({:subscribed, subscription}, socket) do
@@ -56,37 +59,39 @@ defmodule AutocheckWeb.SubmissionLiveView do
         _ -> assign(socket, :results, result)
       end
 
-    socket = assign(socket, :log_lines, Enum.reverse(logs))
-
-    {:noreply, socket}
+    {:noreply, assign(socket, :log_lines, Enum.reverse(logs))}
   end
 
   def handle_event("rebuild", _, %Socket{assigns: %{submission: submission}} = socket) do
     job = Submissions.create_job!(submission)
     Autocheck.Coderunner.start_event_stream(job)
 
-    {:stop, redirect(socket, to: Routes.submission_path(socket, :show, submission.id))}
+    {:noreply, redirect(socket, to: Routes.submission_path(socket, :show, submission.id))}
   end
 
-  defp reduce_event(%EventStore.RecordedEvent{data: data}, {result, logs}) do
+  defp reduce_event(
+         %EventStore.RecordedEvent{data: data, event_number: event_number},
+         {result, logs}
+       ) do
     case data do
       :init ->
-        {result, [{:init, "Coderunner started job"} | logs]}
+        {result, [{event_number, :init, "Coderunner started job"} | logs]}
 
       {:pull, :end} ->
-        {result, [{:done, "Image fetching done. Will now execute the job..."} | logs]}
+        {result,
+         [{event_number, :done, "Image fetching done. Will now execute the job..."} | logs]}
 
       {:run, :end} ->
-        {result, [{:done, "Process execution successful"} | logs]}
+        {result, [{event_number, :done, "Process execution successful"} | logs]}
 
       {:pull, text} ->
-        {result, [{:text, text} | logs]}
+        {result, [{event_number, :text, text} | logs]}
 
       {:run, {:stdio, text}} ->
-        {result, [{:text, text |> String.replace(~r/\n$/, "")} | logs]}
+        {result, [{event_number, :text, text |> String.replace(~r/\n$/, "")} | logs]}
 
       {:run, {:stderr, text}} ->
-        {result, [{:supervisor, text |> String.replace(~r/\n$/, "")} | logs]}
+        {result, [{event_number, :supervisor, text |> String.replace(~r/\n$/, "")} | logs]}
 
       {:result, result} when is_binary(result) ->
         {Jason.decode!(result), logs}
@@ -95,10 +100,10 @@ defmodule AutocheckWeb.SubmissionLiveView do
         {result, logs}
 
       {:error, text} when is_binary(text) ->
-        {result, [{:error, text} | logs]}
+        {result, [{event_number, :error, text} | logs]}
 
       {:error, text} ->
-        {result, [{:error, inspect(text)} | logs]}
+        {result, [{event_number, :error, inspect(text)} | logs]}
     end
   end
 end

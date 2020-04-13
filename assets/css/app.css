@@ -19,6 +19,7 @@ body.iframe {
 pre {
   margin: 0;
   overflow: auto;
+  overflow-y: scroll;
   max-height: 480px;
   font-size: var(--pre-file-size);
   line-height: var(--pre-line-height);

@@ -1,4 +1,5 @@
 import "phoenix_html";
+import { Socket } from "phoenix";
 import LiveSocket from "phoenix_live_view";
 
 import { create_code_editor } from "./code-editor";
@@ -24,7 +25,7 @@ const hooks = {
       this.logScrolling = true;
       this.el.scrollTop = this.el.scrollHeight - this.el.clientHeight;
 
-      this.el.addEventListener("wheel", () => {
+      this.el.addEventListener("scroll", () => {
         this.logScrolling = this.el.scrollTop > this.el.scrollHeight - this.el.clientHeight - 32;
       });
     },
@@ -36,5 +37,8 @@ const hooks = {
   }
 };
 
-let liveSocket = new LiveSocket("/ws/live", { hooks });
+let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
+let liveSocket = new LiveSocket("/ws/live", Socket, { hooks, params: { _csrf_token: csrfToken } });
 liveSocket.connect();
+
+window.liveSocket = liveSocket;

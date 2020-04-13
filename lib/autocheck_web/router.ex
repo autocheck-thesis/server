@@ -6,7 +6,8 @@ defmodule AutocheckWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_flash
-    plug Phoenix.LiveView.Flash
+    plug :fetch_live_flash
+    plug :protect_from_forgery
   end
 
   pipeline :json_client do
